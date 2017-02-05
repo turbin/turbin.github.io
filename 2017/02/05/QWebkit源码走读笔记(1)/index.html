@@ -1,0 +1,412 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>QWebkit源码阅读笔记(1) | Turbine&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="Turbine Yan">
+    
+    <meta name="description" content="本文基于Qt5.5.1版本中的QWebkituserAgent “Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/538.1 (KHTML, like Gecko) cordova Safari/538.1”
+页面加载的过程FrameLoaderFrameLo">
+    
+    
+    
+    
+    <link rel="alternative" href="/atom.xml" title="Turbine&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/cplusplus_30x30_logo.png">
+    
+    
+    <link rel="apple-touch-icon" href="/img/cplusplus_100x100_logo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/cplusplus_100x100_logo.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Turbine&#39;s Blog">Turbine&#39;s Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives/">归档</a></li>
+					
+						<li><a href="/categories/essay">随笔</a></li>
+					
+						<li><a href="/categories/coding">编程</a></li>
+					
+						<li><a href="/categories/translation">文档翻译</a></li>
+					
+						<li><a href="/categories/notes">笔记</a></li>
+					
+					<li>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/02/05/QWebkit源码走读笔记(1)/" title="QWebkit源码阅读笔记(1)" itemprop="url">QWebkit源码阅读笔记(1)</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-02-05T03:45:45.000Z" itemprop="datePublished">2017-02-05</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#本文基于Qt5-5-1版本中的QWebkit"><span class="toc-number">1.</span> <span class="toc-text">本文基于Qt5.5.1版本中的QWebkit</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#页面加载的过程"><span class="toc-number">2.</span> <span class="toc-text">页面加载的过程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#FrameLoader"><span class="toc-number">2.1.</span> <span class="toc-text">FrameLoader</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#FrameLoader-状态定义"><span class="toc-number">2.1.1.</span> <span class="toc-text">FrameLoader-状态定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#资源类型定义"><span class="toc-number">2.1.2.</span> <span class="toc-text">资源类型定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#FrameLoader-FrameState-FrameStateProvisional"><span class="toc-number">2.1.3.</span> <span class="toc-text">FrameLoader::FrameState::FrameStateProvisional</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#WebPage-gt-WebFrame-gt-FrameLoader的加载过程"><span class="toc-number">2.2.</span> <span class="toc-text">WebPage->WebFrame->FrameLoader的加载过程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Adapter层调用"><span class="toc-number">2.2.0.1.</span> <span class="toc-text">Adapter层调用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#通过FrameLoader-执行加载过程"><span class="toc-number">2.2.0.2.</span> <span class="toc-text">通过FrameLoader 执行加载过程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#关于-continueLoadAfterNavigationPolicy-说明"><span class="toc-number">2.2.0.3.</span> <span class="toc-text">关于 continueLoadAfterNavigationPolicy()说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#开始加载页面"><span class="toc-number">2.2.0.4.</span> <span class="toc-text">开始加载页面</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DocumentLoader"><span class="toc-number">2.2.1.</span> <span class="toc-text">DocumentLoader</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CachedResourceLoader"><span class="toc-number">2.2.2.</span> <span class="toc-text">CachedResourceLoader</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Document"><span class="toc-number">3.</span> <span class="toc-text">Document</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Document-对象的三个状态具体转换过程"><span class="toc-number">3.0.1.</span> <span class="toc-text">Document 对象的三个状态具体转换过程</span></a></li></ol></li></ol></li></ol>
+		</div>
+		
+		<h1 id="本文基于Qt5-5-1版本中的QWebkit"><a href="#本文基于Qt5-5-1版本中的QWebkit" class="headerlink" title="本文基于Qt5.5.1版本中的QWebkit"></a>本文基于Qt5.5.1版本中的QWebkit</h1><p>userAgent “Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/538.1 (KHTML, like Gecko) cordova Safari/538.1”</p>
+<h1 id="页面加载的过程"><a href="#页面加载的过程" class="headerlink" title="页面加载的过程"></a>页面加载的过程</h1><h2 id="FrameLoader"><a href="#FrameLoader" class="headerlink" title="FrameLoader"></a>FrameLoader</h2><h3 id="FrameLoader-状态定义"><a href="#FrameLoader-状态定义" class="headerlink" title="FrameLoader-状态定义"></a>FrameLoader-状态定义</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">enum FrameState &#123;</div><div class="line">    FrameStateProvisional,</div><div class="line">    // This state indicates we are ready to commit to a page,</div><div class="line">    // which means the view will transition to use the new data source.</div><div class="line">    FrameStateCommittedPage,</div><div class="line">    FrameStateComplete</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<h3 id="资源类型定义"><a href="#资源类型定义" class="headerlink" title="资源类型定义"></a>资源类型定义</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">enum Type &#123;</div><div class="line">    MainResource, // HTML</div><div class="line">    ImageResource, // 图片</div><div class="line">    CSSStyleSheet, // CSS文件</div><div class="line">    Script, // Javascript文件</div><div class="line">    FontResource, // 字体</div><div class="line">    RawResource // 其他包括多媒体文件等二进制文件</div><div class="line">#if ENABLE(SVG)</div><div class="line">    , SVGDocumentResource</div><div class="line">#endif</div><div class="line">#if ENABLE(XSLT)</div><div class="line">    , XSLStyleSheet</div><div class="line">#endif</div><div class="line">#if ENABLE(LINK_PREFETCH)</div><div class="line">    , LinkPrefetch</div><div class="line">    , LinkSubresource</div><div class="line">#endif</div><div class="line">#if ENABLE(VIDEO_TRACK)</div><div class="line">    , TextTrackResource</div><div class="line">#endif</div><div class="line">#if ENABLE(CSS_SHADERS)</div><div class="line">    , ShaderResource</div><div class="line">#endif</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>在webkit中一般将HTML页面定义为主资源。</p>
+<h3 id="FrameLoader-FrameState-FrameStateProvisional"><a href="#FrameLoader-FrameState-FrameStateProvisional" class="headerlink" title="FrameLoader::FrameState::FrameStateProvisional"></a>FrameLoader::FrameState::FrameStateProvisional</h3><p>Provisional 是Frame第一个定义状态,命名定义该状态是一个临时，且不确定状态<br>   TODO: 后续需要添加说明，该状态的命名原因；</p>
+<h2 id="WebPage-gt-WebFrame-gt-FrameLoader的加载过程"><a href="#WebPage-gt-WebFrame-gt-FrameLoader的加载过程" class="headerlink" title="WebPage-&gt;WebFrame-&gt;FrameLoader的加载过程"></a>WebPage-&gt;WebFrame-&gt;FrameLoader的加载过程</h2><h4 id="Adapter层调用"><a href="#Adapter层调用" class="headerlink" title="Adapter层调用"></a>Adapter层调用</h4><ol>
+<li><p><code>load -&gt; WebCore::Frame()-&gt;loader()</code>获得了 WebCore::FrameLoader。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">void QWebFrameAdapter::load(const QNetworkRequest&amp; req, QNetworkAccessManager::Operation operation, const QByteArray&amp; body)</div><div class="line">&#123;</div><div class="line">if (frame-&gt;tree()-&gt;parent())</div><div class="line">       pageAdapter-&gt;insideOpenCall = true;</div><div class="line"></div><div class="line">   QUrl url = ensureAbsoluteUrl(req.url());</div><div class="line"></div><div class="line">   WebCore::ResourceRequest request(url);</div><div class="line"></div><div class="line">   ... ...</div><div class="line"></div><div class="line">   frame-&gt;loader()-&gt;load(WebCore::FrameLoadRequest(frame, request));</div><div class="line"></div><div class="line">   if (frame-&gt;tree()-&gt;parent())</div><div class="line">       pageAdapter-&gt;insideOpenCall = false;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+<li><p><code>frame-&gt;loader()-&gt;load(WebCore::FrameLoadRequest(frame, request));</code><br>关键代码 <em>WebCore::FrameLoadRequest()</em> 调用的是 -&gt;  <code>FrameLoadRequest(Frame*, const ResourceRequest&amp;, const SubstituteData&amp; = SubstituteData())</code>;<br>这里WebCore::FrameLoadRequest().frameName() 返回的应该是空的string。</p>
+</li>
+<li><code>FrameLoadRequest(Frame*, const ResourceRequest&amp;, const SubstituteData&amp; = SubstituteData())</code>;<br>FrameLoader用空的SubstituteData去创建DocumentLoader，并使用DocumentLoader来完成MainResource的加载,SubstituteData用于在所请求的资源不可到达的时候，提供重定向指导。</li>
+</ol>
+<h4 id="通过FrameLoader-执行加载过程"><a href="#通过FrameLoader-执行加载过程" class="headerlink" title="通过FrameLoader 执行加载过程"></a>通过FrameLoader 执行加载过程</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">void FrameLoader::load(const FrameLoadRequest&amp; passedRequest)</div><div class="line">&#123;</div><div class="line">    FrameLoadRequest request(passedRequest);</div><div class="line"></div><div class="line">    if (m_inStopAllLoaders)</div><div class="line">        return;</div><div class="line"></div><div class="line">    if (!request.frameName().isEmpty()) &#123;</div><div class="line">        Frame* frame = findFrameForNavigation(request.frameName());</div><div class="line">        if (frame) &#123;</div><div class="line">            request.setShouldCheckNewWindowPolicy(false);</div><div class="line">            if (frame-&gt;loader() != this) &#123;</div><div class="line">                frame-&gt;loader()-&gt;load(request);</div><div class="line">                return;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    if (request.shouldCheckNewWindowPolicy()) &#123;</div><div class="line">        policyChecker()-&gt;checkNewWindowPolicy(NavigationAction(request.resourceRequest(), NavigationTypeOther), FrameLoader::callContinueLoadAfterNewWindowPolicy, request.resourceRequest(), 0, request.frameName(), this);</div><div class="line">        return;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    if (!request.hasSubstituteData())</div><div class="line">        request.setSubstituteData(defaultSubstituteDataForURL(request.resourceRequest().url()));</div><div class="line"></div><div class="line">    RefPtr&lt;DocumentLoader&gt; loader = m_client-&gt;createDocumentLoader(request.resourceRequest(), request.substituteData());</div><div class="line">    if (request.lockHistory() &amp;&amp; m_documentLoader)</div><div class="line">        loader-&gt;setClientRedirectSourceForHistory(m_documentLoader-&gt;didCreateGlobalHistoryEntry() ? m_documentLoader-&gt;urlForHistory().string() : m_documentLoader-&gt;clientRedirectSourceForHistory());</div><div class="line">    load(loader.get());</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>建立一个documentloader来加载资源：RefPtr<documentloader> loader = m_client-&gt;createDocumentLoader(request.resourceRequest(), request.substituteData());<br>注意这里的request.subtitueData是一个空对象。<br>然后调用：</documentloader></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">void FrameLoader::load(DocumentLoader* newDocumentLoader)</div><div class="line">&#123;</div><div class="line">    ……</div><div class="line">    if (m_documentLoader)</div><div class="line">        newDocumentLoader-&gt;setOverrideEncoding(m_documentLoader-&gt;overrideEncoding());</div><div class="line"></div><div class="line">    // When we loading alternate content for an unreachable URL that we&apos;re</div><div class="line">    // visiting in the history list, we treat it as a reload so the history list</div><div class="line">    // is appropriately maintained.</div><div class="line">    //</div><div class="line">    // FIXME: This seems like a dangerous overloading of the meaning of &quot;FrameLoadTypeReload&quot; ...</div><div class="line">    // shouldn&apos;t a more explicit type of reload be defined, that means roughly</div><div class="line">    // &quot;load without affecting history&quot; ?</div><div class="line">    if (shouldReloadToHandleUnreachableURL(newDocumentLoader)) &#123;</div><div class="line">        // shouldReloadToHandleUnreachableURL() returns true only when the original load type is back-forward.</div><div class="line">        // In this case we should save the document state now. Otherwise the state can be lost because load type is</div><div class="line">        // changed and updateForBackForwardNavigation() will not be called when loading is committed.</div><div class="line">        history()-&gt;saveDocumentAndScrollState();</div><div class="line">        ASSERT(type == FrameLoadTypeStandard);</div><div class="line">        type = FrameLoadTypeReload;</div><div class="line">    &#125;</div><div class="line">    loadWithDocumentLoader(newDocumentLoader, type, 0);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>注意这里的问题：<br>if (m_documentLoader)<br>        newDocumentLoader-&gt;setOverrideEncoding(m_documentLoader-&gt;overrideEncoding());</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">// 这里是m_documentLoader在FrameLoader中的定义：</div><div class="line">// Document loaders for the three phases of frame loading. Note that while</div><div class="line">// a new request is being loaded, the old document loader may still be referenced.</div><div class="line">// E.g. while a new request is in the &quot;policy&quot; state, the old document loader may</div><div class="line">// be consulted in particular as it makes sense to imply certain settings on the new loader.</div><div class="line">RefPtr&lt;DocumentLoader&gt; m_documentLoader;</div></pre></td></tr></table></figure>
+<p><strong><em>在frame 加载的过程中的三个不同阶段，都将创建并调用到document loader这个类型。请注意一个新的请求正在被加载的时候，先前的document loader可能依然会被其他对象引用到。<br>比如，一个新的请求还处于”policy”这个状态时，新的loader依然会关联到先前的document loader中一些具体配置参数</em></strong>。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div></pre></td><td class="code"><pre><div class="line">void FrameLoader::loadWithDocumentLoader(DocumentLoader* loader, FrameLoadType type, PassRefPtr&lt;FormState&gt; prpFormState)</div><div class="line">&#123;</div><div class="line"></div><div class="line">    // Retain because dispatchBeforeLoadEvent may release the last reference to it.</div><div class="line">    RefPtr&lt;Frame&gt; protect(m_frame);</div><div class="line">    ASSERT(m_client-&gt;hasWebView()); // 所以页面在加载前会判断当前的client中是否包含了View的实现。</div><div class="line">    ……</div><div class="line"></div><div class="line">    if (shouldPerformFragmentNavigation(isFormSubmission, httpMethod, policyChecker()-&gt;loadType(), newURL)) &#123;</div><div class="line">        RefPtr&lt;DocumentLoader&gt; oldDocumentLoader = m_documentLoader;</div><div class="line">        NavigationAction action(loader-&gt;request(), policyChecker()-&gt;loadType(), isFormSubmission);</div><div class="line">        oldDocumentLoader-&gt;setTriggeringAction(action);</div><div class="line">        policyChecker()-&gt;stopCheck();</div><div class="line">        policyChecker()-&gt;checkNavigationPolicy(loader-&gt;request(), oldDocumentLoader.get(), formState,</div><div class="line">            callContinueFragmentScrollAfterNavigationPolicy, this);</div><div class="line">    &#125; else &#123;</div><div class="line">        if (Frame* parent = m_frame-&gt;tree()-&gt;parent())</div><div class="line">            loader-&gt;setOverrideEncoding(parent-&gt;loader()-&gt;documentLoader()-&gt;overrideEncoding());</div><div class="line">        policyChecker()-&gt;stopCheck();</div><div class="line">        // 将新创建的documentloader设置给m_policyDocumentLoader</div><div class="line">        setPolicyDocumentLoader(loader);</div><div class="line">        if (loader-&gt;triggeringAction().isEmpty())</div><div class="line">            // 将本次加载的请求记录在loader的m_triggeringAction中</div><div class="line">            loader-&gt;setTriggeringAction(NavigationAction(loader-&gt;request(), policyChecker()-&gt;loadType(), isFormSubmission));</div><div class="line">        if (Element* ownerElement = m_frame-&gt;ownerElement()) &#123;</div><div class="line">            // We skip dispatching the beforeload event if we&apos;ve already</div><div class="line">            // committed a real document load because the event would leak</div><div class="line">            // subsequent activity by the frame which the parent frame isn&apos;t</div><div class="line">            // supposed to learn. For example, if the child frame navigated to</div><div class="line">            // a new URL, the parent frame shouldn&apos;t learn the URL.</div><div class="line">            if (!m_stateMachine.committedFirstRealDocumentLoad()</div><div class="line">                &amp;&amp; !ownerElement-&gt;dispatchBeforeLoadEvent(loader-&gt;request().url().string())) &#123;</div><div class="line">                continueLoadAfterNavigationPolicy(loader-&gt;request(), formState, false);</div><div class="line">                return;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        // 使用前面记录的loader.m_triggeringAction做校验，处理空白，重复，不可到达的请求，</div><div class="line">        // 该校验还要包括FrameLoaderClient实现的一些检查，以决定如何处理本次请求。</div><div class="line">        policyChecker()-&gt;checkNavigationPolicy(loader-&gt;request(), loader, formState,</div><div class="line">            callContinueLoadAfterNavigationPolicy, this);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><strong><em>设置完成以后，通过<code>policyChecker()</code>校验请求后，调用<code>callContinueLoadAfterNavigationPolicy()</code>。<br>在<code>callContinueLoadAfterNavigationPolicy()</code> 中将设置FrameLoader的状态转换为</em>Provisional<em>。<a href="/FrameLoader-状态定义/">参考FrameLoader的状态定义</a></em></strong><br>这是一个简单 包裹方法，简单地做了一个转换。实际调用的是continueLoadAfterNavigationPolicy。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">void FrameLoader::callContinueLoadAfterNavigationPolicy(void* argument,</div><div class="line">    const ResourceRequest&amp; request, PassRefPtr&lt;FormState&gt; formState, bool shouldContinue)</div><div class="line">&#123;</div><div class="line">    FrameLoader* loader = static_cast&lt;FrameLoader*&gt;(argument);</div><div class="line">    loader-&gt;continueLoadAfterNavigationPolicy(request, formState, shouldContinue);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="关于-continueLoadAfterNavigationPolicy-说明"><a href="#关于-continueLoadAfterNavigationPolicy-说明" class="headerlink" title="关于 continueLoadAfterNavigationPolicy()说明"></a>关于 <code>continueLoadAfterNavigationPolicy()</code>说明</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div></pre></td><td class="code"><pre><div class="line">void FrameLoader::continueLoadAfterNavigationPolicy(const ResourceRequest&amp;, PassRefPtr&lt;FormState&gt; formState, bool shouldContinue)</div><div class="line">&#123;</div><div class="line">    // If we loaded an alternate page to replace an unreachableURL, we&apos;ll get in here with a</div><div class="line">    // nil policyDataSource because loading the alternate page will have passed</div><div class="line">    // through this method already, nested; otherwise, policyDataSource should still be set.</div><div class="line">    ASSERT(m_policyDocumentLoader || !m_provisionalDocumentLoader-&gt;unreachableURL().isEmpty());</div><div class="line"></div><div class="line">    bool isTargetItem = history()-&gt;provisionalItem() ? history()-&gt;provisionalItem()-&gt;isTargetItem() : false;</div><div class="line"></div><div class="line">    // Two reasons we can&apos;t continue:</div><div class="line">    //    1) Navigation policy delegate said we can&apos;t so request is nil. A primary case of this</div><div class="line">    //       is the user responding Cancel to the form repost nag sheet.</div><div class="line">    //    2) User responded Cancel to an alert popped up by the before unload event handler.</div><div class="line">    bool canContinue = shouldContinue &amp;&amp; shouldClose();</div><div class="line"></div><div class="line">    if (!canContinue) &#123;</div><div class="line">        // If we were waiting for a quick redirect, but the policy delegate decided to ignore it, then we</div><div class="line">        // need to report that the client redirect was cancelled.</div><div class="line">        if (m_quickRedirectComing)</div><div class="line">            clientRedirectCancelledOrFinished(false);</div><div class="line"></div><div class="line">        setPolicyDocumentLoader(0);</div><div class="line"></div><div class="line">        // If the navigation request came from the back/forward menu, and we punt on it, we have the</div><div class="line">        // problem that we have optimistically moved the b/f cursor already, so move it back.  For sanity,</div><div class="line">        // we only do this when punting a navigation for the target frame or top-level frame.  </div><div class="line">        if ((isTargetItem || isLoadingMainFrame()) &amp;&amp; isBackForwardLoadType(policyChecker()-&gt;loadType())) &#123;</div><div class="line">            if (Page* page = m_frame-&gt;page()) &#123;</div><div class="line">                Frame* mainFrame = page-&gt;mainFrame();</div><div class="line">                if (HistoryItem* resetItem = mainFrame-&gt;loader()-&gt;history()-&gt;currentItem()) &#123;</div><div class="line">                    page-&gt;backForward()-&gt;setCurrentItem(resetItem);</div><div class="line">                    m_frame-&gt;loader()-&gt;client()-&gt;updateGlobalHistoryItemForPage();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        return;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    FrameLoadType type = policyChecker()-&gt;loadType();</div><div class="line">    // A new navigation is in progress, so don&apos;t clear the history&apos;s provisional item.</div><div class="line">    stopAllLoaders(ShouldNotClearProvisionalItem);</div><div class="line"></div><div class="line">    // &lt;rdar://problem/6250856&gt; - In certain circumstances on pages with multiple frames, stopAllLoaders()</div><div class="line">    // might detach the current FrameLoader, in which case we should bail on this newly defunct load.</div><div class="line">    if (!m_frame-&gt;page())</div><div class="line">        return;</div><div class="line"></div><div class="line">#if ENABLE(JAVASCRIPT_DEBUGGER) &amp;&amp; ENABLE(INSPECTOR)</div><div class="line">    if (Page* page = m_frame-&gt;page()) &#123;</div><div class="line">        if (page-&gt;mainFrame() == m_frame)</div><div class="line">            m_frame-&gt;page()-&gt;inspectorController()-&gt;resume();</div><div class="line">    &#125;</div><div class="line">#endif</div><div class="line"></div><div class="line">    setProvisionalDocumentLoader(m_policyDocumentLoader.get());</div><div class="line">    m_loadType = type;</div><div class="line">    setState(FrameStateProvisional);</div><div class="line"></div><div class="line">    setPolicyDocumentLoader(0);</div><div class="line"></div><div class="line">    if (isBackForwardLoadType(type) &amp;&amp; history()-&gt;provisionalItem()-&gt;isInPageCache()) &#123;</div><div class="line">        loadProvisionalItemFromCachedPage();</div><div class="line">        return;</div><div class="line">    &#125;</div><div class="line">    ///</div><div class="line">    if (formState)</div><div class="line">        m_client-&gt;dispatchWillSubmitForm(&amp;PolicyChecker::continueLoadAfterWillSubmitForm, formState);</div><div class="line">    else</div><div class="line">        continueLoadAfterWillSubmitForm();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>  在继续执行加载的策略中判断，用户是否取消加载，如果取消加载则将已加载的内容替换成缓存中的历史记录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line">// Two reasons we can&apos;t continue:</div><div class="line">//    1) Navigation policy delegate said we can&apos;t so request is nil. A primary case of this</div><div class="line">//       is the user responding Cancel to the form repost nag sheet.</div><div class="line">//    2) User responded Cancel to an alert popped up by the before unload event handler.</div><div class="line">bool canContinue = shouldContinue &amp;&amp; shouldClose();</div><div class="line"></div><div class="line">if (!canContinue) &#123;</div><div class="line">    // If we were waiting for a quick redirect, but the policy delegate decided to ignore it, then we</div><div class="line">    // need to report that the client redirect was cancelled.</div><div class="line">    if (m_quickRedirectComing)</div><div class="line">        clientRedirectCancelledOrFinished(false);</div><div class="line"></div><div class="line">    setPolicyDocumentLoader(0);</div><div class="line"></div><div class="line">    // If the navigation request came from the back/forward menu, and we punt on it, we have the</div><div class="line">    // problem that we have optimistically moved the b/f cursor already, so move it back.  For sanity,</div><div class="line">    // we only do this when punting a navigation for the target frame or top-level frame.  </div><div class="line">    if ((isTargetItem || isLoadingMainFrame()) &amp;&amp; isBackForwardLoadType(policyChecker()-&gt;loadType())) &#123;</div><div class="line">        if (Page* page = m_frame-&gt;page()) &#123;</div><div class="line">            Frame* mainFrame = page-&gt;mainFrame();</div><div class="line">            if (HistoryItem* resetItem = mainFrame-&gt;loader()-&gt;history()-&gt;currentItem()) &#123;</div><div class="line">                page-&gt;backForward()-&gt;setCurrentItem(resetItem);</div><div class="line">                m_frame-&gt;loader()-&gt;client()-&gt;updateGlobalHistoryItemForPage();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    return;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>  如果用户未取消加载操作，则根据表单状态，执行后续流程。一般都是走<code>else</code>这个分支。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">if (formState)</div><div class="line">   m_client-&gt;dispatchWillSubmitForm(&amp;PolicyChecker::continueLoadAfterWillSubmitForm, formState);</div><div class="line">else</div><div class="line">   continueLoadAfterWillSubmitForm();</div></pre></td></tr></table></figure></p>
+<p>接着开始进入页面的真正加载流程。</p>
+<h4 id="开始加载页面"><a href="#开始加载页面" class="headerlink" title="开始加载页面"></a>开始加载页面</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">void FrameLoader::continueLoadAfterWillSubmitForm()</div><div class="line">&#123;</div><div class="line">    if (!m_provisionalDocumentLoader)</div><div class="line">        return;</div><div class="line"></div><div class="line">    prepareForLoadStart();</div><div class="line"></div><div class="line">    // The load might be cancelled inside of prepareForLoadStart(), nulling out the m_provisionalDocumentLoader,</div><div class="line">    // so we need to null check it again.</div><div class="line">    if (!m_provisionalDocumentLoader)</div><div class="line">        return;</div><div class="line"></div><div class="line">    DocumentLoader* activeDocLoader = activeDocumentLoader();</div><div class="line">    if (activeDocLoader &amp;&amp; activeDocLoader-&gt;isLoadingMainResource())</div><div class="line">        return;</div><div class="line"></div><div class="line">    m_loadingFromCachedPage = false;</div><div class="line">    m_provisionalDocumentLoader-&gt;startLoadingMainResource();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ol>
+<li><p><code>prepareForLoadStart();</code> 通知进度条进行加载准备，向client 分发消息通知进行加载</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">void FrameLoader::prepareForLoadStart()</div><div class="line">&#123;</div><div class="line">   m_progressTracker-&gt;progressStarted();</div><div class="line">   m_client-&gt;dispatchDidStartProvisionalLoad();</div><div class="line">   ... ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+<li><p><code>m_provisionalDocumentLoader-&gt;startLoadingMainResource();</code> 开始将首页面作为主资源进行加载，<br>这里实际调用的是DocumentLoader::startLoadingMainResource;</p>
+</li>
+</ol>
+<h3 id="DocumentLoader"><a href="#DocumentLoader" class="headerlink" title="DocumentLoader"></a>DocumentLoader</h3><p>所有资源的加载，都是通过DocumentLoader 以及子类实现的;<br>m_provisionalDocumentLoader 就是一个DocumentLoader;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line">void DocumentLoader::startLoadingMainResource()</div><div class="line">&#123;</div><div class="line">    ... ...</div><div class="line"></div><div class="line">    ResourceRequest request(m_request);</div><div class="line">    DEFINE_STATIC_LOCAL(ResourceLoaderOptions, mainResourceLoadOptions,</div><div class="line">        (SendCallbacks, SniffContent, BufferData, AllowStoredCredentials, AskClientForAllCredentials, SkipSecurityCheck, UseDefaultOriginRestrictionsForType));</div><div class="line">    CachedResourceRequest cachedResourceRequest(request, mainResourceLoadOptions);</div><div class="line"></div><div class="line">    m_mainResource = m_cachedResourceLoader-&gt;requestMainResource(cachedResourceRequest);</div><div class="line">    if (!m_mainResource) &#123;</div><div class="line">        setRequest(ResourceRequest());</div><div class="line">        // If the load was aborted by clearing m_request, it&apos;s possible the ApplicationCacheHost</div><div class="line">        // is now in a state where starting an empty load will be inconsistent. Replace it with</div><div class="line">        // a new ApplicationCacheHost.</div><div class="line">        m_applicationCacheHost = adoptPtr(new ApplicationCacheHost(this));</div><div class="line">        maybeLoadEmpty();</div><div class="line">        return;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    if (!mainResourceLoader()) &#123;</div><div class="line">        m_identifierForLoadWithoutResourceLoader = m_frame-&gt;page()-&gt;progress()-&gt;createUniqueIdentifier();</div><div class="line">        frameLoader()-&gt;notifier()-&gt;assignIdentifierToInitialRequest(m_identifierForLoadWithoutResourceLoader, this, request);</div><div class="line">        frameLoader()-&gt;notifier()-&gt;dispatchWillSendRequest(this, m_identifierForLoadWithoutResourceLoader, request, ResourceResponse());</div><div class="line">    &#125;</div><div class="line">    m_mainResource-&gt;addClient(this);</div><div class="line"></div><div class="line">    // A bunch of headers are set when the underlying ResourceLoader is created, and m_request needs to include those.</div><div class="line">    if (mainResourceLoader())</div><div class="line">        request = mainResourceLoader()-&gt;originalRequest();</div><div class="line">    // If there was a fragment identifier on m_request, the cache will have stripped it. m_request should include</div><div class="line">    // the fragment identifier, so add that back in.</div><div class="line">    if (equalIgnoringFragmentIdentifier(m_request.url(), request.url()))</div><div class="line">        request.setURL(m_request.url());</div><div class="line">    setRequest(request);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ol>
+<li><strong><em><code>关于ResourceRequest request(m_request);</code></em></strong><br>这里仅仅是将指针值赋值给新的request 还是将整个m_request 的内容都拷贝给了request？<br>如果是整个内容都拷贝给了request,那么下面执行的语句：<figure class="highlight plain"><figcaption><span>If there was a fragment identifier on m_request, the cache will have stripped it. m_request should include</span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">// the fragment identifier, so add that back in.</div><div class="line">if (equalIgnoringFragmentIdentifier(m_request.url(), request.url()))</div><div class="line">    request.setURL(m_request.url());</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>不是太理解这边的执行内容。</p>
+<ol>
+<li>在这里通过创建mainResource,然后将自己注册给mainResource作为回调：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">line 1382:</div><div class="line">m_mainResource = m_cachedResourceLoader-&gt;requestMainResource(cachedResourceRequest);</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">line 1398:</div><div class="line">m_mainResource-&gt;addClient(this);</div></pre></td></tr></table></figure>
+<p>接着就将请求转向了<code>CachedResourceLoader</code>。</p>
+<h3 id="CachedResourceLoader"><a href="#CachedResourceLoader" class="headerlink" title="CachedResourceLoader"></a>CachedResourceLoader</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">// 注释说明：</div><div class="line">// The CachedResourceLoader provides a per-context interface to the MemoryCache</div><div class="line">// and enforces a bunch of security checks and rules for resource revalidation.</div><div class="line">// Its lifetime is roughly per-DocumentLoader, in that it is generally created</div><div class="line">// in the DocumentLoader constructor and loses its ability to generate network</div><div class="line">// requests when the DocumentLoader is destroyed. Documents also hold a</div><div class="line">// RefPtr&lt;CachedResourceLoader&gt; for their lifetime (and will create one if they</div><div class="line">// are initialized without a Frame), so a Document can keep a CachedResourceLoader</div><div class="line">// alive past detach if scripts still reference the Document.</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">cplusplus code:</div><div class="line">CachedResourceHandle&lt;CachedRawResource&gt; CachedResourceLoader::requestMainResource(CachedResourceRequest&amp; request)</div><div class="line">&#123;</div><div class="line">    return static_cast&lt;CachedRawResource*&gt;(requestResource(CachedResource::MainResource, request).get());</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>通过调用requestResource 来向服务端请求<a href="/资源类型定义/">主资源</a>。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line">CachedResourceHandle&lt;CachedResource&gt; CachedResourceLoader::requestResource(CachedResource::Type type, CachedResourceRequest&amp; request)</div><div class="line">&#123;</div><div class="line">    // 判断是否由缓存中预取得到相应的资源对象</div><div class="line">    ... ...</div><div class="line"></div><div class="line">    const RevalidationPolicy policy = determineRevalidationPolicy(type, request.mutableResourceRequest(), request.forPreload(), resource.get(), request.defer());</div><div class="line">    switch (policy) &#123;</div><div class="line">    case Reload:</div><div class="line">        memoryCache()-&gt;remove(resource.get());</div><div class="line">        // Fall through</div><div class="line">    case Load:</div><div class="line">        resource = loadResource(type, request, request.charset());</div><div class="line">        break;</div><div class="line">    case Revalidate:</div><div class="line">        resource = revalidateResource(request, resource.get());</div><div class="line">        break;</div><div class="line">    case Use:</div><div class="line">        if (!shouldContinueAfterNotifyingLoadedFromMemoryCache(resource.get()))</div><div class="line">            return 0;</div><div class="line">        memoryCache()-&gt;resourceAccessed(resource.get());</div><div class="line">        break;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    ... ...</div><div class="line"></div><div class="line">    if ((policy != Use || resource-&gt;stillNeedsLoad()) &amp;&amp; CachedResourceRequest::NoDefer == request.defer()) &#123;</div><div class="line">        resource-&gt;load(this, request.options());</div><div class="line"></div><div class="line">        // We don&apos;t support immediate loads, but we do support immediate failure.</div><div class="line">        if (resource-&gt;errorOccurred()) &#123;</div><div class="line">            if (resource-&gt;inCache())</div><div class="line">                memoryCache()-&gt;remove(resource.get());</div><div class="line">            return 0;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    ... ...</div><div class="line">    return resource;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><code>const RevalidationPolicy policy = determineRevalidationPolicy(type, request.mutableResourceRequest(), request.forPreload(), resource.get(), request.defer());</code> 这里通过封装的加载策略，来判断加载方式。<br>加载的策略方式有 reLoad, Revalidate, Use, Load。<br>这里仅分析在Load的情况，其他情况待分解。<br><code>resource = loadResource(type, request, request.charset());</code> 该函数调用了<code>static CachedResource* createResource(CachedResource::Type type, ResourceRequest&amp; request, const String&amp; charset)</code><br>来创建指定的资源类型，并将其返回。<br>然后程序执行到这句：<br><code>if ((policy != Use || resource-&gt;stillNeedsLoad()) &amp;&amp; CachedResourceRequest::NoDefer == request.defer()) {
+        resource-&gt;load(this, request.options());</code><br>新加载的资源对应策略为load,并且主资源未设置Defer,resource-&gt;stillNeedsLoad(),默认情况下都返回False。<br><strong><em>所以<code>policy != Use</code> 与 <code>CachedResourceRequest::NoDefer == request.defer()</code>同时命中，执行resource-&gt;load方法。</em></strong><br>执行<code>CachedResource::load(CachedResourceLoader* cachedResourceLoader, const ResourceLoaderOptions&amp; options)</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">void CachedResource::load(CachedResourceLoader* cachedResourceLoader, const ResourceLoaderOptions&amp; options)</div><div class="line">&#123;</div><div class="line">    // 此处忽略若干行</div><div class="line">    ... ...</div><div class="line"></div><div class="line">    m_loader = platformStrategies()-&gt;loaderStrategy()-&gt;resourceLoadScheduler()-&gt;scheduleSubresourceLoad(cachedResourceLoader-&gt;frame(), this, request, request.priority(), options);</div><div class="line">    if (!m_loader) &#123;</div><div class="line">        failBeforeStarting();</div><div class="line">        return;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    m_status = Pending;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>由于webkit需要支持不同的平台，所以将不同平台下资源加载的方式使用策略模式进行了封装。然后将资源调用通过resourceLoadScheduler来统一请求和调度。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">PassRefPtr&lt;SubresourceLoader&gt; ResourceLoadScheduler::scheduleSubresourceLoad(Frame* frame, CachedResource* resource, const ResourceRequest&amp; request, ResourceLoadPriority priority, const ResourceLoaderOptions&amp; options)</div><div class="line">&#123;</div><div class="line">    RefPtr&lt;SubresourceLoader&gt; loader = SubresourceLoader::create(frame, resource, request, options);</div><div class="line">    if (loader)</div><div class="line">        scheduleLoad(loader.get(), priority);</div><div class="line">    return loader.release();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>这里创建了一个资源调度器，进行加载调用。<br>从CachedResource::load -&gt; ResourceLoadScheduler::scheduleSubresourceLoad 这里的调用流程与其他派生资源(如图片、CSS文件、JS文件等)的加载是同一个流程。</p>
+<h1 id="Document"><a href="#Document" class="headerlink" title="Document"></a>Document</h1><h3 id="Document-对象的三个状态具体转换过程"><a href="#Document-对象的三个状态具体转换过程" class="headerlink" title="Document 对象的三个状态具体转换过程"></a>Document 对象的三个状态具体转换过程</h3><p>在Javascript中页面的DOM加载经历三个状态， loading, interactive, complete。<br>三个状态定义在Document中：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div></pre></td><td class="code"><pre><div class="line">// 三个状态通过readyState 接口返回</div><div class="line">String Document::readyState() const</div><div class="line">&#123;</div><div class="line">    DEFINE_STATIC_LOCAL(const String, loading, (ASCIILiteral(&quot;loading&quot;)));</div><div class="line">    DEFINE_STATIC_LOCAL(const String, interactive, (ASCIILiteral(&quot;interactive&quot;)));</div><div class="line">    DEFINE_STATIC_LOCAL(const String, complete, (ASCIILiteral(&quot;complete&quot;)));</div><div class="line">    switch (m_readyState) &#123;</div><div class="line">    case Loading:</div><div class="line">        return loading;</div><div class="line">    case Interactive:</div><div class="line">        return interactive;</div><div class="line">    case Complete:</div><div class="line">        return complete;</div><div class="line">    &#125;</div><div class="line">    ASSERT_NOT_REACHED();</div><div class="line">    return String();</div><div class="line">&#125;</div><div class="line">// 三个状态通过setReadyState接口进行更改</div><div class="line">void Document::setReadyState(ReadyState readyState)</div><div class="line">&#123;</div><div class="line">    if (readyState == m_readyState)</div><div class="line">        return;</div><div class="line">    switch (readyState) &#123;</div><div class="line">    case Loading:</div><div class="line">        if (!m_documentTiming.domLoading)</div><div class="line">            m_documentTiming.domLoading = monotonicallyIncreasingTime();</div><div class="line">        break;</div><div class="line">    case Interactive:</div><div class="line">        if (!m_documentTiming.domInteractive)</div><div class="line">            m_documentTiming.domInteractive = monotonicallyIncreasingTime();</div><div class="line">        break;</div><div class="line">    case Complete:</div><div class="line">        if (!m_documentTiming.domComplete)</div><div class="line">            m_documentTiming.domComplete = monotonicallyIncreasingTime();</div><div class="line">        break;</div><div class="line">    &#125;</div><div class="line">    m_readyState = readyState;</div><div class="line">    /// COMMENT 通知页面上的监听者(JS)</div><div class="line">    dispatchEvent(Event::create(eventNames().readystatechangeEvent, false, false));</div><div class="line"></div><div class="line">    if (settings() &amp;&amp; settings()-&gt;suppressesIncrementalRendering())</div><div class="line">        setVisualUpdatesAllowed(readyState);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Webkit源码阅读/">Webkit源码阅读</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/notes/">notes</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://turbin.github.io/2017/02/05/QWebkit源码走读笔记(1)/" data-title="QWebkit源码阅读笔记(1) | Turbine&#39;s Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/02/05/改版/" title="为了改版">
+  <strong>新一篇:</strong><br/>
+  <span>
+  为了改版</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2017/01/28/no_new_privs中文说明翻译/"  title="关于 no_new_privs 说明">
+ <strong>旧一篇:</strong><br/> 
+ <span>关于 no_new_privs 说明
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="QWebkit源码阅读笔记(1)" data-thread-key="QWebkit源码走读笔记(1)" data-author-key="Turbine Yan" data-url="https://turbin.github.io/post/QWebkit源码走读笔记(1)"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© Turbine Yan</span>
+		
+	<div>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"turbine yan"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>
