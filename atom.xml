@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://turbin.github.io/"/>
-  <updated>2017-02-05T06:00:51.378Z</updated>
+  <updated>2017-07-17T13:49:30.710Z</updated>
   <id>https://turbin.github.io/</id>
   
   <author>
@@ -16,11 +16,34 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>After Rebuilding My Blog</title>
+    <link href="https://turbin.github.io/2017/07/17/After%20Rebuilding%20My%20blog/"/>
+    <id>https://turbin.github.io/2017/07/17/After Rebuilding My blog/</id>
+    <published>2017-07-17T13:42:00.000Z</published>
+    <updated>2017-07-17T13:49:30.710Z</updated>
+    
+    <content type="html"><![CDATA[<p><strong><em>终于</em></strong> 找回来原来博客的内容。很不容易，本来以为就这么丢了。<br>回头想来，还是要做好备份，不然自己辛辛苦苦积累的东西就这么容易地付之东流，着实可惜。<br>很久没有更新。只是因为懒癌犯了，不过因为前段时间自己的危机感，<br>促使自己要好好继续在码代码之余也要考虑下不断更新自己所思所想。<br>所以，后续会计划陆陆续续把原来的笔记整理出来，然后编写成博客文章填充这里，相对困乏的内容。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;strong&gt;&lt;em&gt;终于&lt;/em&gt;&lt;/strong&gt; 找回来原来博客的内容。很不容易，本来以为就这么丢了。&lt;br&gt;回头想来，还是要做好备份，不然自己辛辛苦苦积累的东西就这么容易地付之东流，着实可惜。&lt;br&gt;很久没有更新。只是因为懒癌犯了，不过因为前段时间自己的危机感，&lt;
+    
+    </summary>
+    
+      <category term="essay" scheme="https://turbin.github.io/categories/essay/"/>
+    
+    
+      <category term="essay" scheme="https://turbin.github.io/tags/essay/"/>
+    
+  </entry>
+  
+  <entry>
     <title>为了改版</title>
     <link href="https://turbin.github.io/2017/02/05/%E6%94%B9%E7%89%88/"/>
     <id>https://turbin.github.io/2017/02/05/改版/</id>
     <published>2017-02-05T05:25:00.000Z</published>
-    <updated>2017-02-05T06:00:51.378Z</updated>
+    <updated>2017-07-17T13:42:52.520Z</updated>
     
     <content type="html"><![CDATA[<h1 id="改版"><a href="#改版" class="headerlink" title="改版"></a>改版</h1><ol>
 <li>修改模板，添加文章分类</li>
@@ -45,7 +68,7 @@
       <category term="essay" scheme="https://turbin.github.io/categories/essay/"/>
     
     
-      <category term="杂谈" scheme="https://turbin.github.io/tags/%E6%9D%82%E8%B0%88/"/>
+      <category term="essay" scheme="https://turbin.github.io/tags/essay/"/>
     
   </entry>
   
@@ -182,7 +205,7 @@
     <link href="https://turbin.github.io/2016/09/14/Promise/"/>
     <id>https://turbin.github.io/2016/09/14/Promise/</id>
     <published>2016-09-14T12:30:45.000Z</published>
-    <updated>2017-02-05T05:22:50.288Z</updated>
+    <updated>2017-02-05T05:22:50.289Z</updated>
     
     <content type="html"><![CDATA[<p>由于项目开发需要解决JS同步的问题，但是受限在目前的框架里没有引用到jQuery，也就无法使用defered。也是自己嫌麻烦，于是开始重新造轮子的过程——服务于自己的测试代码，写了一个简易的promise的实现。</p>
 <p><a href="https://github.com/turbin/JavascriptUtility.git" target="_blank" rel="external">Promise</a>下面有个src/Promise.js<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * Created by turbineyan on 9/12/16.</div><div class="line"> */</div><div class="line">function Promise()&#123;</div><div class="line">&#125;</div><div class="line">Promise.prototype = &#123;</div><div class="line">    callback:null, caller:null,onDone:null,</div><div class="line">    when:function()&#123;</div><div class="line">        if(this.callbacks)&#123;</div><div class="line">            this.callbacks = null;</div><div class="line">        &#125;</div><div class="line">        this.callbacks = [];</div><div class="line">        this.caller = null;</div><div class="line">        for(var i=0; i!=arguments.length; i++)&#123;</div><div class="line">            this.callbacks.push(&#123;fn:arguments[i], onSuccess:this.onSuccess, onFail:this.fail&#125;);</div><div class="line">        &#125;</div><div class="line">        ///this.callbacks[this.idx].fn.call(this, this);</div><div class="line">        return this;</div><div class="line">    &#125;,</div><div class="line">    resolve:function()&#123;</div><div class="line">        this.next();</div><div class="line">        return this;</div><div class="line">    &#125;,</div><div class="line">    reject:function()&#123;</div><div class="line">        this.caller.onFail(this);</div><div class="line">        return this;</div><div class="line">    &#125;,</div><div class="line">    done:function(callback)&#123;</div><div class="line">        this.onDone = callback;</div><div class="line">        return this;</div><div class="line">    &#125;,</div><div class="line">    onSuccess:function(promise)&#123;</div><div class="line">        console.log(&apos;on success!&apos;);</div><div class="line">    &#125;,</div><div class="line">    next:function()&#123;</div><div class="line">        this.caller = null;</div><div class="line">        if(this.callbacks.length !== 0)&#123;</div><div class="line">            this.caller= this.callbacks.shift(1);</div><div class="line">            this.caller.fn(this);</div><div class="line">            return this;</div><div class="line">        &#125;</div><div class="line">        if(this.onDone)this.onDone(this);</div><div class="line">        return this;</div><div class="line">    &#125;,</div><div class="line">    fail:function(promise) &#123;</div><div class="line">        var fn =this.caller.fn;</div><div class="line">        this.caller = null;</div><div class="line">        throw new EvalError(&apos;promise call &apos; + fn + &apos; call fail!&apos;);</div><div class="line">    &#125;</div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
