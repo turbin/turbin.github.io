@@ -4,12 +4,13 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>After Rebuilding My Blog | Turbine&#39;s Blog</title>
+    <title>My first powershell  code | Turbine&#39;s Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="Turbine Yan">
     
-    <meta name="description" content="终于 找回来原来博客的内容。很不容易，本来以为就这么丢了。回头想来，还是要做好备份，不然自己辛辛苦苦积累的东西就这么容易地付之东流，着实可惜。很久没有更新。只是因为懒癌犯了，不过因为前段时间自己的危机感，促使自己要好好继续在码代码之余也要考虑下不断更新自己所思所想。所以，后续会计划陆陆续续把原来的笔">
+    <meta name="description" content="因为懒，也因为烦。所以为了发布版本简单可靠，也因为基于window环境下，所以学着写了powershell。一边搜示例，一面学着写。大概有shell的基础入门挺快。闲话少叙，直接提码：
+1234567891011121314$targe=&amp;quot;N900_4G&amp;quot;$dest_dir=&amp;q">
     
     
     
@@ -91,10 +92,10 @@ var _hmt = _hmt || [];
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/07/17/After Rebuilding My blog/" title="After Rebuilding My Blog" itemprop="url">After Rebuilding My Blog</a>
+      <a href="/2017/07/20/My_First_Powershell/" title="My first powershell  code" itemprop="url">My first powershell  code</a>
   </h1>
   <p class="article-time">
-    <time datetime="2017-07-17T13:42:00.000Z" itemprop="datePublished">2017-07-17</time>
+    <time datetime="2017-07-20T15:42:00.000Z" itemprop="datePublished">2017-07-20</time>
   </p>
 </header>
 	<div class="article-content">
@@ -102,30 +103,34 @@ var _hmt = _hmt || [];
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title"></strong>
-		
+		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#因为懒，也因为烦。"><span class="toc-number">1.</span> <span class="toc-text">因为懒，也因为烦。</span></a></li></ol>
 		</div>
 		
-		<p><strong><em>终于</em></strong> 找回来原来博客的内容。很不容易，本来以为就这么丢了。<br>回头想来，还是要做好备份，不然自己辛辛苦苦积累的东西就这么容易地付之东流，着实可惜。<br>很久没有更新。只是因为懒癌犯了，不过因为前段时间自己的危机感，<br>促使自己要好好继续在码代码之余也要考虑下不断更新自己所思所想。<br>所以，后续会计划陆陆续续把原来的笔记整理出来，然后编写成博客文章填充这里，相对困乏的内容。</p>
+		<h2 id="因为懒，也因为烦。"><a href="#因为懒，也因为烦。" class="headerlink" title="因为懒，也因为烦。"></a>因为懒，也因为烦。</h2><p>所以为了发布版本简单可靠，也因为基于window环境下，所以学着写了powershell。<br>一边搜示例，一面学着写。大概有shell的基础入门挺快。<br>闲话少叙，直接提码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">$targe=&quot;N900_4G&quot;</div><div class="line">$dest_dir=&quot;build_$targe&quot;</div><div class="line"></div><div class="line">Copy-Item -Path &quot;./Pad&quot;  -Destination $dest_dir -Recurse -Force</div><div class="line"></div><div class="line">$obj_dir=&apos;obj\local\armeabi&apos;</div><div class="line">$dirs=&apos;sdtp&apos;,&apos;api&apos;,&apos;mpos&apos;</div><div class="line">$clean=&apos;ndk-build clean -C&apos;</div><div class="line">$make=&apos;ndk-build -C&apos;</div><div class="line"></div><div class="line">foreach($build in $dirs)&#123;</div><div class="line">	ndk-build clean -C &quot;$dest_dir/$build/jni&quot;</div><div class="line">	ndk-build DEVICE=$targe -C &quot;$dest_dir/$build/jni&quot; &gt;&gt; &quot;./$targe.build&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我是要把工程目录Pad下面sdtp,api,mpos这三个库文件的目录依顺序进行编译，然后将编译的文件打包。<br>因为一共要发布3款终端产品，有三个不同产品编译选项开关。同时有两个大的分支版本。所以正式发布版本时，需要3<em>2</em>3=18次目录进出，然后进行ndk-build操作。并且很恶心的是，原来设定的库文件之间还有依赖关系，所以需要严格按照sdtp,api,mpos这三个目录的顺序进行编译。还有就是每个目录每次选择不同机型编译前都需要执行清空操作，因为不同的机型包含进来的代码可能还有些许差异。所以没有用脚本执行前，每次发版本都是异常辛苦，并且要很认真注意每个操作步骤的。<br>目前这个脚本，还不完善。接下来打算添加自动拷贝生成的目标文件功能，并且支持自动打包成指定命名规范的.zip包。那么，我只要把生成的文件附到邮件发布即可。<br>所以学点脚本，还是有用的，效率杠杠的。<br>这里推荐两个不错的powershell学习网址：</p>
+<p><a href="http://www.pstips.net/cat/powershell/" target="_blank" rel="external">pstips</a> 这个是国内的一个不错的站点，中文。</p>
+<p><a href="https://msdn.microsoft.com/zh-cn/powershell/reference/5.1/microsoft.powershell.management/microsoft.powershell.management" target="_blank" rel="external">Microsoft</a> 这是微软官方的站点，资料更详实。微软文档都做得不错。</p>
   
 	</div>
 		<footer class="article-footer clearfix">
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/essay/">essay</a>
+  <span></span> <a href="/tags/power-shell/">power shell</a>
   </div>
 
 
 <div class="article-categories">
   <span></span>
-  <a class="article-category-link" href="/categories/essay/">essay</a>
+  <a class="article-category-link" href="/categories/coding/">coding</a>
 </div>
 
 
 
 <div class="article-share" id="share">
 
-  <div data-url="https://turbin.github.io/2017/07/17/After Rebuilding My blog/" data-title="After Rebuilding My Blog | Turbine&#39;s Blog" data-tsina="null" class="share clearfix">
+  <div data-url="https://turbin.github.io/2017/07/20/My_First_Powershell/" data-title="My first powershell  code | Turbine&#39;s Blog" data-tsina="null" class="share clearfix">
   </div>
 
 </div>
@@ -134,19 +139,11 @@ var _hmt = _hmt || [];
 	
 <nav class="article-nav clearfix">
  
- <div class="prev" >
- <a href="/2017/07/20/My_First_Powershell/" title="My first powershell  code">
-  <strong>新一篇:</strong><br/>
-  <span>
-  My first powershell  code</span>
-</a>
-</div>
-
 
 <div class="next">
-<a href="/2017/02/05/改版/"  title="为了改版">
+<a href="/2017/07/17/After Rebuilding My blog/"  title="After Rebuilding My Blog">
  <strong>旧一篇:</strong><br/> 
- <span>为了改版
+ <span>After Rebuilding My Blog
 </span>
 </a>
 </div>
@@ -156,7 +153,7 @@ var _hmt = _hmt || [];
 	
 <section class="comment">
 	
-	<div class="ds-thread" data-title="After Rebuilding My Blog" data-thread-key="After Rebuilding My blog" data-author-key="Turbine Yan" data-url="https://turbin.github.io/post/After Rebuilding My blog"></div>
+	<div class="ds-thread" data-title="My first powershell  code" data-thread-key="My_First_Powershell" data-author-key="Turbine Yan" data-url="https://turbin.github.io/post/My_First_Powershell"></div>
 	
 </section>
 

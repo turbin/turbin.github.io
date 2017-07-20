@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://turbin.github.io/"/>
-  <updated>2017-07-17T13:49:30.710Z</updated>
+  <updated>2017-07-20T15:59:17.859Z</updated>
   <id>https://turbin.github.io/</id>
   
   <author>
@@ -14,6 +14,33 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>My first powershell  code</title>
+    <link href="https://turbin.github.io/2017/07/20/My_First_Powershell/"/>
+    <id>https://turbin.github.io/2017/07/20/My_First_Powershell/</id>
+    <published>2017-07-20T15:42:00.000Z</published>
+    <updated>2017-07-20T15:59:17.859Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="因为懒，也因为烦。"><a href="#因为懒，也因为烦。" class="headerlink" title="因为懒，也因为烦。"></a>因为懒，也因为烦。</h2><p>所以为了发布版本简单可靠，也因为基于window环境下，所以学着写了powershell。<br>一边搜示例，一面学着写。大概有shell的基础入门挺快。<br>闲话少叙，直接提码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">$targe=&quot;N900_4G&quot;</div><div class="line">$dest_dir=&quot;build_$targe&quot;</div><div class="line"></div><div class="line">Copy-Item -Path &quot;./Pad&quot;  -Destination $dest_dir -Recurse -Force</div><div class="line"></div><div class="line">$obj_dir=&apos;obj\local\armeabi&apos;</div><div class="line">$dirs=&apos;sdtp&apos;,&apos;api&apos;,&apos;mpos&apos;</div><div class="line">$clean=&apos;ndk-build clean -C&apos;</div><div class="line">$make=&apos;ndk-build -C&apos;</div><div class="line"></div><div class="line">foreach($build in $dirs)&#123;</div><div class="line">	ndk-build clean -C &quot;$dest_dir/$build/jni&quot;</div><div class="line">	ndk-build DEVICE=$targe -C &quot;$dest_dir/$build/jni&quot; &gt;&gt; &quot;./$targe.build&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>我是要把工程目录Pad下面sdtp,api,mpos这三个库文件的目录依顺序进行编译，然后将编译的文件打包。<br>因为一共要发布3款终端产品，有三个不同产品编译选项开关。同时有两个大的分支版本。所以正式发布版本时，需要3<em>2</em>3=18次目录进出，然后进行ndk-build操作。并且很恶心的是，原来设定的库文件之间还有依赖关系，所以需要严格按照sdtp,api,mpos这三个目录的顺序进行编译。还有就是每个目录每次选择不同机型编译前都需要执行清空操作，因为不同的机型包含进来的代码可能还有些许差异。所以没有用脚本执行前，每次发版本都是异常辛苦，并且要很认真注意每个操作步骤的。<br>目前这个脚本，还不完善。接下来打算添加自动拷贝生成的目标文件功能，并且支持自动打包成指定命名规范的.zip包。那么，我只要把生成的文件附到邮件发布即可。<br>所以学点脚本，还是有用的，效率杠杠的。<br>这里推荐两个不错的powershell学习网址：</p>
+<p><a href="http://www.pstips.net/cat/powershell/" target="_blank" rel="external">pstips</a> 这个是国内的一个不错的站点，中文。</p>
+<p><a href="https://msdn.microsoft.com/zh-cn/powershell/reference/5.1/microsoft.powershell.management/microsoft.powershell.management" target="_blank" rel="external">Microsoft</a> 这是微软官方的站点，资料更详实。微软文档都做得不错。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;因为懒，也因为烦。&quot;&gt;&lt;a href=&quot;#因为懒，也因为烦。&quot; class=&quot;headerlink&quot; title=&quot;因为懒，也因为烦。&quot;&gt;&lt;/a&gt;因为懒，也因为烦。&lt;/h2&gt;&lt;p&gt;所以为了发布版本简单可靠，也因为基于window环境下，所以学着写了powershe
+    
+    </summary>
+    
+      <category term="coding" scheme="https://turbin.github.io/categories/coding/"/>
+    
+    
+      <category term="power shell" scheme="https://turbin.github.io/tags/power-shell/"/>
+    
+  </entry>
   
   <entry>
     <title>After Rebuilding My Blog</title>
