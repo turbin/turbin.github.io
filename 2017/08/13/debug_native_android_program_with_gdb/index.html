@@ -4,16 +4,16 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>为了改版 | Turbine&#39;s Blog</title>
+    <title>Turbine&#39;s Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="Turbine Yan">
     
-    <meta name="description" content="改版
-修改模板，添加文章分类
-添加文档分类包含，随笔，编程，文档翻译，以及笔记
+    <meta name="description" content="使用GBD 调试你的Ｃ/C++程序
+首先使用如下的命令来编译你的工程：1ndk-build NDK_DEBUG=1 -C &amp;lt;the path of your source code&amp;gt;
 
-====================== 时间分隔线 =========================================发现在国内配置 Ruby 的运行环境，是一种那么痛苦的领悟。本身我也不会 Ru">
+
+其中，编译参数 NDK_DEBUG=1 指示编译链工具以DEBUG模式进行编译;参数　-C 用于ND">
     
     
     
@@ -95,10 +95,10 @@ var _hmt = _hmt || [];
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/02/05/改版/" title="为了改版" itemprop="url">为了改版</a>
+      <a href="/2017/08/13/debug_native_android_program_with_gdb/" title="" itemprop="url"></a>
   </h1>
   <p class="article-time">
-    <time datetime="2017-02-05T05:25:00.000Z" itemprop="datePublished">2017-02-05</time>
+    <time datetime="2017-08-13T07:48:05.367Z" itemprop="datePublished">2017-08-13</time>
   </p>
 </header>
 	<div class="article-content">
@@ -106,37 +106,47 @@ var _hmt = _hmt || [];
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title"></strong>
-		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#改版"><span class="toc-number">1.</span> <span class="toc-text">改版</span></a></li></ol>
+		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#使用GBD-调试你的C-C-程序"><span class="toc-number">1.</span> <span class="toc-text">使用GBD 调试你的Ｃ/C++程序</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#OK-ENJOY-YOUR-GDB"><span class="toc-number">1.1.</span> <span class="toc-text">OK, ENJOY YOUR GDB!</span></a></li></ol></li></ol>
 		</div>
 		
-		<h1 id="改版"><a href="#改版" class="headerlink" title="改版"></a>改版</h1><ol>
-<li>修改模板，添加文章分类</li>
-<li>添加文档分类包含，随笔，编程，文档翻译，以及笔记</li>
+		<h2 id="使用GBD-调试你的C-C-程序"><a href="#使用GBD-调试你的C-C-程序" class="headerlink" title="使用GBD 调试你的Ｃ/C++程序"></a>使用GBD 调试你的Ｃ/C++程序</h2><ol>
+<li>首先使用如下的命令来编译你的工程：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ndk-build NDK_DEBUG=1 -C &lt;the path of your source code&gt;</div></pre></td></tr></table></figure>
+</li>
 </ol>
-<p>====================== 时间分隔线 =========================================<br>发现在国内配置 <strong><em>Ruby</em></strong> 的运行环境，是一种那么痛苦的领悟。本身我也不会 <strong><em>Ruby</em></strong>,配置gem也是种痛苦，出现问题了也不知道该怎么解决。只能祭出短平快的方法，直接上 <strong><em>Hexo</em></strong>，原因就是，大家都在用嘛。</p>
-<p><strong><em>Hexo</em></strong> 只要配置NodeJs环境就够了，相对来说比较简单。虽然很多人诟病它生成速度太慢。特别是博客文章多了以后。</p>
-<p>多等等，应该也无所谓了……</p>
-<p>好吧，先祝福自己的博客改版快乐～～～</p>
-  
+<p>其中，编译参数 <em>NDK_DEBUG=1</em> 指示编译链工具以DEBUG模式进行编译;<br>参数　<em>-C</em> 用于NDK编译链工具指定你的源码工程路径，主要是指定你的Android.mk文件路径;<br>等待编译完成后，在输出的路径下(libs/<your arch="">)就会产生几个新的文件。其中包含你的makefile的生成的目标文件，以及gdb.setup,和gdbserver。<br>路径目录如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">./lib/&lt;your arch&gt;/</div><div class="line">  |- gdb.setup -　the configuration file of GDB</div><div class="line">  |- gdbserver -　the execution file for running on device</div><div class="line">  |- others (your target files, like so file and execution  file etc.)</div></pre></td></tr></table></figure></your></p>
+<ol>
+<li><p>将你的gdbserver，以及编译生成的文件通过adb传到你的设备上的指定目录中，并记得将gdbserver设置为可执行属性。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">adb push &lt;your target files&gt; &lt;path on your device&gt;</div><div class="line">adb push gdbserver &lt;path on your device&gt;</div><div class="line">adb shell chmod 777  &lt;path on your device&gt;/gdbserver # set this file as execution</div></pre></td></tr></table></figure>
+</li>
+<li><p>在你的设备上运行gdbserver 并且需要制定gdbserver监听的端口.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adb shell  &lt;path on your device&gt;/gdbserver &lt;host:port&gt; &lt;your debugging program&gt;</div></pre></td></tr></table></figure>
+<p><em><host:port></host:port></em> 这个参数用来制定gdbserver作为服务端监听的主机ip以及端口，这样就可以支持远程GDB调试。<br>如果希望通过ADB进行访问，则可以将 <em>host</em>　指定为 <em>localhost</em>，然后选择任意的端口作为监听端口，下面的例子就是将　<em>12345</em> 作为监听端口使用。<br>当你成功运行gdbserver的时候，就会在你的adb shell控制台上看到：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">Process ./main0 created; pid = 8163</div><div class="line">Listen on port 12345</div></pre></td></tr></table></figure>
+</li>
+<li><p>重定向你的ADB。如果你启动ADB的时候没有指定ADB的监听端口，就需要将ADB端口重定向到与你在gdbserver中所设置的相同的端口号上。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adb forward tcp:12345 tcp:12345</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>此时adb服务将监听12345端口，并将端口上的内容转发到PC上这样就架设完成了device到PC之间的桥梁。</p>
+<ol>
+<li>接着在PC端启动你的gdb。<br>这里要注意的是，PC端的gdb程序与device上的gdbserver在要使用相同gcc版本编译出来的。<br>在NDK中已经为我们准备好了相应的版本。如果你不确定使用哪个版本，记得在编译你的native文件时，使用参数　<em>-d</em> ：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ndk-build -d -C &lt;the path of your source code&gt;</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>你就可以看到在编译你的工程时，所使用的gcc版本以及路径信息。在这个gcc工具同级目录下，你就可以找到对应gdb可执行文件。<br>直接执行它,将进入gdb的命令状态，并提示等待用户输入命令。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">(gdb):</div></pre></td></tr></table></figure></p>
+<p>在看到上述的命令行等待状态时，请输入:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">(gdb) target remote localhost:12345</div></pre></td></tr></table></figure></p>
+<p>然后等待gdb连接gdbserver即可。<br>如果在调试你的程序过程中，发现gdb上显示为:　<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">0xb77706840 in ???()</div></pre></td></tr></table></figure></p>
+<p>这表示你未导入你的程序的符号表，请在gdb命令状态下输入<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">(gdb) set solib-search-path &lt;path of gdb.setup&gt;</div></pre></td></tr></table></figure></p>
+<p>还记得之前生成的那个 <em>gdb.setup</em>　文件吗，在这里将　<em><path of="" gdb.setup=""></path></em> 替换成该文件的路径即可。</p>
+<h3 id="OK-ENJOY-YOUR-GDB"><a href="#OK-ENJOY-YOUR-GDB" class="headerlink" title="OK, ENJOY YOUR GDB!"></a>OK, ENJOY YOUR GDB!</h3>  
 	</div>
 		<footer class="article-footer clearfix">
 
-  <div class="article-tags">
-  
-  <span></span> <a href="/tags/essay/">essay</a>
-  </div>
-
-
-<div class="article-categories">
-  <span></span>
-  <a class="article-category-link" href="/categories/essay/">essay</a>
-</div>
 
 
 
 <div class="article-share" id="share">
 
-  <div data-url="https://turbin.github.io/2017/02/05/改版/" data-title="为了改版 | Turbine&#39;s Blog" data-tsina="null" class="share clearfix">
+  <div data-url="https://turbin.github.io/2017/08/13/debug_native_android_program_with_gdb/" data-title="Turbine&#39;s Blog" data-tsina="null" class="share clearfix">
   </div>
 
 </div>
@@ -146,18 +156,18 @@ var _hmt = _hmt || [];
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/2017/07/17/After Rebuilding My blog/" title="After Rebuilding My Blog">
+ <a href="/2017/08/21/the _different_linkage/" title="链接方式的区别">
   <strong>新一篇:</strong><br/>
   <span>
-  After Rebuilding My Blog</span>
+  链接方式的区别</span>
 </a>
 </div>
 
 
 <div class="next">
-<a href="/2017/02/05/QWebkit源码走读笔记(1)/"  title="QWebkit源码阅读笔记(1)">
+<a href="/2017/07/20/My_First_Powershell/"  title="My first powershell  code">
  <strong>旧一篇:</strong><br/> 
- <span>QWebkit源码阅读笔记(1)
+ <span>My first powershell  code
 </span>
 </a>
 </div>
@@ -167,7 +177,7 @@ var _hmt = _hmt || [];
 	
 <section class="comment">
 	
-	<div class="ds-thread" data-title="为了改版" data-thread-key="改版" data-author-key="Turbine Yan" data-url="https://turbin.github.io/post/改版"></div>
+	<div class="ds-thread" data-title="" data-thread-key="debug_native_android_program_with_gdb" data-author-key="Turbine Yan" data-url="https://turbin.github.io/post/debug_native_android_program_with_gdb"></div>
 	
 </section>
 
