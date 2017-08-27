@@ -9,8 +9,9 @@
     
     <meta name="author" content="Turbine Yan">
     
-    <meta name="description" content="因为懒，也因为烦。所以为了发布版本简单可靠，也因为基于window环境下，所以学着写了powershell。一边搜示例，一面学着写。大概有shell的基础入门挺快。闲话少叙，直接提码：
-1234567891011121314$targe=&amp;quot;N900_4G&amp;quot;$dest_dir=&amp;q">
+    <meta name="description" content="因为懒，也因为烦。
+所以为了发布版本简单可靠，也因为基于window环境下，所以学着写了powershell。  一边搜示例，一面学着写。大概有shell的基础入门挺快。   闲话少叙，直接提码：
+  1234567891011121314151617181920212223242526272829">
     
     
     
@@ -103,14 +104,19 @@ var _hmt = _hmt || [];
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title"></strong>
-		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#因为懒，也因为烦。"><span class="toc-number">1.</span> <span class="toc-text">因为懒，也因为烦。</span></a></li></ol>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#因为懒，也因为烦。"><span class="toc-number">1.</span> <span class="toc-text">因为懒，也因为烦。</span></a></li></ol>
 		</div>
 		
-		<h2 id="因为懒，也因为烦。"><a href="#因为懒，也因为烦。" class="headerlink" title="因为懒，也因为烦。"></a>因为懒，也因为烦。</h2><p>所以为了发布版本简单可靠，也因为基于window环境下，所以学着写了powershell。<br>一边搜示例，一面学着写。大概有shell的基础入门挺快。<br>闲话少叙，直接提码：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">$targe=&quot;N900_4G&quot;</div><div class="line">$dest_dir=&quot;build_$targe&quot;</div><div class="line"></div><div class="line">Copy-Item -Path &quot;./Pad&quot;  -Destination $dest_dir -Recurse -Force</div><div class="line"></div><div class="line">$obj_dir=&apos;obj\local\armeabi&apos;</div><div class="line">$dirs=&apos;sdtp&apos;,&apos;api&apos;,&apos;mpos&apos;</div><div class="line">$clean=&apos;ndk-build clean -C&apos;</div><div class="line">$make=&apos;ndk-build -C&apos;</div><div class="line"></div><div class="line">foreach($build in $dirs)&#123;</div><div class="line">	ndk-build clean -C &quot;$dest_dir/$build/jni&quot;</div><div class="line">	ndk-build DEVICE=$targe -C &quot;$dest_dir/$build/jni&quot; &gt;&gt; &quot;./$targe.build&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>我是要把工程目录Pad下面sdtp,api,mpos这三个库文件的目录依顺序进行编译，然后将编译的文件打包。<br>因为一共要发布3款终端产品，有三个不同产品编译选项开关。同时有两个大的分支版本。所以正式发布版本时，需要3<em>2</em>3=18次目录进出，然后进行ndk-build操作。并且很恶心的是，原来设定的库文件之间还有依赖关系，所以需要严格按照sdtp,api,mpos这三个目录的顺序进行编译。还有就是每个目录每次选择不同机型编译前都需要执行清空操作，因为不同的机型包含进来的代码可能还有些许差异。所以没有用脚本执行前，每次发版本都是异常辛苦，并且要很认真注意每个操作步骤的。<br>目前这个脚本，还不完善。接下来打算添加自动拷贝生成的目标文件功能，并且支持自动打包成指定命名规范的.zip包。那么，我只要把生成的文件附到邮件发布即可。<br>所以学点脚本，还是有用的，效率杠杠的。<br>这里推荐两个不错的powershell学习网址：</p>
-<p><a href="http://www.pstips.net/cat/powershell/" target="_blank" rel="external">pstips</a> 这个是国内的一个不错的站点，中文。</p>
-<p><a href="https://msdn.microsoft.com/zh-cn/powershell/reference/5.1/microsoft.powershell.management/microsoft.powershell.management" target="_blank" rel="external">Microsoft</a> 这是微软官方的站点，资料更详实。微软文档都做得不错。</p>
+		<h1 id="因为懒，也因为烦。"><a href="#因为懒，也因为烦。" class="headerlink" title="因为懒，也因为烦。"></a>因为懒，也因为烦。</h1><ul>
+<li><p>所以为了发布版本简单可靠，也因为基于window环境下，所以学着写了powershell。<br>  一边搜示例，一面学着写。大概有shell的基础入门挺快。<br>   闲话少叙，直接提码：</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div></pre></td><td class="code"><pre><div class="line">function build($target)&#123;</div><div class="line">	$dest_dir=&quot;build/build_$target&quot;</div><div class="line">	$output=&quot;$dest_dir/output&quot;</div><div class="line">	</div><div class="line">	# if exsit remove it </div><div class="line">	if(Test-Path $dest_dir)</div><div class="line">	&#123;	</div><div class="line">		echo &quot;rm $dest_dir&quot;</div><div class="line">		ri &quot;$dest_dir&quot; -recurse</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">	cpi -Path &quot;./Pad&quot;  -Destination $dest_dir -Recurse -Force</div><div class="line">	</div><div class="line">	if((Test-Path $output) -ne &apos;True&apos;)&#123;</div><div class="line">		echo &quot;mkdir $dest_dir/output&quot;</div><div class="line">		mkdir &quot;$dest_dir/output&quot;</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	$obj_dir=&apos;obj\local\armeabi&apos;</div><div class="line">	$dirs=&apos;sdtp&apos;,&apos;api&apos;,&apos;mpos&apos;</div><div class="line"></div><div class="line">	foreach($build in $dirs)&#123;</div><div class="line">		ndk-build clean -C &quot;$dest_dir/$build/jni&quot;</div><div class="line">		ndk-build -j3 DEVICE=$target -C &quot;$dest_dir/$build/jni&quot;</div><div class="line">		Copy-Item -Path &quot;$dest_dir/$build/$obj_dir/*.so&quot; -Destination $output</div><div class="line">		Copy-Item -Path &quot;$dest_dir/$build/$obj_dir/*.a&quot; -Destination $output</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">function argument_checker([string]$in_arg)&#123;</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line">function buildAll($in_devices)&#123;</div><div class="line">	foreach($device in $in_devices)&#123;</div><div class="line">		echo &quot;in_device=$device&quot;;</div><div class="line">		build($device);</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">#default build all type</div><div class="line">function main&#123;</div><div class="line">	param(</div><div class="line">	[ValidateSet(&apos;N900_3G&apos;,&apos;N900_4G&apos;,&apos;IM81&apos;)]</div><div class="line">	$in_args</div><div class="line">	)</div><div class="line">	</div><div class="line">	$devices=&apos;N900_3G&apos;,&apos;N900_4G&apos;,&apos;IM81&apos;</div><div class="line">	if($in_args.Count -eq 0)&#123;</div><div class="line">		echo &quot;build in default&quot;</div><div class="line">		buildAll($in_devices=$devices);</div><div class="line">	&#125;</div><div class="line">	else&#123;</div><div class="line">		buildAll($in_devices=$in_args);</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">main($args);</div></pre></td></tr></table></figure>
+<p>  我是要把工程目录Pad下面sdtp,api,mpos这三个库文件的目录依顺序进行编译，然后将编译的文件打包。<br>  因为一共要发布3款终端产品，有三个不同产品编译选项开关。同时有两个大的分支版本。所以正式发布版本时，需要3<em>2</em>3=18次目录进出，然后进行ndk-build操作。并且很恶心的是，原来设定的库文件之间还有依赖关系，所以需要严格按照sdtp,api,mpos这三个目录的顺序进行编译。还有就是每个目录每次选择不同机型编译前都需要执行清空操作，因为不同的机型包含进来的代码可能还有些许差异。所以没有用脚本执行前，每次发版本都是异常辛苦，并且要很认真注意每个操作步骤的。<br>  目前这个脚本，还不完善。</p>
+<p>  最近抽时间增加publish脚本，用来进行自动将生成的so文件以及.a文件发布到我们的git服务器上，同时增加了cleanAll脚本用来清理编译生成的目标文件夹，方便提交svn。</p>
+<p>  后续计划会增加并发任务，加快编译的效率。同时也考验下新的i5机器的性能。</p>
+<p>  所以学点脚本，还是有用的，效率杠杠的。</p>
+<p>  这里推荐两个不错的powershell学习网址：<a href="http://www.pstips.net/cat/powershell/" title="pstips" target="_blank" rel="external">pstips</a> 以及<a href="https://msdn.microsoft.com/zh-cn/powershell/reference/5.1/microsoft.powershell.management/microsoft.powershell.management" title="Microsoft PowerShell Management" target="_blank" rel="external">Microsoft PowerShell Management</a></p>
+</li>
+</ul>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -140,10 +146,10 @@ var _hmt = _hmt || [];
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/2017/08/13/debug_native_android_program_with_gdb/" title="">
+ <a href="/2017/08/21/LinkageError/" title="关于一个链接的BUG">
   <strong>新一篇:</strong><br/>
   <span>
-  (no title)</span>
+  关于一个链接的BUG</span>
 </a>
 </div>
 

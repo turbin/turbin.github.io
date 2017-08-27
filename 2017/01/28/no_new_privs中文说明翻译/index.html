@@ -4,12 +4,16 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>关于 no_new_privs 说明 | Turbine&#39;s Blog</title>
+    <title>关于 no　new　privs 翻译稿 | Turbine&#39;s Blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="Turbine Yan">
     
-    <meta name="description" content="The original article, please reference here no_new_privs.txt12The execve system call can grant a newly-started program privileges thatits parent did n">
+    <meta name="description" content="这是一篇关于内核如何限制通过fork方式提升进程特权的文章。是为了求解阅读了Android　init进程的源码中，关于prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)调用的缘由的。
+
+以下是原文与翻译的内容:
+
+The execve system call can gra">
     
     
     
@@ -91,7 +95,7 @@ var _hmt = _hmt || [];
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2017/01/28/no_new_privs中文说明翻译/" title="关于 no_new_privs 说明" itemprop="url">关于 no_new_privs 说明</a>
+      <a href="/2017/01/28/no_new_privs中文说明翻译/" title="关于 no　new　privs 翻译稿" itemprop="url">关于 no　new　privs 翻译稿</a>
   </h1>
   <p class="article-time">
     <time datetime="2017-01-28T12:30:45.000Z" itemprop="datePublished">2017-01-28</time>
@@ -105,11 +109,32 @@ var _hmt = _hmt || [];
 		
 		</div>
 		
-		<p>The original article, please reference here <a href="http://tomoyo.osdn.jp/cgi-bin/lxr/source/Documentation/prctl/no_new_privs.txt" target="_blank" rel="external">no_new_privs.txt</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">The execve system call can grant a newly-started program privileges that</div><div class="line">its parent did not have.</div></pre></td></tr></table></figure></p>
-<p>execve 系统调用能够赋予最新启动的进程其父进程没有的权限。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">The most obvious examples are setuid/setgid</div><div class="line">programs and file capabilities.  To prevent the parent program from</div><div class="line">gaining these privileges as well, the kernel and user code must be</div><div class="line">careful to prevent the parent from doing anything that could subvert the</div><div class="line">child.</div></pre></td></tr></table></figure></p>
+		<ul>
+<li><p>这是一篇关于内核如何限制通过fork方式提升进程特权的文章。是为了求解阅读了Android　init进程的源码中，关于prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)调用的缘由的。</p>
+</li>
+<li><p>以下是原文与翻译的内容:</p>
+<blockquote>
+<p>The execve system call can grant a newly-started program privileges that<br>its parent did not have.  </p>
+</blockquote>
+<p>execve 系统调用能够赋予最新启动的进程其父进程没有的权限。</p>
+<blockquote>
+<p>The most obvious examples are setuid/setgid<br>programs and file capabilities.  To prevent the parent program from<br>gaining these privileges as well, the kernel and user code must be<br>careful to prevent the parent from doing anything that could subvert the<br>child.  </p>
+</blockquote>
 <p>最常见的例子就是通过 setuid和setgid来设置程序进程的uid以及gid以及文件的访问权限。(子进程)同样继承了父进程的权限，在内核以及用户代码中必须小心这些权限信息，避免造成子进程崩溃。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">For example:</div><div class="line"></div><div class="line"> - The dynamic loader handles LD_* environment variables differently if</div><div class="line">   a program is setuid.</div><div class="line"></div><div class="line"> - chroot is disallowed to unprivileged processes, since it would allow</div><div class="line">   /etc/passwd to be replaced from the point of view of a process that</div><div class="line">   inherited chroot.</div><div class="line"></div><div class="line"> - The exec code has special handling for ptrace.</div></pre></td></tr></table></figure>
-<p>例如：</p>
+<blockquote>
+<p>For example:</p>
+<ul>
+<li><p>The dynamic loader handles LD_* environment variables differently if<br>a program is setuid.</p>
+</li>
+<li><p>chroot is disallowed to unprivileged processes, since it would allow<br>/etc/passwd to be replaced from the point of view of a process that<br>inherited chroot.</p>
+</li>
+<li><p>The exec code has special handling for ptrace.</p>
+</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<p>  例如：</p>
 <ul>
 <li><p>一个被重新设置了uid的程序，(启动运行时)动态链接器在处理这些以”LD_”为前缀的环境变量时，要注意(其文件路径的权限)差异；</p>
 </li>
@@ -118,20 +143,41 @@ var _hmt = _hmt || [];
 <li><p>使用ptrace来跟踪指定的代码；</p>
 </li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">These are all ad-hoc fixes.  The no_new_privs bit (since Linux 3.5) is a</div><div class="line">new, generic mechanism to make it safe for a process to modify its</div><div class="line">execution environment in a manner that persists across execve.  Any task</div><div class="line">can set no_new_privs.  Once the bit is set, it is inherited across fork,</div><div class="line">clone, and execve and cannot be unset.  With no_new_privs set, execve</div><div class="line">promises not to grant the privilege to do anything that could not have</div><div class="line">been done without the execve call.  For example, the setuid and setgid</div><div class="line">bits will no longer change the uid or gid; file capabilities will not</div><div class="line">add to the permitted set, and LSMs will not relax constraints after</div><div class="line">execve.</div></pre></td></tr></table></figure>
-<p>因此内核引入了一些临时性解决方案。到后来，内核(从 Linux3.5版本开始)引入(设置)”no_new_privs”位的全新的通用机制，提供给进程一种能够在execve()调用整个阶段都能持续有效且安全的方法。任何一个进程都可以设置”no_new_privs”位。然而一旦(当前进程)被置位，不论通过fork,clone,或者execve生成的子进程都无法将该位清零。因此通过”no_new_privs”置位的方式，execve函数可以确保所有的操作都必须调用execve()(判定)赋予权限后才被执行。比如，<br>  setuid和setgid操作将无法有效执行；<br>  文件访问权限无法被扩增，LINUX安全模块(LSM-Linux Security Module)在execve()执行后不会释放控制权限；</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">To set no_new_privs, use prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0).</div></pre></td></tr></table></figure>
-<p>设置”no_new_privs”位，可以这样调用:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)</div></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">Be careful, though: LSMs might also not tighten constraints on exec</div><div class="line">in no_new_privs mode.  (This means that setting up a general-purpose</div><div class="line">service launcher to set no_new_privs before execing daemons may</div><div class="line">interfere with LSM-based sandboxing.)</div></pre></td></tr></table></figure>
-<p>要注意到的是，因此：处于”no_new_privs”模式下,调用exec()函数时，Linux安全模块将收紧权限控制。<br>(这意味着建立一个通用启动器，在设置no_new_privs之前execing守护进程可能会受到LSM沙盒的影响)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Note that no_new_privs does not prevent privilege changes that do not</div><div class="line">involve execve.  An appropriately privileged task can still call</div><div class="line">setuid(2) and receive SCM_RIGHTS datagrams.</div></pre></td></tr></table></figure></p>
-<p>注意，通过execve调用，可以确保处于”no_new_privs”模式(下的进程)权限不发生变化。一个适当的特权任务，可以持续完成uid设置，以及接收SCM_RIGHTS报文数据。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">There are two main use cases for no_new_privs so far:</div><div class="line"></div><div class="line"> - Filters installed for the seccomp mode 2 sandbox persist across</div><div class="line">   execve and can change the behavior of newly-executed programs.</div><div class="line">   Unprivileged users are therefore only allowed to install such filters</div><div class="line">   if no_new_privs is set.</div><div class="line"></div><div class="line"> - By itself, no_new_privs can be used to reduce the attack surface</div><div class="line">   available to an unprivileged user.  If everything running with a</div><div class="line">   given uid has no_new_privs set, then that uid will be unable to</div><div class="line">   escalate its privileges by directly attacking setuid, setgid, and</div><div class="line">   fcap-using binaries; it will need to compromise something without the</div><div class="line">   no_new_privs bit set first.</div></pre></td></tr></table></figure></p>
-<p>“no_new_privs”主要应用在以下两个场景：</p>
+<blockquote>
+<p>These are all ad-hoc fixes.  The no_new_privs bit (since Linux 3.5) is a<br>new, generic mechanism to make it safe for a process to modify its<br>execution environment in a manner that persists across execve.  Any task<br>can set no_new_privs.  Once the bit is set, it is inherited across fork,<br>clone, and execve and cannot be unset.  With no_new_privs set, execve<br>promises not to grant the privilege to do anything that could not have<br>been done without the execve call.  For example, the setuid and setgid<br>bits will no longer change the uid or gid; file capabilities will not<br>add to the permitted set, and LSMs will not relax constraints after<br>execve.</p>
+</blockquote>
+<p>  因此内核引入了一些临时性解决方案。到后来，内核(从 Linux3.5版本开始)引入(设置)”no_new_privs”位的全新的通用机制，提供给进程一种能够在execve()调用整个阶段都能持续有效且安全的方法。任何一个进程都可以设置”no_new_privs”位。然而一旦(当前进程)被置位，不论通过fork,clone,或者execve生成的子进程都无法将该位清零。因此通过”no_new_privs”置位的方式，execve函数可以确保所有的操作都必须调用execve()(判定)赋予权限后才被执行。比如，<br>    setuid和setgid操作将无法有效执行；<br>    文件访问权限无法被扩增，LINUX安全模块(LSM-Linux Security Module)在execve()执行后不会释放控制权限；</p>
+<blockquote>
+<p>To set no_new_privs, use<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&gt; prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0).</div><div class="line">&gt;</div></pre></td></tr></table></figure></p>
+</blockquote>
+<p>  设置”no_new_privs”位，可以这样调用:<br>  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)</div></pre></td></tr></table></figure></p>
+<blockquote>
+<p>Be careful, though: LSMs might also not tighten constraints on exec<br>in no_new_privs mode.  (This means that setting up a general-purpose<br>service launcher to set no_new_privs before execing daemons may<br>interfere with LSM-based sandboxing.)</p>
+</blockquote>
+<p>  要注意到的是，因此：处于”no_new_privs”模式下,调用exec()函数时，Linux安全模块将收紧权限控制。<br>  (这意味着建立一个通用启动器，在设置no_new_privs之前execing守护进程可能会受到LSM沙盒的影响)</p>
+<blockquote>
+<p>Note that no_new_privs does not prevent privilege changes that do not<br>involve execve.  An appropriately privileged task can still call<br>setuid(2) and receive SCM_RIGHTS datagrams.</p>
+</blockquote>
+<p>  注意，通过execve调用，可以确保处于”no_new_privs”模式(下的进程)权限不发生变化。一个适当的特权任务，可以持续完成uid设置，以及接收SCM_RIGHTS报文数据。</p>
+<blockquote>
+<p>There are two main use cases for no_new_privs so far:</p>
 <ul>
-<li>已安装在seccomp模式2的沙盒过滤器可以持续在execve()(函数调用期间)改变新执行的程序的行为。no_new_privs设置后，只允许非特权用户安装过滤器。</li>
-<li>就其本身而言，”no_new_privs”能够减小非法用户可进行攻击的攻击面。如果每一个进程都能够运行在设置了”no_new_privs”的UID下，这个UID就不会被”setuid”,”setgid”以及”fcap-using binaries”这些攻击手段提升权限;(为了避免权限提升)首先确保”no_new_privs”位能够提前设置。<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">In the future, other potentially dangerous kernel features could become</div><div class="line">available to unprivileged tasks if no_new_privs is set.  In principle,</div><div class="line">several options to unshare(2) and clone(2) would be safe when</div><div class="line">no_new_privs is set, and no_new_privs + chroot is considerable less</div><div class="line">dangerous than chroot by itself.</div></pre></td></tr></table></figure>
+<li><p>Filters installed for the seccomp mode 2 sandbox persist across<br>execve and can change the behavior of newly-executed programs.<br>Unprivileged users are therefore only allowed to install such filters<br>if no_new_privs is set.</p>
+</li>
+<li><p>By itself, no_new_privs can be used to reduce the attack surface<br>available to an unprivileged user.  If everything running with a<br>given uid has no_new_privs set, then that uid will be unable to<br>escalate its privileges by directly attacking setuid, setgid, and<br>fcap-using binaries; it will need to compromise something without the<br>no_new_privs bit set first.</p>
 </li>
 </ul>
-<p>在未来，在”no_new_privs”模式下，将出现其他具有威胁内核的功能被非法的任务所应用。原则上，在”no_new_privs”模式下需要对unshare(2),以及clone(2)进行配置设置。实现”no_new_privs”与chroot的组合使用方式是一种相比与独立使用chroot的一种可实现的低风险方案。</p>
+</blockquote>
+<p>  “no_new_privs”更多地应用在以下两个场景：</p>
+<pre><code>- 已安装在seccomp模式2的沙盒过滤器可以持续在execve()(函数调用期间)改变新执行的程序的行为。no_new_privs设置后，只允许非特权用户安装过滤器。
+- 就其本身而言，&quot;no_new_privs&quot;能够减小非法用户可进行攻击的攻击面。如果每一个进程都能够运行在设置了&quot;no_new_privs&quot;的UID下，这个UID就不会被&quot;setuid&quot;,&quot;setgid&quot;以及&quot;fcap-using binaries&quot;这些攻击手段提升权限;(为了避免权限提升)首先确保&quot;no_new_privs&quot;位能够提前设置。
+</code></pre><blockquote>
+<p>In the future, other potentially dangerous kernel features could become<br>available to unprivileged tasks if no_new_privs is set.  In principle,<br>several options to unshare(2) and clone(2) would be safe when<br>no_new_privs is set, and no_new_privs + chroot is considerable less<br>dangerous than chroot by itself.</p>
+</blockquote>
+<p>  在未来，在”no_new_privs”模式下，将出现其他具有威胁内核的功能被非法的任务所应用。原则上，在”no_new_privs”模式下需要对unshare(2),以及clone(2)进行配置设置。实现”no_new_privs”与chroot的组合使用方式是一种相比与独立使用chroot的一种可实现的低风险方案。</p>
+<ul>
+<li>原始文档，请参考这里 <a href="http://tomoyo.osdn.jp/cgi-bin/lxr/source/Documentation/prctl/no_new_privs.txt" title="no_new_privs.txt" target="_blank" rel="external">no_new_privs.txt</a></li>
+</ul>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -151,7 +197,7 @@ var _hmt = _hmt || [];
 
 <div class="article-share" id="share">
 
-  <div data-url="https://turbin.github.io/2017/01/28/no_new_privs中文说明翻译/" data-title="关于 no_new_privs 说明 | Turbine&#39;s Blog" data-tsina="null" class="share clearfix">
+  <div data-url="https://turbin.github.io/2017/01/28/no_new_privs中文说明翻译/" data-title="关于 no　new　privs 翻译稿 | Turbine&#39;s Blog" data-tsina="null" class="share clearfix">
   </div>
 
 </div>
@@ -182,7 +228,7 @@ var _hmt = _hmt || [];
 	
 <section class="comment">
 	
-	<div class="ds-thread" data-title="关于 no_new_privs 说明" data-thread-key="no_new_privs中文说明翻译" data-author-key="Turbine Yan" data-url="https://turbin.github.io/post/no_new_privs中文说明翻译"></div>
+	<div class="ds-thread" data-title="关于 no　new　privs 翻译稿" data-thread-key="no_new_privs中文说明翻译" data-author-key="Turbine Yan" data-url="https://turbin.github.io/post/no_new_privs中文说明翻译"></div>
 	
 </section>
 

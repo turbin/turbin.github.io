@@ -92,6 +92,70 @@ var _hmt = _hmt || [];
   <article>
     <h1 itemprop="name">
       
+        <a href="/2017/08/27/note_for_reading_LinkerandLoader/" title="《Linker and Loader》阅读笔记(1)" itemprop="url">
+      
+        《Linker and Loader》阅读笔记(1)
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >链接和加载链接与加载
+程序加载:
+
+将程序从辅助存储设备(自 1968 年后这就意味着磁盘)拷贝到主内存中。准备运行。在某些情况下,加载仅仅是将数据从磁盘拷入内存;在其他情况下,还包括分配存储空间,设置保护位或通过虚拟内存将虚拟地址映射到磁盘内存页上。
+
+
+重定位:
+
+编译器和汇</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2017-08-27T09:40:00.000Z" itemprop="datePublished">2017-08-27</time>
+      
+          <a href="/2017/08/27/note_for_reading_LinkerandLoader/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
+        <a href="/2017/08/23/Android_Reverse_Engineering_reading_note/" title="《Android软件安全与逆向分析》阅读笔记" itemprop="url">
+      
+        《Android软件安全与逆向分析》阅读笔记
+      </a>
+    </h1>
+    
+     
+           <p itemprop="description" >原生程序的启动流程分析 (P194.)
+GCC命令参数说明
+
+
+未使用默认C库:
+  Android 未使用glibc作为C库，而是采用了google自己开发的Bionic C因此编译时需要加入 -nostdlib
+
+静态链接:
+  gcc 命令参数中指定 -Bstatic,在生</p>
+        
+    
+    <p class="article-more-link">
+      <time datetime="2017-08-23T15:02:00.000Z" itemprop="datePublished">2017-08-23</time>
+      
+          <a href="/2017/08/23/Android_Reverse_Engineering_reading_note/">阅读更多&raquo;</a>
+      
+    </p>
+
+  </article>
+</section>
+
+  <section class="post" itemscope itemprop="blogPost">
+  <article>
+    <h1 itemprop="name">
+      
         <a href="/2017/08/21/about_the_linkage_error/" title="关于一个链接的BUG" itemprop="url">
       
         关于一个链接的BUG
@@ -99,9 +163,10 @@ var _hmt = _hmt || [];
     </h1>
     
      
-           <p itemprop="description" >关于链接问题导致的程序BUG疑难问题现象:现象一个安卓程序需要调用一个so库实现加解密操作，但是在更新了新版本后一直发现程序崩溃。
-kernel pain:
-12345678910111213141516171819202122232017-08-21 10:43:58.724 </p>
+           <p itemprop="description" >疑难问题现象:现象
+一个安卓程序需要调用一个so库实现加解密操作，但是在更新了新版本后一直发现程序崩溃。
+  kernel pain:
+  12345678910111213141516171819202122232017-08-21 10:43:58.724 F/libc   </p>
         
     
     <p class="article-more-link">
@@ -125,9 +190,19 @@ kernel pain:
     </h1>
     
      
-           <p itemprop="description" >关于链接方式的区别显示链接方式在程序中直接通过动态库装载的方式，对程序中定义的 [函数指针]进行加载和赋值。
-下面是用例:
-123456789101112131415161718192021222324252627282930313233343536373839404142434</p>
+           <p itemprop="description" >关于链接方式的区别动态库的调用链接方式
+动态库调用方式可分为两种：
+
+显式调用
+隐式调用
+
+
+
+两种调用方式
+显式调用
+  在程序中直接通过动态库装载的方式，对程序中定义的 [函数指针]进行加载和赋值。
+  下面是用例:
+  123456789101112131415161718</p>
         
     
     <p class="article-more-link">
@@ -144,24 +219,23 @@ kernel pain:
   <article>
     <h1 itemprop="name">
       
-        <a href="/2017/08/13/debug_native_android_program_with_gdb/" title="" itemprop="url">
+        <a href="/2017/08/21/LinkageError/" title="关于一个链接的BUG" itemprop="url">
       
-        
+        关于一个链接的BUG
       </a>
     </h1>
     
      
-           <p itemprop="description" >使用GBD 调试你的Ｃ/C++程序
-首先使用如下的命令来编译你的工程：1ndk-build NDK_DEBUG=1 -C &amp;lt;the path of your source code&amp;gt;
-
-
-其中，编译参数 NDK_DEBUG=1 指示编译链工具以DEBUG模式进行编译;</p>
+           <p itemprop="description" >疑难问题现象现象
+一个安卓程序需要调用一个so库实现加解密操作，但是在更新了新版本后一直发现程序崩溃。
+kernel pain:
+12345678910111213141516171819202122232017-08-21 10:43:58.724 F/libc    ( 48</p>
         
     
     <p class="article-more-link">
-      <time datetime="2017-08-13T07:48:05.367Z" itemprop="datePublished">2017-08-13</time>
+      <time datetime="2017-08-20T16:00:00.000Z" itemprop="datePublished">2017-08-21</time>
       
-          <a href="/2017/08/13/debug_native_android_program_with_gdb/">阅读更多&raquo;</a>
+          <a href="/2017/08/21/LinkageError/">阅读更多&raquo;</a>
       
     </p>
 
@@ -179,8 +253,9 @@ kernel pain:
     </h1>
     
      
-           <p itemprop="description" >因为懒，也因为烦。所以为了发布版本简单可靠，也因为基于window环境下，所以学着写了powershell。一边搜示例，一面学着写。大概有shell的基础入门挺快。闲话少叙，直接提码：
-1234567891011121314$targe=&amp;quot;N900_4G&amp;quot;$d</p>
+           <p itemprop="description" >因为懒，也因为烦。
+所以为了发布版本简单可靠，也因为基于window环境下，所以学着写了powershell。  一边搜示例，一面学着写。大概有shell的基础入门挺快。   闲话少叙，直接提码：
+  123456789101112131415161718192021222324</p>
         
     
     <p class="article-more-link">
@@ -274,14 +349,18 @@ kernel pain:
   <article>
     <h1 itemprop="name">
       
-        <a href="/2017/01/28/no_new_privs中文说明翻译/" title="关于 no_new_privs 说明" itemprop="url">
+        <a href="/2017/01/28/no_new_privs中文说明翻译/" title="关于 no　new　privs 翻译稿" itemprop="url">
       
-        关于 no_new_privs 说明
+        关于 no　new　privs 翻译稿
       </a>
     </h1>
     
      
-           <p itemprop="description" >The original article, please reference here no_new_privs.txt12The execve system call can grant a newly-started program privileges thatits pa</p>
+           <p itemprop="description" >这是一篇关于内核如何限制通过fork方式提升进程特权的文章。是为了求解阅读了Android　init进程的源码中，关于prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)调用的缘由的。
+
+以下是原文与翻译的内容:
+
+The execve system ca</p>
         
     
     <p class="article-more-link">
@@ -294,56 +373,10 @@ kernel pain:
   </article>
 </section>
 
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2016/09/14/Promise/" title="Promise" itemprop="url">
-      
-        Promise
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >由于项目开发需要解决JS同步的问题，但是受限在目前的框架里没有引用到jQuery，也就无法使用defered。也是自己嫌麻烦，于是开始重新造轮子的过程——服务于自己的测试代码，写了一个简易的promise的实现。
-Promise下面有个src/Promise.js12345678</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2016-09-14T12:30:45.000Z" itemprop="datePublished">2016-09-14</time>
-      
-          <a href="/2016/09/14/Promise/">阅读更多&raquo;</a>
-      
-    </p>
 
-  </article>
-</section>
-
-  <section class="post" itemscope itemprop="blogPost">
-  <article>
-    <h1 itemprop="name">
-      
-        <a href="/2016/09/13/Javascript-Examples/" title="Javascript Examples" itemprop="url">
-      
-        Javascript Examples
-      </a>
-    </h1>
-    
-     
-           <p itemprop="description" >摘自《Javascript权威教程》
-Monkey Path123456789function trace(o, m)&amp;#123;   var original = o[m];   o[m] = function()&amp;#123;        console.log(new Da</p>
-        
-    
-    <p class="article-more-link">
-      <time datetime="2016-09-13T12:46:36.000Z" itemprop="datePublished">2016-09-13</time>
-      
-          <a href="/2016/09/13/Javascript-Examples/">阅读更多&raquo;</a>
-      
-    </p>
-
-  </article>
-</section>
-
+  <nav id="page-nav" class="clearfix">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">下一页 &raquo;</a>
+  </nav>
 
 </div>
       <div id="asidepart">
@@ -382,7 +415,9 @@ Monkey Path123456789function trace(o, m)&amp;#123;   var original = o[m];   o[m]
 		
 			<li><a href="/categories/essay/" title="essay">essay<sup>2</sup></a></li>
 		
-			<li><a href="/categories/notes/" title="notes">notes<sup>3</sup></a></li>
+			<li><a href="/categories/note/" title="note">note<sup>1</sup></a></li>
+		
+			<li><a href="/categories/notes/" title="notes">notes<sup>5</sup></a></li>
 		
 			<li><a href="/categories/translation/" title="translation">translation<sup>1</sup></a></li>
 		
@@ -403,7 +438,9 @@ Monkey Path123456789function trace(o, m)&amp;#123;   var original = o[m];   o[m]
 		
 			<li><a href="/tags/essay/" title="essay">essay<sup>2</sup></a></li>
 		
-			<li><a href="/tags/notes/" title="notes">notes<sup>2</sup></a></li>
+			<li><a href="/tags/note/" title="note">note<sup>1</sup></a></li>
+		
+			<li><a href="/tags/notes/" title="notes">notes<sup>4</sup></a></li>
 		
 			<li><a href="/tags/power-shell/" title="power shell">power shell<sup>1</sup></a></li>
 		

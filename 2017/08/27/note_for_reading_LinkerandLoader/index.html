@@ -1,0 +1,519 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>《Linker and Loader》阅读笔记(1) | Turbine&#39;s Blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="Turbine Yan">
+    
+    <meta name="description" content="链接和加载链接与加载
+程序加载:
+
+将程序从辅助存储设备(自 1968 年后这就意味着磁盘)拷贝到主内存中。准备运行。在某些情况下,加载仅仅是将数据从磁盘拷入内存;在其他情况下,还包括分配存储空间,设置保护位或通过虚拟内存将虚拟地址映射到磁盘内存页上。
+
+
+重定位:
+
+编译器和汇编器通常为每个文件创">
+    
+    
+    
+    
+    <link rel="alternative" href="/atom.xml" title="Turbine&#39;s Blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/cplusplus_30x30_logo.png">
+    
+    
+    <link rel="apple-touch-icon" href="/img/cplusplus_100x100_logo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/cplusplus_100x100_logo.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Turbine&#39;s Blog">Turbine&#39;s Blog</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives/">归档</a></li>
+					
+						<li><a href="/categories/essay/">随笔</a></li>
+					
+						<li><a href="/categories/coding/">编程</a></li>
+					
+						<li><a href="/categories/translation/">文档翻译</a></li>
+					
+						<li><a href="/categories/notes/">笔记</a></li>
+					
+					<li>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/08/27/note_for_reading_LinkerandLoader/" title="《Linker and Loader》阅读笔记(1)" itemprop="url">《Linker and Loader》阅读笔记(1)</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2017-08-27T09:40:00.000Z" itemprop="datePublished">2017-08-27</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#链接和加载"><span class="toc-number">1.</span> <span class="toc-text">链接和加载</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#链接与加载"><span class="toc-number">1.0.1.</span> <span class="toc-text">链接与加载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#重定位和代码修改"><span class="toc-number">1.0.2.</span> <span class="toc-text">重定位和代码修改</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#体系结构的问题"><span class="toc-number">2.</span> <span class="toc-text">体系结构的问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#应用程序二进制接口-ABI-application-binary-interface"><span class="toc-number">2.0.1.</span> <span class="toc-text">应用程序二进制接口 ABI(application binary interface)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#字节顺序和对齐"><span class="toc-number">2.0.2.</span> <span class="toc-text">字节顺序和对齐</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#过程调用和可寻址性"><span class="toc-number">2.0.3.</span> <span class="toc-text">过程调用和可寻址性:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#过程调用"><span class="toc-number">2.0.4.</span> <span class="toc-text">过程调用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#分页和虚拟内存"><span class="toc-number">2.0.5.</span> <span class="toc-text">分页和虚拟内存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#映射文件"><span class="toc-number">2.0.6.</span> <span class="toc-text">映射文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#共享库："><span class="toc-number">2.0.7.</span> <span class="toc-text">共享库：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#位置无关代码"><span class="toc-number">2.0.8.</span> <span class="toc-text">位置无关代码:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Intel-386-分段"><span class="toc-number">2.0.9.</span> <span class="toc-text">Intel 386 分段</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#第一章节和第二章节结束"><span class="toc-number">3.</span> <span class="toc-text">第一章节和第二章节结束</span></a></li></ol>
+		</div>
+		
+		<h1 id="链接和加载"><a href="#链接和加载" class="headerlink" title="链接和加载"></a>链接和加载</h1><h3 id="链接与加载"><a href="#链接与加载" class="headerlink" title="链接与加载"></a>链接与加载</h3><ul>
+<li><p>程序加载:</p>
+<blockquote>
+<p>将程序从辅助存储设备(自 1968 年后这就意味着磁盘)拷贝到主内存中。准备运行。在某些情况下,加载仅仅是将数据从磁盘拷入内存;在其他情况下,还包括分配存储空间,设置保护位或通过虚拟内存将虚拟地址映射到磁盘内存页上。</p>
+</blockquote>
+</li>
+<li><p>重定位:</p>
+<blockquote>
+<p>编译器和汇编器通常为每个文件创建程序地址从 0 开始的目标代码,但是几乎没有计算机会允许从地址 0 加载你的程序。如果一个程序是由多个子程序组成的,那么所有的子程序必须被加载到互不重叠的地址上。重<br>定位就是为程序不同部分分配加载地址,调整程序中的数据和代码以反映所分配地址的过程。在很多系统中,重定位不止进行一次。对于链接器的一种普遍情景是由多个子程序来构建一个程序,并生成一个链接好的起始<br>地址为 0 的输出程序,各个子程序通过重定位在大程序中确定位置。当这个程序被加载时,系统会选择一个加载地址,而链接好的程序会作为整体被重定位到加载地址。</p>
+</blockquote>
+</li>
+<li><p>符号解析:</p>
+<blockquote>
+<p>当通过多个子程序来构建一个程序时,子程序间的相互引用是通过符号进行的;主程序可能会调用一个名为 sqrt 的计算平方根例程,并且数学库中定义了sqrt 例程。链接器通过标明分配给 sqrt 的地址在库中来解<br>析这个符号,并通过修改目标代码使得 call 指令引用该地址。<br>当链接器运行时,会首先对输入文件进行扫描,得到各个段的大小,并收集对所有符号的定义和引用。<br>它会创建一个列出输入文件中定义的所有段的段表,和包含所有导出、导入符号的符号表。<br>利用第一遍扫描得到的数据,链接器可以为符号分配数字地址,决定各个段在输出地址空间中的大小&gt;和位置,并确定每一部分在输出文件中的布局。<br>第二遍扫描会利用第一遍扫描中收集的信息来控制实际的链接过程。<br>它会读取并重定位目标代码,为符号引用替换数字地址,调整代码和数据的内存地址以反映重定位的&gt;段地址,并将重定位后的代码写入到输出文件中。<br>通常还会再向输出文件中写入文件头部信息,重定位的段和符号表信息。如果程序使用了动态链接,那么符号表中还要包含运行时链接器解析动态符号时所需的信息。</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="重定位和代码修改"><a href="#重定位和代码修改" class="headerlink" title="重定位和代码修改"></a>重定位和代码修改</h3><blockquote>
+<p>对于现代计算机,包括所有的 RISC 架构,都需要进行复杂的多的代码修改。没有一条指令有足够的空间容纳一个直接地址,因此编译器和链接器不得不才用复杂的寻址技巧来处理任意地址上的数据。某些情况下,使用<br>两到三条指令来组成一个地址都是有可能的,每个指令包含地址的一部分,然后使用位操作将它们组合为一个完整的地址。 这种情况下,链接器不得不对每个指令都进行恰当的修改,将地址中的某些位插入到每一个指令<br>中。 其它情况下,一个例程或一组例程使用的所有地址都被放置在一个作为“地址池”的数组中,初始化代码将某一个机器寄存器指向这个数组,当需要时,代码会将该寄存器作为基址寄存器从地址池中加载所需指针。<br>链接器需要由被程序使用的所有地址来创建这个数组,并修改各指令使它们可以关联到正确的地址池入口处。</p>
+<p>由于每个段都会被填充为 4K 对齐以满足 x86 的页尺寸,因此文本段为 4K(减去文件中 20 字节长度的 a.out 头部,逻辑上它并不属于该段),数据段和 bss 段每个同样也是 4K 字节。</p>
+</blockquote>
+<h1 id="体系结构的问题"><a href="#体系结构的问题" class="headerlink" title="体系结构的问题"></a>体系结构的问题</h1><h3 id="应用程序二进制接口-ABI-application-binary-interface"><a href="#应用程序二进制接口-ABI-application-binary-interface" class="headerlink" title="应用程序二进制接口 ABI(application binary interface)"></a>应用程序二进制接口 ABI(application binary interface)</h3><blockquote>
+<p>每个操作系统都会为运行在该系统下的应用程序提供应用程序二进制接口(Application Binary Interface)。ABI 包含了应用程序在这个系统下运行时必须遵守的编程约定。<br>ABI总是包含一系列的系统调用和使用这些系统调用的方法,以及关于程序可以使用的内存地址和使用机器寄存器的规定。</p>
+</blockquote>
+<h3 id="字节顺序和对齐"><a href="#字节顺序和对齐" class="headerlink" title="字节顺序和对齐"></a>字节顺序和对齐</h3><blockquote>
+<p>多字节数据通常会被 对齐到一些“天生”的边界上。就是说,4 字节的数据必须对齐到4 字节的边界上,2 字节要对齐到 2 字节的边界上,并以此类推。另一种想法就是任何 N 字节数据的地址至少要有 log 2 (N)<br>个低位为 0。在某些系统上(Intel X86,DEC VAX,IBM 370/390),引用未对齐数据会付出性能降低的代价,在另外一些系统上(多数 RISC 芯片),这会导致程序故障。即使在那些引用未对齐数据不会导致故障的系<br>统上,性能的损失也是非常大的,以至于值得我们花费精力来尽可能保持地址的对齐。很多处理器同样要求程序指令的对齐。多数 RISC 芯片要求指令必须对齐在 4 字节的边界上。</p>
+</blockquote>
+<h3 id="过程调用和可寻址性"><a href="#过程调用和可寻址性" class="headerlink" title="过程调用和可寻址性:"></a>过程调用和可寻址性:</h3><blockquote>
+<p>在一个“自举”的问题:一个例程要使用寄存器中的基地址来计算数据地址,<br>但是将基址从内存中加载到寄存器中的标准方法是从存有另一个基址的寄存器中寻址。<br>自举问题就是如何在程序开始时将第一个基地址载入到寄存器中,<br>随后再确保每一个例程都拥有它需要的基地址来寻址它要使用的数据。</p>
+</blockquote>
+<ul>
+<li>Q&amp;A: 所以MMU的设计就是为了方便进行分页寻址的时候能够加快寻址的速度?(需要阅读对应cpu相应的体系资料)</li>
+</ul>
+<h3 id="过程调用"><a href="#过程调用" class="headerlink" title="过程调用"></a>过程调用</h3><blockquote>
+<p>在诸如 x86 这样具有硬件栈的体系结构中返回地址被压入栈中,而在其它体系结构中它会被保存在一个寄存器里。如果必要软件要负责将寄存器中的值保存在内存中。具有栈的体系结构通常都会有一个硬件的返回指令将返回地址推出栈并跳转到该地址,而其它体系结构则使用一个“跳转到寄存器中地址”的指令来返回。</p>
+</blockquote>
+<ul>
+<li>Q&amp;A： 在ARM 架构中使用lr寄存器用来保存返回地址。</li>
+</ul>
+<blockquote>
+<p>系结构则使用一个“跳转到寄存器中地址”的指令来返回。<br>  在一个过程的内部,数据寻址可分为 4 类:</p>
+<ol>
+<li>调用者可以向过程传递参数 。</li>
+<li>本地变量在过程中分配,并在过程返回前释放。</li>
+<li>本地静态数据保存在内存的固定位置中,并为该过程私有。</li>
+<li>全局静态数据保存在内存的固定位置中,并可被很多不同过程引用。</li>
+</ol>
+</blockquote>
+<ul>
+<li><p>stack frame of X86:</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">stack pointer register ---&gt; |-------------|   Lower addresses ^</div><div class="line">                            |   local     |</div><div class="line">                            |   variables |</div><div class="line">                            |-------------|</div><div class="line">                            |  old frame  |</div><div class="line">                            |  pointer    |</div><div class="line">                            |-------------|</div><div class="line">frame pointer register---&gt;  |  return     |</div><div class="line">                            |  address    |</div><div class="line">                            |-------------|</div><div class="line">                            |  Incoming   |</div><div class="line">                            |  arguments  |</div><div class="line">                            |-------------|</div><div class="line">                            |  previous   |</div><div class="line">                            |  frame      |</div><div class="line">                            ---------------</div></pre></td></tr></table></figure>
+</li>
+<li><p>原文摘要:</p>
+<p>  原文:</p>
+<blockquote>
+<p>Arguments and local variables are usually allocated on the stack. One of the registers serves as a stack pointer which can be used as a base register.<br>In a common variant of this scheme, used with SPARC and x86, a separate frame pointer or base pointer register is loaded from the stack pointer at the time a<br>procedure starts. This makes it possible to push variable sized objects on the stack, changing the value in the stack pointer register to a hard-to-predict value,&gt;<br>but still lets the procedure address arguments and lo-cals at fixed offsets from the frame pointer which doesn’t change during a procedure’s execution. Assuming<br>the stack grows from higher to lower addresses and that the frame pointer points to the address in memory where the return address is stored, arguments are at small<br>positive offsets from the frame pointer, and local variables at negative offsets. The operating system usually sets the initial stack pointer register before a<br>program starts, so the program need only update the register as needed when it pushes and pops data.</p>
+<p>  For local and global static data, a compiler can generate a table of pointers to all of the static objects that a routine references. If one of the registers<br>contains a pointer to this table, the routine can address any desired static object by loading the pointer to the object from the table using the table pointer<br>register into another register using the table pointer register as a base register, then using that second register as the base register to address the object. The<br>trick, then, is to get the address of the table into the first register. On SPARC, the routine can load the table address into the register using a sequence of<br>instructions with immediate operands, and on the SPARC or 370 the routine can use a variant of a subroutine call instruction to load the program counter (the<br>register that keeps the address of the current instruction) into a base register, though for reasons we discuss later,those techniques cause problems in library<br>code. A better solution is to foist off the job of loading the table pointer on the routine’s caller, since the caller will have its own table pointer already loaded<br>and can get address of the called routine’s table from its own table.</p>
+</blockquote>
+<p>  译文:</p>
+<blockquote>
+<p>参数和本地变量通常在栈中分配空间,某一个寄存器可以作为栈指针,它可以基址寄存器来使用。SPARC和x86中使用了该策略的一种比较普遍的变体,在一个过程开始的时候,会从栈指针中加载专门的框架指针或<br>基址指针寄存器。这样就可以在栈中压入可变大小的对象,将栈指针寄存器中的值改变为难以预定的值,当仍使过程的参数和本地变量们仍然位于相对于框架指针在整个过程执行中都不变的固定偏移量处。如果假<br>定栈是从高地址向低地址生长的,而框架指针指向返回地址保存在内存中的位置,那么参数就位于框架指针较小的正偏移量处,本地变量在负偏移量处。</p>
+<p>由于操作系统通常会在程序启动前为其初始化栈指针,所以程序只需要在将输入压栈或推栈时更新寄存器即可。对于局部和全局静态数据,编译器可以为一个例程引用的所有静态变量创建一个指针表。如果某个寄<br>存器存有指向这个表的指针,那么例程可以通过使用表指针寄存器将对象在表中的指针读取出来,加载到另一个使用表指针寄存器作为基址的寄存器中,并将第二个寄存器做为基址寄存器来寻址任何想要访问的静<br>态目标。因此,关键技巧是表的地址存入到第一个寄存器中。在SPARC 上,例程可以通过带有立即操作数的一系列指令来加载表地址,同时在 SPARC 或者 370 上例程可以通过一系列子例程调用指令将程序计数<br>器(保存当前指令地址的寄存器)加载到一个基址寄存器,虽然后面我们还会讨论这种方法在对待库代码时会遇到问题。<br>一个更好的解决方法是将提取表指针的工作交给例程的调用者,因为调用者已经加载了自己的表指针,并可以从自己的表中获取被调用例程的表的指针。</p>
+</blockquote>
+</li>
+<li><p>Q&amp;A:    </p>
+<ul>
+<li>文中所描述的指针表，具体的实现实例是什么？是一个段？还是就是ELF中的GOT表?</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>一个典型的例程调用序列。Rf 是框架指针,Rt 是表指针,Rx 是临时寄存器。调用者将自己的表指针保存到自己的栈框架中,然后将被调用例程的地址和它的指针表地址载入到寄存器中,再进行调用。<br>被调用的例程可以通过 Rt 中的表指针找到它需要的所有数据,包括它随后要调用的例程的地址和表指针。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">@理想的调用过程</div><div class="line">    ... 将参数压入堆栈 ...</div><div class="line">    store Rt</div><div class="line">    xxx(Rf) ; save caller’s table pointer in caller’s stack frame</div><div class="line">    load Rx MMM(Rt) ; load address of called routine into temp register</div><div class="line">    load Rt NNN(Rt) ; load called routine’s table pointer</div><div class="line">    call (Rx) ; call routine at address in Rx</div><div class="line">    load Rt</div><div class="line">    xxx(Rf) ; restore caller’s table pointer</div></pre></td></tr></table></figure>
+<ul>
+<li>Q&amp;A:<ul>
+<li>按照上述描述的情况，在具体的CPU架构中是如何实现的？找到ARM以及X86中的具体实现机制进行说明。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>又回到地址自举的问题了,这个表指针的链最初是怎么开始的呢?如果每一个例程都从前面例程中获取它的表指针,那么最初的例程从哪里获得呢?答案不是固定的,但是总会涉及到一些特殊代码。主例程的表可能存储在<br>一个固定的位置,或初始指针值被标注在可执行文件中这样操作系统可以在程序开始前加载它。无论使用的是什么技术,都是需要链接器的帮助的。</p>
+</blockquote>
+<ul>
+<li>Q&amp;A:<ul>
+<li>这段的就涉及到ELF文件中，如何使用GOT以及PLT进行函数重定位的问题。</li>
+</ul>
+</li>
+</ul>
+<h3 id="分页和虚拟内存"><a href="#分页和虚拟内存" class="headerlink" title="分页和虚拟内存"></a>分页和虚拟内存</h3><blockquote>
+<p>分页硬件将一个程序的地址空间划分为大小固定的页,典型的大小是2K或4K,同时将计算机的物理内存划分为同样大小的页框。</p>
+</blockquote>
+<ul>
+<li><p>页映射：</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">        Virtual             Page table                               Physical</div><div class="line">        address                                                      memory</div><div class="line">        space</div><div class="line"></div><div class="line">        +|------|   Page A  |------|  physical address of Page A    |-----|</div><div class="line">         |      |   ------&gt; |------|  -----&gt;                        |     |</div><div class="line">         |      |           |------|                                |-----|</div><div class="line">        +|------|           |------|                                |     |</div><div class="line">2K or 4K |      |   ------&gt; |------|                                |-----|</div><div class="line">page     |      |           |------|</div><div class="line">        +|------|           |------|</div><div class="line">         |      |   ------&gt; |------|</div><div class="line">         |      |           |------|</div><div class="line">        +|------|           |------|</div><div class="line">         |      |   ------&gt; |------|</div><div class="line">         |      |           |------|</div><div class="line">        +|------|           |------|</div></pre></td></tr></table></figure>
+</li>
+<li><p>缺页：</p>
+<blockquote>
+<p>一个页表项可以包含针对某个页的实际内存页框,或通过标志位标注该页“不存在”。当应用程序尝试使用一个不存在的页时,硬件会产生一个由操作系统处理的“页失效”错误。操作系统可以将页的内容从磁盘上复制到一个空闲的内存页框中,并让应用程序继续运行。通过按需将页在内存和磁盘之间移动,操作系统可以提供“虚拟内存”的功能,这样从应用程序看来使用的是比实际大的多的内存。<br>  Q&amp;A: 这部分详细的过程需要参考x86计算机原理。</p>
+</blockquote>
+</li>
+<li><p>页抖动:</p>
+<blockquote>
+<p>应用程序产生的页失效越多,它就运行的越慢,最坏的情况会导致“页抖动”,这时页失效对程序的有效运行没有任何帮助。程序使用的页越少,它可能产生的页失效也就越少。如果链接器可以将有关联的例程挤压到一个页或者少量的几个页,就会提高分页的性能。</p>
+</blockquote>
+</li>
+<li><p>只读页的优点：</p>
+<blockquote>
+<p>如果页可以被标注为只读,那么也会提升性能。由于只读页可以重新加载因此它们不需要调出页的操作。如果某个页逻辑上出现在多个地址空间中(这通常会发生在运行相同程序的多个实例时),一个单独的物理页就可以满足所有的地址空间。</p>
+</blockquote>
+</li>
+<li><p>Q&amp;A:</p>
+<ul>
+<li>这点需要确认。类似在多个进程实例中链接了同一个库，运行相同的函数的效果？</li>
+<li>在多核CPU中，多个并发线程里如果不同核心执行的线程中调用了相同函数，而这个函数里会操作相同的一个全局变量时，这时候汇编是如何处理的？(就是c++大会里提到的cache coherence)</li>
+</ul>
+</li>
+<li><p>多级页表:</p>
+<blockquote>
+<p>两级或三级的页表对应用程序是透明的,但有一个重要的例外:操作系统可以通过修改高层次页表的某一项改变对一大块地址空间的映射,因此由于效率的原因,地址空间经常通过替换单独的第二级页表项来按照这个尺寸倍数来管理,而不是在进程切换时重新加载整个页表。</p>
+</blockquote>
+</li>
+<li><p>Q&amp;A:</p>
+<ul>
+<li>这点可以补充下Linux内核是如何处理和管理内存页，以及进程空间的页入页出的规则。</li>
+</ul>
+</li>
+</ul>
+<h3 id="映射文件"><a href="#映射文件" class="headerlink" title="映射文件"></a>映射文件</h3><blockquote>
+<p>当一个应用程序将一个文件映射到程序的部分地址空间时,操作系统将那部分地址空间对应的页设置为“不存在”,然后将该文件像这部分地址空间对应的页交换磁盘那样来使用程序可以通过引用这部分地址空间的方法来读取文件,这时换页系统会从磁盘加载所需的页。</p>
+</blockquote>
+<ul>
+<li>Q&amp;A:<br>  这点可以确认下Linux上是如何实现的。</li>
+</ul>
+<blockquote>
+<p>处理映射文件的三种不同方法:</p>
+<ol>
+<li>最简单的办法是将文件以只读方式(RO)映射,任何对映射文件存储数据的操作都会失败,这通常会导致程序终止。</li>
+<li>第二种方法是将文件以可读写方式(RW)映射,这样对映射文件在内存中副本的修改会在取消映射的时候写回磁盘上。</li>
+<li>第三种方法是将文件以写时复制方式(COW)映射。这种情况下操作系统会对该页面做一个副本,这个副本会被当作没有映射的私有页来对待。</li>
+</ol>
+</blockquote>
+<h3 id="共享库："><a href="#共享库：" class="headerlink" title="共享库："></a>共享库：</h3><blockquote>
+<p>如果单一的程序或单一的程序库在多于一个的地址空间中被使用,若能够在多个地址空间中共享这个程序或程序库的单一副本,那将节省大量的内存。<br>对于操作系统实现这个功能是相当简捷的——只需要将可执行程序文件映射到每一个程序的地址空间即可。不可重定位的代码和只读的数据以RO方式映射,可写的数据以COW方式映射。操作系统还可以让所有映射到该文件的进程之间共享RO和尚未被写的COW数据对应的物理页框(如果代码在加载时需要重定位,重定位过程会修改代码页,那他们就必须被当作 COW 对待,而不是 RO)。<br>在可执行程序中,链接器需要将所有的可执行代码聚集起来形成文件中可以被映射为RO的部分,而数据是可以被映射为COW的另一部分。每一个段的开始地址都需要以页边界对齐,这既针对逻辑上的地址空间也包括实际的被映射文件。当多个不同程序使用一个共享库时,链接器需要做标记,好让程序启动时共享库可以被映射到它们各自的地址空间中。</p>
+</blockquote>
+<ul>
+<li><p>Q&amp;A:</p>
+<blockquote>
+<p> 当多个不同程序使用一个共享库时,链接器需要做标记,好让程序启动时共享库可以被映射到它们各自的地址空间中。</p>
+</blockquote>
+<p>  那么是不是意味着所有调用该函数的程序都会拥有一个该函数的副本？</p>
+</li>
+</ul>
+<h3 id="位置无关代码"><a href="#位置无关代码" class="headerlink" title="位置无关代码:"></a>位置无关代码:</h3><blockquote>
+<p>  当一个程序在多个不同的地址空间运行时，操作系统通常可以将程序加载到各地址空间的相同位置。</p>
+</blockquote>
+<ul>
+<li><p>Q&amp;A:</p>
+<p>  这里注意描述，是各自地址空间的相同位置。因为每个函数的入口的偏移位置在程序完成链接的阶段就已经定义。在加载过程中仅需要将函数通过基地址+偏移的方式加载到内存中。</p>
+</li>
+</ul>
+<h3 id="Intel-386-分段"><a href="#Intel-386-分段" class="headerlink" title="Intel 386 分段"></a>Intel 386 分段</h3><p>这一章节内容，需要添加x86体系结构以及具体Linker实现中参照理解。</p>
+<h1 id="第一章节和第二章节结束"><a href="#第一章节和第二章节结束" class="headerlink" title="第一章节和第二章节结束"></a>第一章节和第二章节结束</h1>  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/notes/">notes</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/notes/">notes</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://turbin.github.io/2017/08/27/note_for_reading_LinkerandLoader/" data-title="《Linker and Loader》阅读笔记(1) | Turbine&#39;s Blog" data-tsina="null" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2017/08/23/Android_Reverse_Engineering_reading_note/"  title="《Android软件安全与逆向分析》阅读笔记">
+ <strong>旧一篇:</strong><br/> 
+ <span>《Android软件安全与逆向分析》阅读笔记
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="《Linker and Loader》阅读笔记(1)" data-thread-key="note_for_reading_LinkerandLoader" data-author-key="Turbine Yan" data-url="https://turbin.github.io/post/note_for_reading_LinkerandLoader"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp">Tinnypp</a>.</span>
+		
+			<span>© Turbine Yan</span>
+		
+	<div>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"turbine yan"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

@@ -9,9 +9,19 @@
     
     <meta name="author" content="Turbine Yan">
     
-    <meta name="description" content="关于链接方式的区别显示链接方式在程序中直接通过动态库装载的方式，对程序中定义的 [函数指针]进行加载和赋值。
-下面是用例:
-1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484">
+    <meta name="description" content="关于链接方式的区别动态库的调用链接方式
+动态库调用方式可分为两种：
+
+显式调用
+隐式调用
+
+
+
+两种调用方式
+显式调用
+  在程序中直接通过动态库装载的方式，对程序中定义的 [函数指针]进行加载和赋值。
+  下面是用例:
+  1234567891011121314151617181920212223">
     
     
     
@@ -104,20 +114,38 @@ var _hmt = _hmt || [];
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title"></strong>
-		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#关于链接方式的区别"><span class="toc-number">1.</span> <span class="toc-text">关于链接方式的区别</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#显示链接方式"><span class="toc-number">1.0.1.</span> <span class="toc-text">显示链接方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#什么是隐式调用"><span class="toc-number">1.0.2.</span> <span class="toc-text">什么是隐式调用</span></a></li></ol></li></ol></li></ol>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#关于链接方式的区别"><span class="toc-number">1.</span> <span class="toc-text">关于链接方式的区别</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#动态库的调用链接方式"><span class="toc-number">1.0.1.</span> <span class="toc-text">动态库的调用链接方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#两种调用方式"><span class="toc-number">1.0.2.</span> <span class="toc-text">两种调用方式</span></a></li></ol></li></ol></li></ol>
 		</div>
 		
-		<h1 id="关于链接方式的区别"><a href="#关于链接方式的区别" class="headerlink" title="关于链接方式的区别"></a>关于链接方式的区别</h1><h3 id="显示链接方式"><a href="#显示链接方式" class="headerlink" title="显示链接方式"></a>显示链接方式</h3><p>在程序中直接通过动态库装载的方式，对程序中定义的 <a href="https://www.baidu.com/link?url=IyNpctAiIjf-6aNwijWx3FSkI6B2g0hJwkhpa_TrYz-5agg8CTGLCvhXxTIsjb_hN5excOFQ1tFQZTHXKDfKEdQhW05M_wdn7wjUtyS_zR9RRKXZ0dM-bzUjnp0zWBLG&amp;wd=&amp;eqid=810661050000d2e400000006599a5210" title="函数指针" target="_blank" rel="external">[函数指针]</a>进行加载和赋值。</p>
-<p>下面是用例:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div></pre></td><td class="code"><pre><div class="line">//定义函数指针　以及变量</div><div class="line">void  *functionLib;   /*  Handle to shared lib file   */</div><div class="line">char *dlError;        /*  Pointer to error string     */</div><div class="line"></div><div class="line"></div><div class="line">//mag</div><div class="line">int (*NDK_MagOpen)(void);</div><div class="line">int (*NDK_MagClose)(void);</div><div class="line">int (*NDK_MagSwiped)(uchar * psSwiped);</div><div class="line">int (*NDK_MagReadNormal)(char *pszTk1, char *pszTk2, char　*pszTk3, int *pnErrorCode);</div><div class="line"></div><div class="line">// ... 省略N行　...</div><div class="line"></div><div class="line">// onload.c</div><div class="line">// 定义了一个加载宏</div><div class="line">#define DLSYM(lib, foo) &#123;	\</div><div class="line">	dlError = (char *)dlerror();	\</div><div class="line">	foo = dlsym( lib , #foo);	\</div><div class="line">	if( dlError || NULL == foo )&#123;	\</div><div class="line">		foo = NULL;	\</div><div class="line">		nRet -= 1;	\</div><div class="line">		LOGI(&quot;dlsym &quot;#foo&quot; fail:%s,Addr:%x,nRet:%d.&quot;, </div><div class="line">            dlError, (int)foo, nRet);	\</div><div class="line">		&#125;	\</div><div class="line">	else&#123;	\</div><div class="line">		LOGI(&quot;dlsym &quot;#foo&quot; succ. Addr:%x.&quot;, (int)foo);	\</div><div class="line">		&#125;	\</div><div class="line">	&#125;;	\</div><div class="line"></div><div class="line">//------- 通过显示加载方式加载库文件 --------------------</div><div class="line">	int   nRet = 0;             /*  return codes            */</div><div class="line"></div><div class="line">	// libnl_ndk.so</div><div class="line"></div><div class="line">	// libnlposapi.so</div><div class="line">	functionLib = dlopen(&quot;/system/lib/libabcd.so&quot;,RTLD_LAZY);</div><div class="line">	dlError = (char *)dlerror();</div><div class="line">	LOGI(&quot;dlopen libnlposapi.so error:%s&quot;, dlError);</div><div class="line">	if( functionLib == NULL )</div><div class="line">	&#123;</div><div class="line">		return (-1000);</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">	//mag</div><div class="line">	DLSYM(functionLib, NDK_MagOpen);</div><div class="line">	DLSYM(functionLib, NDK_MagClose);</div><div class="line">	DLSYM(functionLib, NDK_MagSwiped);</div><div class="line">	DLSYM(functionLib, NDK_MagReadNormal);</div><div class="line">    // ... 省略N行　...</div></pre></td></tr></table></figure>
-<p>这时候　在mk文件中可以不需要链接这个库(libabcd.so)就可以调用这个库里面的函数。</p>
-<p>像这样：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">int ret= NDK_MagOpen();</div></pre></td></tr></table></figure>
-<p>这时NDK头文件中也将函数声明定义为函数指针的方式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">int (*NDK_MagOpen)();</div></pre></td></tr></table></figure></p>
-<h3 id="什么是隐式调用"><a href="#什么是隐式调用" class="headerlink" title="什么是隐式调用"></a>什么是隐式调用</h3><p>隐式调用，即通过在mk文件中显示指定需要调用链接的函数库的名称，然后在程序运行的过程中由os系统中的装载器以及链接器来完成函数的装载和链接过程。</p>
-<p>如果一个函数定义在libabcd.so中时，我们需要调用它，就要在Android.mk文件中显示指定调用链接函数库名称:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">LOCAL_LDLIBS += labcd</div></pre></td></tr></table></figure></p>
-<p>然后在NDK头文件中声明为函数调用方式(注意区别前面的函数指针的什么方式):<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">int NDK_MagOpen();</div></pre></td></tr></table></figure></p>
-<p>然后调用方式同函数指针的方式:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">int ret= NDK_MagOpen();</div></pre></td></tr></table></figure></p>
+		<h1 id="关于链接方式的区别"><a href="#关于链接方式的区别" class="headerlink" title="关于链接方式的区别"></a>关于链接方式的区别</h1><h3 id="动态库的调用链接方式"><a href="#动态库的调用链接方式" class="headerlink" title="动态库的调用链接方式"></a>动态库的调用链接方式</h3><ul>
+<li><p>动态库调用方式可分为两种：</p>
+<ul>
+<li>显式调用</li>
+<li>隐式调用</li>
+</ul>
+</li>
+</ul>
+<h3 id="两种调用方式"><a href="#两种调用方式" class="headerlink" title="两种调用方式"></a>两种调用方式</h3><ul>
+<li><p>显式调用</p>
+<p>  在程序中直接通过动态库装载的方式，对程序中定义的 <a href="https://www.baidu.com/link?url=IyNpctAiIjf-6aNwijWx3FSkI6B2g0hJwkhpa_TrYz-5agg8CTGLCvhXxTIsjb_hN5excOFQ1tFQZTHXKDfKEdQhW05M_wdn7wjUtyS_zR9RRKXZ0dM-bzUjnp0zWBLG&amp;wd=&amp;eqid=810661050000d2e400000006599a5210" title="函数指针" target="_blank" rel="external">[函数指针]</a>进行加载和赋值。</p>
+<p>  下面是用例:</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div></pre></td><td class="code"><pre><div class="line">//定义函数指针　以及变量</div><div class="line">void  *functionLib;   /*  Handle to shared lib file   */</div><div class="line">char *dlError;        /*  Pointer to error string     */</div><div class="line"></div><div class="line"></div><div class="line">//mag</div><div class="line">int (*NDK_MagOpen)(void);</div><div class="line">int (*NDK_MagClose)(void);</div><div class="line">int (*NDK_MagSwiped)(uchar * psSwiped);</div><div class="line">int (*NDK_MagReadNormal)(char *pszTk1, char *pszTk2, char　*pszTk3, int *pnErrorCode);</div><div class="line"></div><div class="line">// ... 省略N行　...</div><div class="line"></div><div class="line">// onload.c</div><div class="line">// 定义了一个加载宏</div><div class="line">#define DLSYM(lib, foo) &#123;	\</div><div class="line">	dlError = (char *)dlerror();	\</div><div class="line">	foo = dlsym( lib , #foo);	\</div><div class="line">	if( dlError || NULL == foo )&#123;	\</div><div class="line">		foo = NULL;	\</div><div class="line">		nRet -= 1;	\</div><div class="line">		LOGI(&quot;dlsym &quot;#foo&quot; fail:%s,Addr:%x,nRet:%d.&quot;, </div><div class="line">			dlError, (int)foo, nRet);	\</div><div class="line">		&#125;	\</div><div class="line">	else&#123;	\</div><div class="line">		LOGI(&quot;dlsym &quot;#foo&quot; succ. Addr:%x.&quot;, (int)foo);	\</div><div class="line">		&#125;	\</div><div class="line">	&#125;;	\</div><div class="line"></div><div class="line">//------- 通过显示加载方式加载库文件 --------------------</div><div class="line">	int   nRet = 0;             /*  return codes            */</div><div class="line"></div><div class="line">	// libnl_ndk.so</div><div class="line"></div><div class="line">	// libnlposapi.so</div><div class="line">	functionLib = dlopen(&quot;/system/lib/libabcd.so&quot;,RTLD_LAZY);</div><div class="line">	dlError = (char *)dlerror();</div><div class="line">	LOGI(&quot;dlopen libnlposapi.so error:%s&quot;, dlError);</div><div class="line">	if( functionLib == NULL )</div><div class="line">	&#123;</div><div class="line">		return (-1000);</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">	//mag</div><div class="line">	DLSYM(functionLib, NDK_MagOpen);</div><div class="line">	DLSYM(functionLib, NDK_MagClose);</div><div class="line">	DLSYM(functionLib, NDK_MagSwiped);</div><div class="line">	DLSYM(functionLib, NDK_MagReadNormal);</div><div class="line">	// ... 省略N行　...</div></pre></td></tr></table></figure>
+<p>  这时候　在mk文件中可以不需要链接这个库(libabcd.so)就可以调用这个库里面的函数。</p>
+<p>  像这样：</p>
+<pre><code>int ret= NDK_MagOpen();
+</code></pre><p>  这时NDK头文件中也将函数声明定义为函数指针的方式：</p>
+<pre><code>int (*NDK_MagOpen)();
+</code></pre></li>
+<li><p>隐式调用</p>
+<p>  即通过在mk文件中显示指定需要调用链接的函数库的名称，然后在程序运行的过程中由os系统中的装载器以及链接器来完成函数的装载和链接过程。</p>
+<p>  如果一个函数定义在libabcd.so中时，我们需要调用它，就要在Android.mk文件中显示指定调用链接函数库名称:</p>
+<pre><code>LOCAL_LDLIBS += labcd
+</code></pre><p>  然后在NDK头文件中声明为函数调用方式(注意区别前面的函数指针的什么方式):</p>
+<pre><code>int NDK_MagOpen();
+</code></pre><p>  然后调用方式同函数指针的方式:</p>
+<pre><code>int ret= NDK_MagOpen();
+</code></pre></li>
+</ul>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -156,9 +184,9 @@ var _hmt = _hmt || [];
 
 
 <div class="next">
-<a href="/2017/08/13/debug_native_android_program_with_gdb/"  title="">
+<a href="/2017/08/21/LinkageError/"  title="关于一个链接的BUG">
  <strong>旧一篇:</strong><br/> 
- <span>(no title)
+ <span>关于一个链接的BUG
 </span>
 </a>
 </div>

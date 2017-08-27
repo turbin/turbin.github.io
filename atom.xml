@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://turbin.github.io/"/>
-  <updated>2017-08-21T15:57:02.750Z</updated>
+  <updated>2017-08-27T13:34:25.873Z</updated>
   <id>https://turbin.github.io/</id>
   
   <author>
@@ -16,59 +16,297 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>关于一个链接的BUG</title>
-    <link href="https://turbin.github.io/2017/08/21/about_the_linkage_error/"/>
-    <id>https://turbin.github.io/2017/08/21/about_the_linkage_error/</id>
-    <published>2017-08-21T15:43:00.000Z</published>
-    <updated>2017-08-21T15:57:02.750Z</updated>
+    <title>《Linker and Loader》阅读笔记(1)</title>
+    <link href="https://turbin.github.io/2017/08/27/note_for_reading_LinkerandLoader/"/>
+    <id>https://turbin.github.io/2017/08/27/note_for_reading_LinkerandLoader/</id>
+    <published>2017-08-27T09:40:00.000Z</published>
+    <updated>2017-08-27T13:34:25.873Z</updated>
     
-    <content type="html"><![CDATA[<h1 id="关于链接问题导致的程序BUG"><a href="#关于链接问题导致的程序BUG" class="headerlink" title="关于链接问题导致的程序BUG"></a>关于链接问题导致的程序BUG</h1><h2 id="疑难问题现象"><a href="#疑难问题现象" class="headerlink" title="疑难问题现象:"></a>疑难问题现象:</h2><h3 id="现象"><a href="#现象" class="headerlink" title="现象"></a>现象</h3><p>一个安卓程序需要调用一个so库实现加解密操作，但是在更新了新版本后一直发现程序崩溃。</p>
-<p>kernel pain:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">2017-08-21 10:43:58.724 F/libc    ( 4844): Fatal signal 11 (SIGSEGV), code 1, fault addr 0xf4c3eb4 in tid 4844 (test.app)</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): Build fingerprint: &apos;qcom/msm8909/msm8909:5.1.1/NewLand_N900/newland.20170815.163947:user/test-keys&apos;</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): Revision: &apos;0&apos;</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): ABI: &apos;arm&apos;</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): pid: 4844, tid: 4844, name: test.app  &gt;&gt;&gt; ./test.app &lt;&lt;&lt;</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0xf4c3eb4</div><div class="line">2017-08-21 10:43:58.830 W/NativeCrashListener(  760): Couldn&apos;t find ProcessRecord for pid 4844</div><div class="line">2017-08-21 10:43:58.835 I/DEBUG   (  266):     r0 00000000  r1 becddf70  r2 becddf90  r3 0f4c3eb5</div><div class="line">2017-08-21 10:43:58.835 E/DEBUG   (  266): AM write failure (32 / Broken pipe)</div><div class="line">2017-08-21 10:43:58.835 I/DEBUG   (  266):     r4 b6f1efc8  r5 becde97c  r6 00000001  r7 b6f1cc34</div><div class="line">2017-08-21 10:43:58.835 I/DEBUG   (  266):     r8 00000000  r9 00000000  sl 00000000  fp becde81c</div><div class="line">2017-08-21 10:43:58.835 I/DEBUG   (  266):     ip 80000000  sp becddf50  lr b6f1d2b4  pc 0f4c3eb4  cpsr a00f0030</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266): </div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266): backtrace:</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #00 pc 0f4c3eb4  &lt;unknown&gt;</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #01 pc 000012b0  /data/test.app (mfg_request_auth+1196)</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #02 pc 00000ca8  /data/test.app (main+116)</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #03 pc 0000f3f9  /system/lib/libc.so (__libc_init+44)</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #04 pc 00000bfc  /data/test.app (_start+88)</div><div class="line">2017-08-21 10:43:58.994 I/DEBUG   (  266): </div><div class="line">2017-08-21 10:43:58.994 I/DEBUG   (  266): Tombstone written to: /data/tombstones/tombstone_09</div><div class="line">2017-08-21 10:43:58.994 I/BootReceiver(  760): Copying /data/tombstones/tombstone_09 to DropBox (SYSTEM_TOMBSTONE)</div></pre></td></tr></table></figure>
-<p>从日志上看到PC指针指向一个地址0xf4c3eb4,在kernel pain上可以看出这个地址是一个无效地址。</p>
-<p>这点我们可以从后面的程序的map里面可以看出来。</p>
-<p>观察brackstrace:中打印的调用栈的信息，在奔溃之前进入了一个叫做 <em>mgf_request_auth</em> 的函数中，调用位置在offet=1196的位置上。</p>
-<p>此时，我们反汇编这个函数所在的bin文件:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">00000e04 &lt;mfg_request_auth&gt;:</div><div class="line">     e04:	e92d4810 	push	&#123;r4, fp, lr&#125;</div><div class="line">     e08:	e28db008 	add	fp, sp, #8</div><div class="line">     e0c:	e24ddd23 	sub	sp, sp, #2240	; 0x8c0</div><div class="line">     e10:	e24dd004 	sub	sp, sp, #4</div><div class="line">     e14:	e1a03000 	mov	r3, r0</div><div class="line">	 @ ---- 此处省略若干行 ----</div></pre></td></tr></table></figure>
-<p>从这里我们可以看到函数的入口地址为:0x0E04，定位崩溃点位置为:</p>
-<p><strong><em> 0x0E04 + 1196(这个是十进制数) </em></strong> 得到偏移位置为,0x12B0。<br>定位汇编文件中offset=12b0的位置：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">@ ----- 此处省略若干行　------</div><div class="line">   128c:	ebfffe29 	bl	b38 &lt;memset@plt&gt;</div><div class="line">   1290:	e59f32fc 	ldr	r3, [pc, #764]	; 1594 &lt;mfg_request_auth+0x790&gt;</div><div class="line">   1294:	e7943003 	ldr	r3, [r4, r3]</div><div class="line">   1298:	e5933000 	ldr	r3, [r3]</div><div class="line">   129c:	e24b1e8a 	sub	r1, fp, #2208	; 0x8a0</div><div class="line">   12a0:	e241100c 	sub	r1, r1, #12</div><div class="line">   12a4:	e24b2d22 	sub	r2, fp, #2176	; 0x880</div><div class="line">   12a8:	e242200c 	sub	r2, r2, #12</div><div class="line">   12ac:	e3a00000 	mov	r0, #0</div><div class="line">   12b0:	e12fff33 	blx	r3</div><div class="line">   12b4:	e3a03f63 	mov	r3, #396	; 0x18c</div><div class="line">   12b8:	e2833002 	add	r3, r3, #2</div><div class="line">   12bc:	e58d3000 	str	r3, [sp]</div><div class="line">   12c0:	e3a00003 	mov	r0, #3</div><div class="line">@ ----- 此处省略若干行　------</div></pre></td></tr></table></figure>
-<p>请注意这里:</p>
-<pre><code>12b0:    e12fff33     blx    r3 
-</code></pre><p>这是一条跳转指令，跳转地址存放在r3寄存器中。所以我们可以查看在kernel pain 中打印的r3寄存器的值，r3＝0f4c3eb5。</p>
-<p>BLX 本身是一条跳转并切换指令集的指令，跳转地址为0xf4c3eb5，但是这个地址是一个无效地址。</p>
-<p>(奔溃的时PC=0xf4c3eb4, r3=0x0f4c3eb5,但是为什么PC指针是跳转地址的上一个字节地址，可能和ARM32指令集切换到Thumb16指令集的地址对齐规则有关，后续查阅资料后将补充该内容。)</p>
-<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>从上述描述的现象看是崩溃的原因是由于跳转到错误的地址导致的。　</p>
-<ul>
-<li>那么这个错误的地址是如何引入的？</li>
-<li>具体的奔溃位置在源码中的哪个部分呢？<br>于是我们开始结合汇编代码查阅源码：</li>
+    <content type="html"><![CDATA[<h1 id="链接和加载"><a href="#链接和加载" class="headerlink" title="链接和加载"></a>链接和加载</h1><h3 id="链接与加载"><a href="#链接与加载" class="headerlink" title="链接与加载"></a>链接与加载</h3><ul>
+<li><p>程序加载:</p>
+<blockquote>
+<p>将程序从辅助存储设备(自 1968 年后这就意味着磁盘)拷贝到主内存中。准备运行。在某些情况下,加载仅仅是将数据从磁盘拷入内存;在其他情况下,还包括分配存储空间,设置保护位或通过虚拟内存将虚拟地址映射到磁盘内存页上。</p>
+</blockquote>
+</li>
+<li><p>重定位:</p>
+<blockquote>
+<p>编译器和汇编器通常为每个文件创建程序地址从 0 开始的目标代码,但是几乎没有计算机会允许从地址 0 加载你的程序。如果一个程序是由多个子程序组成的,那么所有的子程序必须被加载到互不重叠的地址上。重<br>定位就是为程序不同部分分配加载地址,调整程序中的数据和代码以反映所分配地址的过程。在很多系统中,重定位不止进行一次。对于链接器的一种普遍情景是由多个子程序来构建一个程序,并生成一个链接好的起始<br>地址为 0 的输出程序,各个子程序通过重定位在大程序中确定位置。当这个程序被加载时,系统会选择一个加载地址,而链接好的程序会作为整体被重定位到加载地址。</p>
+</blockquote>
+</li>
+<li><p>符号解析:</p>
+<blockquote>
+<p>当通过多个子程序来构建一个程序时,子程序间的相互引用是通过符号进行的;主程序可能会调用一个名为 sqrt 的计算平方根例程,并且数学库中定义了sqrt 例程。链接器通过标明分配给 sqrt 的地址在库中来解<br>析这个符号,并通过修改目标代码使得 call 指令引用该地址。<br>当链接器运行时,会首先对输入文件进行扫描,得到各个段的大小,并收集对所有符号的定义和引用。<br>它会创建一个列出输入文件中定义的所有段的段表,和包含所有导出、导入符号的符号表。<br>利用第一遍扫描得到的数据,链接器可以为符号分配数字地址,决定各个段在输出地址空间中的大小&gt;和位置,并确定每一部分在输出文件中的布局。<br>第二遍扫描会利用第一遍扫描中收集的信息来控制实际的链接过程。<br>它会读取并重定位目标代码,为符号引用替换数字地址,调整代码和数据的内存地址以反映重定位的&gt;段地址,并将重定位后的代码写入到输出文件中。<br>通常还会再向输出文件中写入文件头部信息,重定位的段和符号表信息。如果程序使用了动态链接,那么符号表中还要包含运行时链接器解析动态符号时所需的信息。</p>
+</blockquote>
+</li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">int mfg_request_auth(uint8_t auth_code, uint8_t *obuf, uint32_t *olen)&#123;</div><div class="line">	// ... ... 此处省略Ｎ行　</div><div class="line">	TRACE(&quot;czl--------------------&quot;);</div><div class="line"></div><div class="line">	unsigned int nLen = 0;</div><div class="line">	char szPosType[123]=&#123;0&#125;;</div><div class="line"></div><div class="line">	NDK_SysGetPosInfo(SYS_HWINFO_GET_POS_TYPE, &amp;nLen, &amp;szPosType[0]);</div><div class="line">	// ..... 此处省略N行</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>发现崩溃位置就是调用了这个函数(NDK_SysGetPosInfo)的地方。</p>
-<p>(具体结合汇编定位源码位置的方法有很多种，靠谱的方式就是通过GDB单步调试的方式。限于一些商业上的问题所以不方便公布所有源码内容，只能摘取部分关键片段)</p>
-<p>初步以为是因为函数传参时候由于传递的参数不正确导致进出栈时出错而崩溃。后来我们全部按照参数表的规定进行了调整，并单独定义局部变量等方式进行了多种尝试后发现依然崩溃。</p>
-<p>奔溃点还是在相同的地方。百思不得其解。</p>
-<p>后来在浏览汇编源码时发现有个奇怪的现象:</p>
-<p>奔溃的位置是一个地址跳转指令，但是我们调用的这个函数是被定义在一个函数库中，通过隐式调用方式进行调用的。</p>
-<p>那么所有隐式调用过程在汇编展开时都会是这样的:</p>
-<pre><code>128c:    ebfffe29     bl    b38 &lt;memset@plt&gt;
-</code></pre><p>每个函数名的后面都有个@plt，这个是用来标识这个函数是定义在外部库中，通过BL 指令进行带链接方式的跳转。</p>
-<p>它会产生一次长调用过程切换到GOT中查找函数名的对应入口地址。</p>
-<p>如果发现该函数不存在有效的已链接地址，则引发加载器搜索对应的库文件将函数实现的汇编代码导出并生产一个有效地址，链接到可执行文件的GOT表中。</p>
-<p>关于GOT和PLT可参考 <a href="http://blog.sina.com.cn/s/blog_54f82cc201011oqy.html" title="GOT(全局偏移表)和PLT(过程链接表)" target="_blank" rel="external">[GOT(全局偏移表)和PLT(过程链接表)]</a></p>
-<h3 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h3><p>通过上述问题的分析我们可以大致分析出问题的原因，肯定是由于错误的链接方式导致的。<br>于是我查询了该函数所在的头文件，查看函数的声明方式:</p>
-<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">extern int (*NDK_SysGetPosInfo)(EM_SYS_HWINFO emFlag,uint *punLen,char *psBuf);</div></pre></td></tr></table></figure>
-</code></pre><p>看到这里，真相大白。</p>
-<p>我们看到这个函数在头文件中被声明为一个函数指针。但是我们在代码中一直都没有看到这个指针的赋值过程，所以编译器在初始化过程中任意赋值，就导致了一个错误地址被引入到代码中的。</p>
-<p>这也是一个将显示调用和隐式调用混合调用的BUG。</p>
-<p>所以,在C语言中，我们应该鼓励在调用函数指针时都使用指针解引用方式进行调用:</p>
-<pre><code>int ret = (*NDK_SysGetPosInfo)(/* 这里省略若干参数*/);
-</code></pre><p>这样我们就在调用时很清楚地知道现在我们是通过显式调用方式进行函数调用，在查看问题时，我们就能够更容易且直接地发现问题的原因。</p>
+<h3 id="重定位和代码修改"><a href="#重定位和代码修改" class="headerlink" title="重定位和代码修改"></a>重定位和代码修改</h3><blockquote>
+<p>对于现代计算机,包括所有的 RISC 架构,都需要进行复杂的多的代码修改。没有一条指令有足够的空间容纳一个直接地址,因此编译器和链接器不得不才用复杂的寻址技巧来处理任意地址上的数据。某些情况下,使用<br>两到三条指令来组成一个地址都是有可能的,每个指令包含地址的一部分,然后使用位操作将它们组合为一个完整的地址。 这种情况下,链接器不得不对每个指令都进行恰当的修改,将地址中的某些位插入到每一个指令<br>中。 其它情况下,一个例程或一组例程使用的所有地址都被放置在一个作为“地址池”的数组中,初始化代码将某一个机器寄存器指向这个数组,当需要时,代码会将该寄存器作为基址寄存器从地址池中加载所需指针。<br>链接器需要由被程序使用的所有地址来创建这个数组,并修改各指令使它们可以关联到正确的地址池入口处。</p>
+<p>由于每个段都会被填充为 4K 对齐以满足 x86 的页尺寸,因此文本段为 4K(减去文件中 20 字节长度的 a.out 头部,逻辑上它并不属于该段),数据段和 bss 段每个同样也是 4K 字节。</p>
+</blockquote>
+<h1 id="体系结构的问题"><a href="#体系结构的问题" class="headerlink" title="体系结构的问题"></a>体系结构的问题</h1><h3 id="应用程序二进制接口-ABI-application-binary-interface"><a href="#应用程序二进制接口-ABI-application-binary-interface" class="headerlink" title="应用程序二进制接口 ABI(application binary interface)"></a>应用程序二进制接口 ABI(application binary interface)</h3><blockquote>
+<p>每个操作系统都会为运行在该系统下的应用程序提供应用程序二进制接口(Application Binary Interface)。ABI 包含了应用程序在这个系统下运行时必须遵守的编程约定。<br>ABI总是包含一系列的系统调用和使用这些系统调用的方法,以及关于程序可以使用的内存地址和使用机器寄存器的规定。</p>
+</blockquote>
+<h3 id="字节顺序和对齐"><a href="#字节顺序和对齐" class="headerlink" title="字节顺序和对齐"></a>字节顺序和对齐</h3><blockquote>
+<p>多字节数据通常会被 对齐到一些“天生”的边界上。就是说,4 字节的数据必须对齐到4 字节的边界上,2 字节要对齐到 2 字节的边界上,并以此类推。另一种想法就是任何 N 字节数据的地址至少要有 log 2 (N)<br>个低位为 0。在某些系统上(Intel X86,DEC VAX,IBM 370/390),引用未对齐数据会付出性能降低的代价,在另外一些系统上(多数 RISC 芯片),这会导致程序故障。即使在那些引用未对齐数据不会导致故障的系<br>统上,性能的损失也是非常大的,以至于值得我们花费精力来尽可能保持地址的对齐。很多处理器同样要求程序指令的对齐。多数 RISC 芯片要求指令必须对齐在 4 字节的边界上。</p>
+</blockquote>
+<h3 id="过程调用和可寻址性"><a href="#过程调用和可寻址性" class="headerlink" title="过程调用和可寻址性:"></a>过程调用和可寻址性:</h3><blockquote>
+<p>在一个“自举”的问题:一个例程要使用寄存器中的基地址来计算数据地址,<br>但是将基址从内存中加载到寄存器中的标准方法是从存有另一个基址的寄存器中寻址。<br>自举问题就是如何在程序开始时将第一个基地址载入到寄存器中,<br>随后再确保每一个例程都拥有它需要的基地址来寻址它要使用的数据。</p>
+</blockquote>
+<ul>
+<li>Q&amp;A: 所以MMU的设计就是为了方便进行分页寻址的时候能够加快寻址的速度?(需要阅读对应cpu相应的体系资料)</li>
+</ul>
+<h3 id="过程调用"><a href="#过程调用" class="headerlink" title="过程调用"></a>过程调用</h3><blockquote>
+<p>在诸如 x86 这样具有硬件栈的体系结构中返回地址被压入栈中,而在其它体系结构中它会被保存在一个寄存器里。如果必要软件要负责将寄存器中的值保存在内存中。具有栈的体系结构通常都会有一个硬件的返回指令将返回地址推出栈并跳转到该地址,而其它体系结构则使用一个“跳转到寄存器中地址”的指令来返回。</p>
+</blockquote>
+<ul>
+<li>Q&amp;A： 在ARM 架构中使用lr寄存器用来保存返回地址。</li>
+</ul>
+<blockquote>
+<p>系结构则使用一个“跳转到寄存器中地址”的指令来返回。<br>  在一个过程的内部,数据寻址可分为 4 类:</p>
+<ol>
+<li>调用者可以向过程传递参数 。</li>
+<li>本地变量在过程中分配,并在过程返回前释放。</li>
+<li>本地静态数据保存在内存的固定位置中,并为该过程私有。</li>
+<li>全局静态数据保存在内存的固定位置中,并可被很多不同过程引用。</li>
+</ol>
+</blockquote>
+<ul>
+<li><p>stack frame of X86:</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">stack pointer register ---&gt; |-------------|   Lower addresses ^</div><div class="line">                            |   local     |</div><div class="line">                            |   variables |</div><div class="line">                            |-------------|</div><div class="line">                            |  old frame  |</div><div class="line">                            |  pointer    |</div><div class="line">                            |-------------|</div><div class="line">frame pointer register---&gt;  |  return     |</div><div class="line">                            |  address    |</div><div class="line">                            |-------------|</div><div class="line">                            |  Incoming   |</div><div class="line">                            |  arguments  |</div><div class="line">                            |-------------|</div><div class="line">                            |  previous   |</div><div class="line">                            |  frame      |</div><div class="line">                            ---------------</div></pre></td></tr></table></figure>
+</li>
+<li><p>原文摘要:</p>
+<p>  原文:</p>
+<blockquote>
+<p>Arguments and local variables are usually allocated on the stack. One of the registers serves as a stack pointer which can be used as a base register.<br>In a common variant of this scheme, used with SPARC and x86, a separate frame pointer or base pointer register is loaded from the stack pointer at the time a<br>procedure starts. This makes it possible to push variable sized objects on the stack, changing the value in the stack pointer register to a hard-to-predict value,&gt;<br>but still lets the procedure address arguments and lo-cals at fixed offsets from the frame pointer which doesn’t change during a procedure’s execution. Assuming<br>the stack grows from higher to lower addresses and that the frame pointer points to the address in memory where the return address is stored, arguments are at small<br>positive offsets from the frame pointer, and local variables at negative offsets. The operating system usually sets the initial stack pointer register before a<br>program starts, so the program need only update the register as needed when it pushes and pops data.</p>
+<p>  For local and global static data, a compiler can generate a table of pointers to all of the static objects that a routine references. If one of the registers<br>contains a pointer to this table, the routine can address any desired static object by loading the pointer to the object from the table using the table pointer<br>register into another register using the table pointer register as a base register, then using that second register as the base register to address the object. The<br>trick, then, is to get the address of the table into the first register. On SPARC, the routine can load the table address into the register using a sequence of<br>instructions with immediate operands, and on the SPARC or 370 the routine can use a variant of a subroutine call instruction to load the program counter (the<br>register that keeps the address of the current instruction) into a base register, though for reasons we discuss later,those techniques cause problems in library<br>code. A better solution is to foist off the job of loading the table pointer on the routine’s caller, since the caller will have its own table pointer already loaded<br>and can get address of the called routine’s table from its own table.</p>
+</blockquote>
+<p>  译文:</p>
+<blockquote>
+<p>参数和本地变量通常在栈中分配空间,某一个寄存器可以作为栈指针,它可以基址寄存器来使用。SPARC和x86中使用了该策略的一种比较普遍的变体,在一个过程开始的时候,会从栈指针中加载专门的框架指针或<br>基址指针寄存器。这样就可以在栈中压入可变大小的对象,将栈指针寄存器中的值改变为难以预定的值,当仍使过程的参数和本地变量们仍然位于相对于框架指针在整个过程执行中都不变的固定偏移量处。如果假<br>定栈是从高地址向低地址生长的,而框架指针指向返回地址保存在内存中的位置,那么参数就位于框架指针较小的正偏移量处,本地变量在负偏移量处。</p>
+<p>由于操作系统通常会在程序启动前为其初始化栈指针,所以程序只需要在将输入压栈或推栈时更新寄存器即可。对于局部和全局静态数据,编译器可以为一个例程引用的所有静态变量创建一个指针表。如果某个寄<br>存器存有指向这个表的指针,那么例程可以通过使用表指针寄存器将对象在表中的指针读取出来,加载到另一个使用表指针寄存器作为基址的寄存器中,并将第二个寄存器做为基址寄存器来寻址任何想要访问的静<br>态目标。因此,关键技巧是表的地址存入到第一个寄存器中。在SPARC 上,例程可以通过带有立即操作数的一系列指令来加载表地址,同时在 SPARC 或者 370 上例程可以通过一系列子例程调用指令将程序计数<br>器(保存当前指令地址的寄存器)加载到一个基址寄存器,虽然后面我们还会讨论这种方法在对待库代码时会遇到问题。<br>一个更好的解决方法是将提取表指针的工作交给例程的调用者,因为调用者已经加载了自己的表指针,并可以从自己的表中获取被调用例程的表的指针。</p>
+</blockquote>
+</li>
+<li><p>Q&amp;A:    </p>
+<ul>
+<li>文中所描述的指针表，具体的实现实例是什么？是一个段？还是就是ELF中的GOT表?</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>一个典型的例程调用序列。Rf 是框架指针,Rt 是表指针,Rx 是临时寄存器。调用者将自己的表指针保存到自己的栈框架中,然后将被调用例程的地址和它的指针表地址载入到寄存器中,再进行调用。<br>被调用的例程可以通过 Rt 中的表指针找到它需要的所有数据,包括它随后要调用的例程的地址和表指针。</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">@理想的调用过程</div><div class="line">    ... 将参数压入堆栈 ...</div><div class="line">    store Rt</div><div class="line">    xxx(Rf) ; save caller’s table pointer in caller’s stack frame</div><div class="line">    load Rx MMM(Rt) ; load address of called routine into temp register</div><div class="line">    load Rt NNN(Rt) ; load called routine’s table pointer</div><div class="line">    call (Rx) ; call routine at address in Rx</div><div class="line">    load Rt</div><div class="line">    xxx(Rf) ; restore caller’s table pointer</div></pre></td></tr></table></figure>
+<ul>
+<li>Q&amp;A:<ul>
+<li>按照上述描述的情况，在具体的CPU架构中是如何实现的？找到ARM以及X86中的具体实现机制进行说明。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>又回到地址自举的问题了,这个表指针的链最初是怎么开始的呢?如果每一个例程都从前面例程中获取它的表指针,那么最初的例程从哪里获得呢?答案不是固定的,但是总会涉及到一些特殊代码。主例程的表可能存储在<br>一个固定的位置,或初始指针值被标注在可执行文件中这样操作系统可以在程序开始前加载它。无论使用的是什么技术,都是需要链接器的帮助的。</p>
+</blockquote>
+<ul>
+<li>Q&amp;A:<ul>
+<li>这段的就涉及到ELF文件中，如何使用GOT以及PLT进行函数重定位的问题。</li>
+</ul>
+</li>
+</ul>
+<h3 id="分页和虚拟内存"><a href="#分页和虚拟内存" class="headerlink" title="分页和虚拟内存"></a>分页和虚拟内存</h3><blockquote>
+<p>分页硬件将一个程序的地址空间划分为大小固定的页,典型的大小是2K或4K,同时将计算机的物理内存划分为同样大小的页框。</p>
+</blockquote>
+<ul>
+<li><p>页映射：</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">        Virtual             Page table                               Physical</div><div class="line">        address                                                      memory</div><div class="line">        space</div><div class="line"></div><div class="line">        +|------|   Page A  |------|  physical address of Page A    |-----|</div><div class="line">         |      |   ------&gt; |------|  -----&gt;                        |     |</div><div class="line">         |      |           |------|                                |-----|</div><div class="line">        +|------|           |------|                                |     |</div><div class="line">2K or 4K |      |   ------&gt; |------|                                |-----|</div><div class="line">page     |      |           |------|</div><div class="line">        +|------|           |------|</div><div class="line">         |      |   ------&gt; |------|</div><div class="line">         |      |           |------|</div><div class="line">        +|------|           |------|</div><div class="line">         |      |   ------&gt; |------|</div><div class="line">         |      |           |------|</div><div class="line">        +|------|           |------|</div></pre></td></tr></table></figure>
+</li>
+<li><p>缺页：</p>
+<blockquote>
+<p>一个页表项可以包含针对某个页的实际内存页框,或通过标志位标注该页“不存在”。当应用程序尝试使用一个不存在的页时,硬件会产生一个由操作系统处理的“页失效”错误。操作系统可以将页的内容从磁盘上复制到一个空闲的内存页框中,并让应用程序继续运行。通过按需将页在内存和磁盘之间移动,操作系统可以提供“虚拟内存”的功能,这样从应用程序看来使用的是比实际大的多的内存。<br>  Q&amp;A: 这部分详细的过程需要参考x86计算机原理。</p>
+</blockquote>
+</li>
+<li><p>页抖动:</p>
+<blockquote>
+<p>应用程序产生的页失效越多,它就运行的越慢,最坏的情况会导致“页抖动”,这时页失效对程序的有效运行没有任何帮助。程序使用的页越少,它可能产生的页失效也就越少。如果链接器可以将有关联的例程挤压到一个页或者少量的几个页,就会提高分页的性能。</p>
+</blockquote>
+</li>
+<li><p>只读页的优点：</p>
+<blockquote>
+<p>如果页可以被标注为只读,那么也会提升性能。由于只读页可以重新加载因此它们不需要调出页的操作。如果某个页逻辑上出现在多个地址空间中(这通常会发生在运行相同程序的多个实例时),一个单独的物理页就可以满足所有的地址空间。</p>
+</blockquote>
+</li>
+<li><p>Q&amp;A:</p>
+<ul>
+<li>这点需要确认。类似在多个进程实例中链接了同一个库，运行相同的函数的效果？</li>
+<li>在多核CPU中，多个并发线程里如果不同核心执行的线程中调用了相同函数，而这个函数里会操作相同的一个全局变量时，这时候汇编是如何处理的？(就是c++大会里提到的cache coherence)</li>
+</ul>
+</li>
+<li><p>多级页表:</p>
+<blockquote>
+<p>两级或三级的页表对应用程序是透明的,但有一个重要的例外:操作系统可以通过修改高层次页表的某一项改变对一大块地址空间的映射,因此由于效率的原因,地址空间经常通过替换单独的第二级页表项来按照这个尺寸倍数来管理,而不是在进程切换时重新加载整个页表。</p>
+</blockquote>
+</li>
+<li><p>Q&amp;A:</p>
+<ul>
+<li>这点可以补充下Linux内核是如何处理和管理内存页，以及进程空间的页入页出的规则。</li>
+</ul>
+</li>
+</ul>
+<h3 id="映射文件"><a href="#映射文件" class="headerlink" title="映射文件"></a>映射文件</h3><blockquote>
+<p>当一个应用程序将一个文件映射到程序的部分地址空间时,操作系统将那部分地址空间对应的页设置为“不存在”,然后将该文件像这部分地址空间对应的页交换磁盘那样来使用程序可以通过引用这部分地址空间的方法来读取文件,这时换页系统会从磁盘加载所需的页。</p>
+</blockquote>
+<ul>
+<li>Q&amp;A:<br>  这点可以确认下Linux上是如何实现的。</li>
+</ul>
+<blockquote>
+<p>处理映射文件的三种不同方法:</p>
+<ol>
+<li>最简单的办法是将文件以只读方式(RO)映射,任何对映射文件存储数据的操作都会失败,这通常会导致程序终止。</li>
+<li>第二种方法是将文件以可读写方式(RW)映射,这样对映射文件在内存中副本的修改会在取消映射的时候写回磁盘上。</li>
+<li>第三种方法是将文件以写时复制方式(COW)映射。这种情况下操作系统会对该页面做一个副本,这个副本会被当作没有映射的私有页来对待。</li>
+</ol>
+</blockquote>
+<h3 id="共享库："><a href="#共享库：" class="headerlink" title="共享库："></a>共享库：</h3><blockquote>
+<p>如果单一的程序或单一的程序库在多于一个的地址空间中被使用,若能够在多个地址空间中共享这个程序或程序库的单一副本,那将节省大量的内存。<br>对于操作系统实现这个功能是相当简捷的——只需要将可执行程序文件映射到每一个程序的地址空间即可。不可重定位的代码和只读的数据以RO方式映射,可写的数据以COW方式映射。操作系统还可以让所有映射到该文件的进程之间共享RO和尚未被写的COW数据对应的物理页框(如果代码在加载时需要重定位,重定位过程会修改代码页,那他们就必须被当作 COW 对待,而不是 RO)。<br>在可执行程序中,链接器需要将所有的可执行代码聚集起来形成文件中可以被映射为RO的部分,而数据是可以被映射为COW的另一部分。每一个段的开始地址都需要以页边界对齐,这既针对逻辑上的地址空间也包括实际的被映射文件。当多个不同程序使用一个共享库时,链接器需要做标记,好让程序启动时共享库可以被映射到它们各自的地址空间中。</p>
+</blockquote>
+<ul>
+<li><p>Q&amp;A:</p>
+<blockquote>
+<p> 当多个不同程序使用一个共享库时,链接器需要做标记,好让程序启动时共享库可以被映射到它们各自的地址空间中。</p>
+</blockquote>
+<p>  那么是不是意味着所有调用该函数的程序都会拥有一个该函数的副本？</p>
+</li>
+</ul>
+<h3 id="位置无关代码"><a href="#位置无关代码" class="headerlink" title="位置无关代码:"></a>位置无关代码:</h3><blockquote>
+<p>  当一个程序在多个不同的地址空间运行时，操作系统通常可以将程序加载到各地址空间的相同位置。</p>
+</blockquote>
+<ul>
+<li><p>Q&amp;A:</p>
+<p>  这里注意描述，是各自地址空间的相同位置。因为每个函数的入口的偏移位置在程序完成链接的阶段就已经定义。在加载过程中仅需要将函数通过基地址+偏移的方式加载到内存中。</p>
+</li>
+</ul>
+<h3 id="Intel-386-分段"><a href="#Intel-386-分段" class="headerlink" title="Intel 386 分段"></a>Intel 386 分段</h3><p>这一章节内容，需要添加x86体系结构以及具体Linker实现中参照理解。</p>
+<h1 id="第一章节和第二章节结束"><a href="#第一章节和第二章节结束" class="headerlink" title="第一章节和第二章节结束"></a>第一章节和第二章节结束</h1>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h1 id=&quot;链接和加载&quot;&gt;&lt;a href=&quot;#链接和加载&quot; class=&quot;headerlink&quot; title=&quot;链接和加载&quot;&gt;&lt;/a&gt;链接和加载&lt;/h1&gt;&lt;h3 id=&quot;链接与加载&quot;&gt;&lt;a href=&quot;#链接与加载&quot; class=&quot;headerlink&quot; title=&quot;链接与
+    
+    </summary>
+    
+      <category term="notes" scheme="https://turbin.github.io/categories/notes/"/>
+    
+    
+      <category term="notes" scheme="https://turbin.github.io/tags/notes/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>《Android软件安全与逆向分析》阅读笔记</title>
+    <link href="https://turbin.github.io/2017/08/23/Android_Reverse_Engineering_reading_note/"/>
+    <id>https://turbin.github.io/2017/08/23/Android_Reverse_Engineering_reading_note/</id>
+    <published>2017-08-23T15:02:00.000Z</published>
+    <updated>2017-08-23T16:00:47.102Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="原生程序的启动流程分析-P194"><a href="#原生程序的启动流程分析-P194" class="headerlink" title="原生程序的启动流程分析 (P194.)"></a>原生程序的启动流程分析 (P194.)</h1><ol>
+<li>GCC命令参数说明</li>
+</ol>
+<ul>
+<li><p>未使用默认C库:</p>
+<p>  Android 未使用glibc作为C库，而是采用了google自己开发的Bionic C因此编译时需要加入 <strong><em>-nostdlib</em></strong></p>
+</li>
+<li><p>静态链接:</p>
+<p>  gcc 命令参数中指定 <strong><em>-Bstatic</em></strong>,在生成可执行程序时会链接 <strong><em>crtbegin_static.o</em></strong> 与 <strong><em>crtend_android.o</em></strong>。<strong><em>crtbegin_static.o</em></strong> 文件中定义了静态链接的启动函数 <strong><em>_start</em></strong>,这个函数是程序启动时的第一个函数。</p>
+</li>
+<li><p>动态链接:</p>
+<p>  需要在gcc命令中指定 <strong><em>-Bdynamic</em></strong>,在生成可执行文件时会链接 <strong><em>crtbegin_dynamic.o</em></strong> 与 <strong><em>crtend_android.o</em></strong> 目标文件，并且动态链接时需要通过 <strong><em>–dynamic-linker</em></strong> 指定 <strong><em>加载器</em></strong>，默认为 <strong><em>/system/bin/linker</em></strong>。在生成的可执行程序中，每个程序都会包含一个 <strong><em>.interp</em></strong> 段存入程序的 <strong><em>加载器</em></strong>。 动态库的启动函数 <strong><em>_start</em></strong> 位于 <strong><em>crtbegin_dynamic.o</em></strong> 文件中。</p>
+</li>
+<li><p>链接脚本:</p>
+<p>  无论是动态链接还是静态链接Android原生程序，在链接时都会传入一个<a href="http://www.cnblogs.com/li-hao/p/4107964.html" title="链接脚本语法说明" target="_blank" rel="external">链接脚本</a>根据链接时指定参数的不同，所传入的链接脚本也不一样，所有的链接脚本位于Android NDK的 toolchains\arm-linux-android-4.4.3\prebuilt\windows\arm-linux-androideabi\lib\ldscripts 目录。默认情况下链接时会传入 <strong><em>armelf_linux_eabi.x</em></strong> 脚本文件，该文件的第五行代码 <strong><em>ENTRY(_start)</em></strong> 指出程序入口函数为_start。</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"> /* 此处省略N行 */</div><div class="line"> OUTPUT_FORMAT(&quot;elf32-littlearm&quot;, &quot;elf32-bigarm&quot;,</div><div class="line">&quot;elf32-littlearm&quot;)</div><div class="line"> OUTPUT_ARCH(arm)</div><div class="line"> ENTRY(_start)</div><div class="line"> /* 此处省略N行 */</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<ul>
+<li><p>crtbegin_dynamic.S 与 crtbegin_static.S 位于Android源码位置:</p>
+<p>  bionic\libc\arch-arm\bionic目录下</p>
+</li>
+</ul>
 ]]></content>
     
     <summary type="html">
     
-      &lt;h1 id=&quot;关于链接问题导致的程序BUG&quot;&gt;&lt;a href=&quot;#关于链接问题导致的程序BUG&quot; class=&quot;headerlink&quot; title=&quot;关于链接问题导致的程序BUG&quot;&gt;&lt;/a&gt;关于链接问题导致的程序BUG&lt;/h1&gt;&lt;h2 id=&quot;疑难问题现象&quot;&gt;&lt;a href=&quot;
+      &lt;h1 id=&quot;原生程序的启动流程分析-P194&quot;&gt;&lt;a href=&quot;#原生程序的启动流程分析-P194&quot; class=&quot;headerlink&quot; title=&quot;原生程序的启动流程分析 (P194.)&quot;&gt;&lt;/a&gt;原生程序的启动流程分析 (P194.)&lt;/h1&gt;&lt;ol&gt;
+&lt;li&gt;GC
+    
+    </summary>
+    
+      <category term="notes" scheme="https://turbin.github.io/categories/notes/"/>
+    
+    
+      <category term="notes" scheme="https://turbin.github.io/tags/notes/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>关于一个链接的BUG</title>
+    <link href="https://turbin.github.io/2017/08/21/about_the_linkage_error/"/>
+    <id>https://turbin.github.io/2017/08/21/about_the_linkage_error/</id>
+    <published>2017-08-21T15:43:00.000Z</published>
+    <updated>2017-08-27T13:34:25.857Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="疑难问题现象"><a href="#疑难问题现象" class="headerlink" title="疑难问题现象:"></a>疑难问题现象:</h1><h3 id="现象"><a href="#现象" class="headerlink" title="现象"></a>现象</h3><ul>
+<li><p>一个安卓程序需要调用一个so库实现加解密操作，但是在更新了新版本后一直发现程序崩溃。</p>
+<p>  kernel pain:</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">2017-08-21 10:43:58.724 F/libc    ( 4844): Fatal signal 11 (SIGSEGV), code 1, fault addr 0xf4c3eb4 in tid 4844 (test.app)</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): Build fingerprint: &apos;qcom/msm8909/msm8909:5.1.1/NewLand_N900/newland.20170815.163947:user/test-keys&apos;</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): Revision: &apos;0&apos;</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): ABI: &apos;arm&apos;</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): pid: 4844, tid: 4844, name: test.app  &gt;&gt;&gt; ./test.app &lt;&lt;&lt;</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0xf4c3eb4</div><div class="line">2017-08-21 10:43:58.830 W/NativeCrashListener(  760): Couldn&apos;t find ProcessRecord for pid 4844</div><div class="line">2017-08-21 10:43:58.835 I/DEBUG   (  266):     r0 00000000  r1 becddf70  r2 becddf90  r3 0f4c3eb5</div><div class="line">2017-08-21 10:43:58.835 E/DEBUG   (  266): AM write failure (32 / Broken pipe)</div><div class="line">2017-08-21 10:43:58.835 I/DEBUG   (  266):     r4 b6f1efc8  r5 becde97c  r6 00000001  r7 b6f1cc34</div><div class="line">2017-08-21 10:43:58.835 I/DEBUG   (  266):     r8 00000000  r9 00000000  sl 00000000  fp becde81c</div><div class="line">2017-08-21 10:43:58.835 I/DEBUG   (  266):     ip 80000000  sp becddf50  lr b6f1d2b4  pc 0f4c3eb4  cpsr a00f0030</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266): </div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266): backtrace:</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #00 pc 0f4c3eb4  &lt;unknown&gt;</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #01 pc 000012b0  /data/test.app (mfg_request_auth+1196)</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #02 pc 00000ca8  /data/test.app (main+116)</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #03 pc 0000f3f9  /system/lib/libc.so (__libc_init+44)</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #04 pc 00000bfc  /data/test.app (_start+88)</div><div class="line">2017-08-21 10:43:58.994 I/DEBUG   (  266): </div><div class="line">2017-08-21 10:43:58.994 I/DEBUG   (  266): Tombstone written to: /data/tombstones/tombstone_09</div><div class="line">2017-08-21 10:43:58.994 I/BootReceiver(  760): Copying /data/tombstones/tombstone_09 to DropBox (SYSTEM_TOMBSTONE)</div></pre></td></tr></table></figure>
+<p>  从日志上看到PC指针指向一个地址0xf4c3eb4,在kernel pain上可以看出这个地址是一个无效地址。</p>
+<p>  这点我们可以从后面的程序的map里面可以看出来。</p>
+<p>  观察brackstrace:中打印的调用栈的信息，在奔溃之前进入了一个叫做 <em>mgf_request_auth</em> 的函数中，调用位置在offet=1196的位置上。</p>
+<p>  此时，我们反汇编这个函数所在的bin文件:</p>
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">00000e04 &lt;mfg_request_auth&gt;:</div><div class="line">    e04:	e92d4810 	push	&#123;r4, fp, lr&#125;</div><div class="line">    e08:	e28db008 	add	fp, sp, #8</div><div class="line">    e0c:	e24ddd23 	sub	sp, sp, #2240	; 0x8c0</div><div class="line">    e10:	e24dd004 	sub	sp, sp, #4</div><div class="line">    e14:	e1a03000 	mov	r3, r0</div><div class="line">    @ ---- 此处省略若干行 ----</div></pre></td></tr></table></figure>
+</code></pre><p>  从这里我们可以看到函数的入口地址为:0x0E04，定位崩溃点位置为:</p>
+<p>  <strong><em> 0x0E04 + 1196(这个是十进制数) </em></strong> 得到偏移位置为,0x12B0。</p>
+<p>  定位汇编文件中offset=12b0的位置：</p>
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">@ ----- 此处省略若干行　------</div><div class="line">128c:	ebfffe29 	bl	b38 &lt;memset@plt&gt;</div><div class="line">1290:	e59f32fc 	ldr	r3, [pc, #764]	; 1594 &lt;mfg_request_auth+0x790&gt;</div><div class="line">1294:	e7943003 	ldr	r3, [r4, r3]</div><div class="line">1298:	e5933000 	ldr	r3, [r3]</div><div class="line">129c:	e24b1e8a 	sub	r1, fp, #2208	; 0x8a0</div><div class="line">12a0:	e241100c 	sub	r1, r1, #12</div><div class="line">12a4:	e24b2d22 	sub	r2, fp, #2176	; 0x880</div><div class="line">12a8:	e242200c 	sub	r2, r2, #12</div><div class="line">12ac:	e3a00000 	mov	r0, #0</div><div class="line">12b0:	e12fff33 	blx	r3</div><div class="line">12b4:	e3a03f63 	mov	r3, #396	; 0x18c</div><div class="line">12b8:	e2833002 	add	r3, r3, #2</div><div class="line">12bc:	e58d3000 	str	r3, [sp]</div><div class="line">12c0:	e3a00003 	mov	r0, #3</div><div class="line">@ ----- 此处省略若干行　------</div></pre></td></tr></table></figure>
+</code></pre><p>  请注意这里:</p>
+<pre><code>12b0:    e12fff33     blx    r3 
+</code></pre><p>  这是一条跳转指令，跳转地址存放在r3寄存器中。所以我们可以查看在kernel pain 中打印的r3寄存器的值，r3＝0f4c3eb5。</p>
+<p>  BLX 本身是一条跳转并切换指令集的指令，跳转地址为0xf4c3eb5，但是这个地址是一个无效地址。</p>
+<p>  (奔溃的时PC=0xf4c3eb4, r3=0x0f4c3eb5,但是为什么PC指针是跳转地址的上一个字节地址，可能和ARM32指令集切换到Thumb16指令集的地址对齐规则有关，后续查阅资料后将补充该内容。)</p>
+</li>
+</ul>
+<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><ul>
+<li><p>从上述描述的现象看是崩溃的原因是由于跳转到错误的地址导致的:</p>
+<ul>
+<li>那么这个错误的地址是如何引入的？</li>
+<li><p>具体的奔溃位置在源码中的哪个部分呢？</p>
+<p>于是我们开始结合汇编代码查阅源码：</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">int mfg_request_auth(uint8_t auth_code, uint8_t *obuf, uint32_t *olen)&#123;</div><div class="line">    // ... ... 此处省略Ｎ行　</div><div class="line">    TRACE(&quot;czl--------------------&quot;);</div><div class="line"></div><div class="line">    unsigned int nLen = 0;</div><div class="line">    char szPosType[123]=&#123;0&#125;;</div><div class="line"></div><div class="line">    NDK_SysGetPosInfo(SYS_HWINFO_GET_POS_TYPE, &amp;nLen, &amp;szPosType[0]);</div><div class="line">    // ..... 此处省略N行</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>发现崩溃位置就是调用了这个函数(NDK_SysGetPosInfo)的地方。(具体结合汇编定位源码位置的方法有很多种，靠谱的方式就是通过GDB单步调试的方式。限于一些商业上的问题所以不方便公布所有源码内容，只能摘取部分关键片段)初步以为是因为函数传参时候由于传递的参数不正确导致进出栈时出错而崩溃。后来我们全部按照参数表的规定进行了调整，并单独定义局部变量等方式进行了多种尝试后发现依然崩溃。奔溃点还是在相同的地方。百思不得其解。</p>
+<p>后来在浏览汇编源码时发现有个奇怪的现象:奔溃的位置是一个地址跳转指令，但是我们调用的这个函数是被定义在一个函数库中，通过隐式调用方式进行调用的。</p>
+<p>那么所有隐式调用过程在汇编展开时都会是这样的:</p>
+<p>  128c:    ebfffe29     bl    b38 <a href="&#x6d;&#97;&#x69;&#108;&#x74;&#111;&#x3a;&#109;&#x65;&#109;&#115;&#x65;&#x74;&#64;&#112;&#x6c;&#x74;">&#109;&#x65;&#109;&#115;&#x65;&#x74;&#64;&#112;&#x6c;&#x74;</a></p>
+<p>每个函数名的后面都有个@plt，这个是用来标识这个函数是定义在外部库中，通过BL 指令进行带链接方式的跳转。</p>
+<p>它会产生一次长调用过程切换到GOT中查找函数名的对应入口地址。</p>
+<p>如果发现该函数不存在有效的已链接地址，则引发加载器搜索对应的库文件将函数实现的汇编代码导出并生产一个有效地址，链接到可执行文件的GOT表中。</p>
+<p>关于GOT和PLT可参考 <a href="http://blog.sina.com.cn/s/blog_54f82cc201011oqy.html" title="GOT(全局偏移表)和PLT(过程链接表)" target="_blank" rel="external">[GOT(全局偏移表)和PLT(过程链接表)]</a></p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h3><ul>
+<li><p>通过上述问题的分析我们可以大致分析出问题的原因，肯定是由于错误的链接方式导致的。<br>  于是我查询了该函数所在的头文件，查看函数的声明方式:</p>
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">extern int (*NDK_SysGetPosInfo)(EM_SYS_HWINFO emFlag,uint *punLen,char *psBuf);</div></pre></td></tr></table></figure>
+</code></pre><p>  看到这里，真相大白。</p>
+<p>  我们看到这个函数在头文件中被声明为一个函数指针。但是我们在代码中一直都没有看到这个指针的赋值过程，所以编译器在初始化过程中任意赋值，就导致了一个错误地址被引入到代码中的。</p>
+<p>  这也是一个将显示调用和隐式调用混合调用的BUG。</p>
+<p>  所以,在C语言中，我们应该鼓励在调用函数指针时都使用指针解引用方式进行调用:</p>
+<pre><code>int ret = (*NDK_SysGetPosInfo)(/* 这里省略若干参数*/);
+</code></pre><p>  这样我们就在调用时很清楚地知道现在我们是通过显式调用方式进行函数调用，在查看问题时，我们就能够更容易且直接地发现问题的原因。</p>
+</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h1 id=&quot;疑难问题现象&quot;&gt;&lt;a href=&quot;#疑难问题现象&quot; class=&quot;headerlink&quot; title=&quot;疑难问题现象:&quot;&gt;&lt;/a&gt;疑难问题现象:&lt;/h1&gt;&lt;h3 id=&quot;现象&quot;&gt;&lt;a href=&quot;#现象&quot; class=&quot;headerlink&quot; title=&quot;现象&quot;
     
     </summary>
     
@@ -84,24 +322,42 @@
     <link href="https://turbin.github.io/2017/08/21/the%20_different_linkage/"/>
     <id>https://turbin.github.io/2017/08/21/the _different_linkage/</id>
     <published>2017-08-21T15:43:00.000Z</published>
-    <updated>2017-08-21T15:49:18.435Z</updated>
+    <updated>2017-08-27T13:34:25.884Z</updated>
     
-    <content type="html"><![CDATA[<h1 id="关于链接方式的区别"><a href="#关于链接方式的区别" class="headerlink" title="关于链接方式的区别"></a>关于链接方式的区别</h1><h3 id="显示链接方式"><a href="#显示链接方式" class="headerlink" title="显示链接方式"></a>显示链接方式</h3><p>在程序中直接通过动态库装载的方式，对程序中定义的 <a href="https://www.baidu.com/link?url=IyNpctAiIjf-6aNwijWx3FSkI6B2g0hJwkhpa_TrYz-5agg8CTGLCvhXxTIsjb_hN5excOFQ1tFQZTHXKDfKEdQhW05M_wdn7wjUtyS_zR9RRKXZ0dM-bzUjnp0zWBLG&amp;wd=&amp;eqid=810661050000d2e400000006599a5210" title="函数指针" target="_blank" rel="external">[函数指针]</a>进行加载和赋值。</p>
-<p>下面是用例:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div></pre></td><td class="code"><pre><div class="line">//定义函数指针　以及变量</div><div class="line">void  *functionLib;   /*  Handle to shared lib file   */</div><div class="line">char *dlError;        /*  Pointer to error string     */</div><div class="line"></div><div class="line"></div><div class="line">//mag</div><div class="line">int (*NDK_MagOpen)(void);</div><div class="line">int (*NDK_MagClose)(void);</div><div class="line">int (*NDK_MagSwiped)(uchar * psSwiped);</div><div class="line">int (*NDK_MagReadNormal)(char *pszTk1, char *pszTk2, char　*pszTk3, int *pnErrorCode);</div><div class="line"></div><div class="line">// ... 省略N行　...</div><div class="line"></div><div class="line">// onload.c</div><div class="line">// 定义了一个加载宏</div><div class="line">#define DLSYM(lib, foo) &#123;	\</div><div class="line">	dlError = (char *)dlerror();	\</div><div class="line">	foo = dlsym( lib , #foo);	\</div><div class="line">	if( dlError || NULL == foo )&#123;	\</div><div class="line">		foo = NULL;	\</div><div class="line">		nRet -= 1;	\</div><div class="line">		LOGI(&quot;dlsym &quot;#foo&quot; fail:%s,Addr:%x,nRet:%d.&quot;, </div><div class="line">            dlError, (int)foo, nRet);	\</div><div class="line">		&#125;	\</div><div class="line">	else&#123;	\</div><div class="line">		LOGI(&quot;dlsym &quot;#foo&quot; succ. Addr:%x.&quot;, (int)foo);	\</div><div class="line">		&#125;	\</div><div class="line">	&#125;;	\</div><div class="line"></div><div class="line">//------- 通过显示加载方式加载库文件 --------------------</div><div class="line">	int   nRet = 0;             /*  return codes            */</div><div class="line"></div><div class="line">	// libnl_ndk.so</div><div class="line"></div><div class="line">	// libnlposapi.so</div><div class="line">	functionLib = dlopen(&quot;/system/lib/libabcd.so&quot;,RTLD_LAZY);</div><div class="line">	dlError = (char *)dlerror();</div><div class="line">	LOGI(&quot;dlopen libnlposapi.so error:%s&quot;, dlError);</div><div class="line">	if( functionLib == NULL )</div><div class="line">	&#123;</div><div class="line">		return (-1000);</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">	//mag</div><div class="line">	DLSYM(functionLib, NDK_MagOpen);</div><div class="line">	DLSYM(functionLib, NDK_MagClose);</div><div class="line">	DLSYM(functionLib, NDK_MagSwiped);</div><div class="line">	DLSYM(functionLib, NDK_MagReadNormal);</div><div class="line">    // ... 省略N行　...</div></pre></td></tr></table></figure>
-<p>这时候　在mk文件中可以不需要链接这个库(libabcd.so)就可以调用这个库里面的函数。</p>
-<p>像这样：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">int ret= NDK_MagOpen();</div></pre></td></tr></table></figure>
-<p>这时NDK头文件中也将函数声明定义为函数指针的方式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">int (*NDK_MagOpen)();</div></pre></td></tr></table></figure></p>
-<h3 id="什么是隐式调用"><a href="#什么是隐式调用" class="headerlink" title="什么是隐式调用"></a>什么是隐式调用</h3><p>隐式调用，即通过在mk文件中显示指定需要调用链接的函数库的名称，然后在程序运行的过程中由os系统中的装载器以及链接器来完成函数的装载和链接过程。</p>
-<p>如果一个函数定义在libabcd.so中时，我们需要调用它，就要在Android.mk文件中显示指定调用链接函数库名称:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">LOCAL_LDLIBS += labcd</div></pre></td></tr></table></figure></p>
-<p>然后在NDK头文件中声明为函数调用方式(注意区别前面的函数指针的什么方式):<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">int NDK_MagOpen();</div></pre></td></tr></table></figure></p>
-<p>然后调用方式同函数指针的方式:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">int ret= NDK_MagOpen();</div></pre></td></tr></table></figure></p>
+    <content type="html"><![CDATA[<h1 id="关于链接方式的区别"><a href="#关于链接方式的区别" class="headerlink" title="关于链接方式的区别"></a>关于链接方式的区别</h1><h3 id="动态库的调用链接方式"><a href="#动态库的调用链接方式" class="headerlink" title="动态库的调用链接方式"></a>动态库的调用链接方式</h3><ul>
+<li><p>动态库调用方式可分为两种：</p>
+<ul>
+<li>显式调用</li>
+<li>隐式调用</li>
+</ul>
+</li>
+</ul>
+<h3 id="两种调用方式"><a href="#两种调用方式" class="headerlink" title="两种调用方式"></a>两种调用方式</h3><ul>
+<li><p>显式调用</p>
+<p>  在程序中直接通过动态库装载的方式，对程序中定义的 <a href="https://www.baidu.com/link?url=IyNpctAiIjf-6aNwijWx3FSkI6B2g0hJwkhpa_TrYz-5agg8CTGLCvhXxTIsjb_hN5excOFQ1tFQZTHXKDfKEdQhW05M_wdn7wjUtyS_zR9RRKXZ0dM-bzUjnp0zWBLG&amp;wd=&amp;eqid=810661050000d2e400000006599a5210" title="函数指针" target="_blank" rel="external">[函数指针]</a>进行加载和赋值。</p>
+<p>  下面是用例:</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div></pre></td><td class="code"><pre><div class="line">//定义函数指针　以及变量</div><div class="line">void  *functionLib;   /*  Handle to shared lib file   */</div><div class="line">char *dlError;        /*  Pointer to error string     */</div><div class="line"></div><div class="line"></div><div class="line">//mag</div><div class="line">int (*NDK_MagOpen)(void);</div><div class="line">int (*NDK_MagClose)(void);</div><div class="line">int (*NDK_MagSwiped)(uchar * psSwiped);</div><div class="line">int (*NDK_MagReadNormal)(char *pszTk1, char *pszTk2, char　*pszTk3, int *pnErrorCode);</div><div class="line"></div><div class="line">// ... 省略N行　...</div><div class="line"></div><div class="line">// onload.c</div><div class="line">// 定义了一个加载宏</div><div class="line">#define DLSYM(lib, foo) &#123;	\</div><div class="line">	dlError = (char *)dlerror();	\</div><div class="line">	foo = dlsym( lib , #foo);	\</div><div class="line">	if( dlError || NULL == foo )&#123;	\</div><div class="line">		foo = NULL;	\</div><div class="line">		nRet -= 1;	\</div><div class="line">		LOGI(&quot;dlsym &quot;#foo&quot; fail:%s,Addr:%x,nRet:%d.&quot;, </div><div class="line">			dlError, (int)foo, nRet);	\</div><div class="line">		&#125;	\</div><div class="line">	else&#123;	\</div><div class="line">		LOGI(&quot;dlsym &quot;#foo&quot; succ. Addr:%x.&quot;, (int)foo);	\</div><div class="line">		&#125;	\</div><div class="line">	&#125;;	\</div><div class="line"></div><div class="line">//------- 通过显示加载方式加载库文件 --------------------</div><div class="line">	int   nRet = 0;             /*  return codes            */</div><div class="line"></div><div class="line">	// libnl_ndk.so</div><div class="line"></div><div class="line">	// libnlposapi.so</div><div class="line">	functionLib = dlopen(&quot;/system/lib/libabcd.so&quot;,RTLD_LAZY);</div><div class="line">	dlError = (char *)dlerror();</div><div class="line">	LOGI(&quot;dlopen libnlposapi.so error:%s&quot;, dlError);</div><div class="line">	if( functionLib == NULL )</div><div class="line">	&#123;</div><div class="line">		return (-1000);</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">	//mag</div><div class="line">	DLSYM(functionLib, NDK_MagOpen);</div><div class="line">	DLSYM(functionLib, NDK_MagClose);</div><div class="line">	DLSYM(functionLib, NDK_MagSwiped);</div><div class="line">	DLSYM(functionLib, NDK_MagReadNormal);</div><div class="line">	// ... 省略N行　...</div></pre></td></tr></table></figure>
+<p>  这时候　在mk文件中可以不需要链接这个库(libabcd.so)就可以调用这个库里面的函数。</p>
+<p>  像这样：</p>
+<pre><code>int ret= NDK_MagOpen();
+</code></pre><p>  这时NDK头文件中也将函数声明定义为函数指针的方式：</p>
+<pre><code>int (*NDK_MagOpen)();
+</code></pre></li>
+<li><p>隐式调用</p>
+<p>  即通过在mk文件中显示指定需要调用链接的函数库的名称，然后在程序运行的过程中由os系统中的装载器以及链接器来完成函数的装载和链接过程。</p>
+<p>  如果一个函数定义在libabcd.so中时，我们需要调用它，就要在Android.mk文件中显示指定调用链接函数库名称:</p>
+<pre><code>LOCAL_LDLIBS += labcd
+</code></pre><p>  然后在NDK头文件中声明为函数调用方式(注意区别前面的函数指针的什么方式):</p>
+<pre><code>int NDK_MagOpen();
+</code></pre><p>  然后调用方式同函数指针的方式:</p>
+<pre><code>int ret= NDK_MagOpen();
+</code></pre></li>
+</ul>
 ]]></content>
     
     <summary type="html">
     
-      &lt;h1 id=&quot;关于链接方式的区别&quot;&gt;&lt;a href=&quot;#关于链接方式的区别&quot; class=&quot;headerlink&quot; title=&quot;关于链接方式的区别&quot;&gt;&lt;/a&gt;关于链接方式的区别&lt;/h1&gt;&lt;h3 id=&quot;显示链接方式&quot;&gt;&lt;a href=&quot;#显示链接方式&quot; class=&quot;head
+      &lt;h1 id=&quot;关于链接方式的区别&quot;&gt;&lt;a href=&quot;#关于链接方式的区别&quot; class=&quot;headerlink&quot; title=&quot;关于链接方式的区别&quot;&gt;&lt;/a&gt;关于链接方式的区别&lt;/h1&gt;&lt;h3 id=&quot;动态库的调用链接方式&quot;&gt;&lt;a href=&quot;#动态库的调用链接方式&quot; cla
     
     </summary>
     
@@ -113,49 +369,82 @@
   </entry>
   
   <entry>
-    <title></title>
-    <link href="https://turbin.github.io/2017/08/13/debug_native_android_program_with_gdb/"/>
-    <id>https://turbin.github.io/2017/08/13/debug_native_android_program_with_gdb/</id>
-    <published>2017-08-13T07:48:05.367Z</published>
-    <updated>2017-08-13T07:48:05.367Z</updated>
+    <title>关于一个链接的BUG</title>
+    <link href="https://turbin.github.io/2017/08/21/LinkageError/"/>
+    <id>https://turbin.github.io/2017/08/21/LinkageError/</id>
+    <published>2017-08-20T16:00:00.000Z</published>
+    <updated>2017-08-27T13:34:25.813Z</updated>
     
-    <content type="html"><![CDATA[<h2 id="使用GBD-调试你的C-C-程序"><a href="#使用GBD-调试你的C-C-程序" class="headerlink" title="使用GBD 调试你的Ｃ/C++程序"></a>使用GBD 调试你的Ｃ/C++程序</h2><ol>
-<li>首先使用如下的命令来编译你的工程：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ndk-build NDK_DEBUG=1 -C &lt;the path of your source code&gt;</div></pre></td></tr></table></figure>
+    <content type="html"><![CDATA[<h1 id="疑难问题现象"><a href="#疑难问题现象" class="headerlink" title="疑难问题现象"></a>疑难问题现象</h1><h3 id="现象"><a href="#现象" class="headerlink" title="现象"></a>现象</h3><ul>
+<li><p>一个安卓程序需要调用一个so库实现加解密操作，但是在更新了新版本后一直发现程序崩溃。</p>
+<p>kernel pain:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">2017-08-21 10:43:58.724 F/libc    ( 4844): Fatal signal 11 (SIGSEGV), code 1, fault addr 0xf4c3eb4 in tid 4844 (test.app)</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): Build fingerprint: &apos;qcom/msm8909/msm8909:5.1.1/NewLand_N900/newland.20170815.163947:user/test-keys&apos;</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): Revision: &apos;0&apos;</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): ABI: &apos;arm&apos;</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): pid: 4844, tid: 4844, name: test.app  &gt;&gt;&gt; ./test.app &lt;&lt;&lt;</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0xf4c3eb4</div><div class="line">2017-08-21 10:43:58.830 W/NativeCrashListener(  760): Couldn&apos;t find ProcessRecord for pid 4844</div><div class="line">2017-08-21 10:43:58.835 I/DEBUG   (  266):     r0 00000000  r1 becddf70  r2 becddf90  r3 0f4c3eb5</div><div class="line">2017-08-21 10:43:58.835 E/DEBUG   (  266): AM write failure (32 / Broken pipe)</div><div class="line">2017-08-21 10:43:58.835 I/DEBUG   (  266):     r4 b6f1efc8  r5 becde97c  r6 00000001  r7 b6f1cc34</div><div class="line">2017-08-21 10:43:58.835 I/DEBUG   (  266):     r8 00000000  r9 00000000  sl 00000000  fp becde81c</div><div class="line">2017-08-21 10:43:58.835 I/DEBUG   (  266):     ip 80000000  sp becddf50  lr b6f1d2b4  pc 0f4c3eb4  cpsr a00f0030</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266): </div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266): backtrace:</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #00 pc 0f4c3eb4  &lt;unknown&gt;</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #01 pc 000012b0  /data/test.app (mfg_request_auth+1196)</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #02 pc 00000ca8  /data/test.app (main+116)</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #03 pc 0000f3f9  /system/lib/libc.so (__libc_init+44)</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #04 pc 00000bfc  /data/test.app (_start+88)</div><div class="line">2017-08-21 10:43:58.994 I/DEBUG   (  266): </div><div class="line">2017-08-21 10:43:58.994 I/DEBUG   (  266): Tombstone written to: /data/tombstones/tombstone_09</div><div class="line">2017-08-21 10:43:58.994 I/BootReceiver(  760): Copying /data/tombstones/tombstone_09 to DropBox (SYSTEM_TOMBSTONE)</div></pre></td></tr></table></figure>
+<p>从日志上看到PC指针指向一个地址0xf4c3eb4,在kernel pain上可以看出这个地址是一个无效地址。</p>
+<p>这点我们可以从后面的程序的map里面可以看出来。</p>
+<p>观察brackstrace:中打印的调用栈的信息，在奔溃之前进入了一个叫做 <em>mgf_request_auth</em> 的函数中，调用位置在offet=1196的位置上。</p>
+<p>此时，我们反汇编这个函数所在的bin文件:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">00000e04 &lt;mfg_request_auth&gt;:</div><div class="line">	e04:	e92d4810 	push	&#123;r4, fp, lr&#125;</div><div class="line">	e08:	e28db008 	add	fp, sp, #8</div><div class="line">	e0c:	e24ddd23 	sub	sp, sp, #2240	; 0x8c0</div><div class="line">	e10:	e24dd004 	sub	sp, sp, #4</div><div class="line">	e14:	e1a03000 	mov	r3, r0</div><div class="line">	@ ---- 此处省略若干行 ----</div></pre></td></tr></table></figure>
 </li>
-</ol>
-<p>其中，编译参数 <em>NDK_DEBUG=1</em> 指示编译链工具以DEBUG模式进行编译;<br>参数　<em>-C</em> 用于NDK编译链工具指定你的源码工程路径，主要是指定你的Android.mk文件路径;<br>等待编译完成后，在输出的路径下(libs/<your arch="">)就会产生几个新的文件。其中包含你的makefile的生成的目标文件，以及gdb.setup,和gdbserver。<br>路径目录如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">./lib/&lt;your arch&gt;/</div><div class="line">  |- gdb.setup -　the configuration file of GDB</div><div class="line">  |- gdbserver -　the execution file for running on device</div><div class="line">  |- others (your target files, like so file and execution  file etc.)</div></pre></td></tr></table></figure></your></p>
-<ol>
-<li><p>将你的gdbserver，以及编译生成的文件通过adb传到你的设备上的指定目录中，并记得将gdbserver设置为可执行属性。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">adb push &lt;your target files&gt; &lt;path on your device&gt;</div><div class="line">adb push gdbserver &lt;path on your device&gt;</div><div class="line">adb shell chmod 777  &lt;path on your device&gt;/gdbserver # set this file as execution</div></pre></td></tr></table></figure>
+</ul>
+<pre><code>从这里我们可以看到函数的入口地址为:0x0E04，定位崩溃点位置为:0x0E04 + 1196(这个是十进制数) 得到偏移位置为,0x12B0。
+
+定位汇编文件中offset=12b0的位置：
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">@ ----- 此处省略若干行　------</div><div class="line">128c:	ebfffe29 	bl	b38 &lt;memset@plt&gt;</div><div class="line">1290:	e59f32fc 	ldr	r3, [pc, #764]	; 1594 &lt;mfg_request_auth+0x790&gt;</div><div class="line">1294:	e7943003 	ldr	r3, [r4, r3]</div><div class="line">1298:	e5933000 	ldr	r3, [r3]</div><div class="line">129c:	e24b1e8a 	sub	r1, fp, #2208	; 0x8a0</div><div class="line">12a0:	e241100c 	sub	r1, r1, #12</div><div class="line">12a4:	e24b2d22 	sub	r2, fp, #2176	; 0x880</div><div class="line">12a8:	e242200c 	sub	r2, r2, #12</div><div class="line">12ac:	e3a00000 	mov	r0, #0</div><div class="line">12b0:	e12fff33 	blx	r3</div><div class="line">12b4:	e3a03f63 	mov	r3, #396	; 0x18c</div><div class="line">12b8:	e2833002 	add	r3, r3, #2</div><div class="line">12bc:	e58d3000 	str	r3, [sp]</div><div class="line">12c0:	e3a00003 	mov	r0, #3</div><div class="line">@ ----- 此处省略若干行　------</div></pre></td></tr></table></figure>
+
+
+
+请注意这里:
+
+    12b0:    e12fff33     blx    r3 
+
+这是一条跳转指令，跳转地址存放在r3寄存器中。所以我们可以查看在kernel pain 中打印的r3寄存器的值，r3＝0f4c3eb5。
+BLX 本身是一条跳转并切换指令集的指令，跳转地址为0xf4c3eb5，但是这个地址是一个无效地址。(奔溃的时PC=0xf4c3eb4, r3=0x0f4c3eb5,但是为什么PC指针是跳转地址的上一个字节地址，可能和ARM32指令集切换到Thumb16指令集的地址对齐规则有关，后续查阅资料后将补充该内容。)
+</code></pre><h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><ul>
+<li><p>从上述描述的现象看是崩溃的原因是由于跳转到错误的地址导致的。　</p>
 </li>
-<li><p>在你的设备上运行gdbserver 并且需要制定gdbserver监听的端口.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adb shell  &lt;path on your device&gt;/gdbserver &lt;host:port&gt; &lt;your debugging program&gt;</div></pre></td></tr></table></figure>
-<p><em><host:port></host:port></em> 这个参数用来制定gdbserver作为服务端监听的主机ip以及端口，这样就可以支持远程GDB调试。<br>如果希望通过ADB进行访问，则可以将 <em>host</em>　指定为 <em>localhost</em>，然后选择任意的端口作为监听端口，下面的例子就是将　<em>12345</em> 作为监听端口使用。<br>当你成功运行gdbserver的时候，就会在你的adb shell控制台上看到：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">Process ./main0 created; pid = 8163</div><div class="line">Listen on port 12345</div></pre></td></tr></table></figure>
+<li><p>问题:</p>
+<ul>
+<li>那么这个错误的地址是如何引入的？</li>
+<li><p>具体的奔溃位置在源码中的哪个部分呢？</p>
+<p>于是我们开始结合汇编代码查阅源码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">int mfg_request_auth(uint8_t auth_code, uint8_t *obuf, uint32_t *olen)&#123;</div><div class="line">	// ... ... 此处省略Ｎ行　</div><div class="line">	TRACE(&quot;czl--------------------&quot;);</div><div class="line"></div><div class="line">	unsigned int nLen = 0;</div><div class="line">	char szPosType[123]=&#123;0&#125;;</div><div class="line"></div><div class="line">	NDK_SysGetPosInfo(SYS_HWINFO_GET_POS_TYPE, &amp;nLen, &amp;szPosType[0]);</div><div class="line">	// ..... 此处省略N行</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>发现崩溃位置就是调用了这个函数(NDK_SysGetPosInfo)的地方。(具体结合汇编定位源码位置的方法有很多种，靠谱的方式就是通过GDB单步调试的方式。限于一些商业上的问题所以不方便公布所有源码内容，只能摘取部分关键片段)初步以为是因为函数传参时候由于传递的参数不正确导致进出栈时出错而崩溃。后来我们全部按照参数表的规定进行了调整，并单独定义局部变量等方式进行了多种尝试后发现依然崩溃。奔溃点还是在相同的地方。百思不得其解。<br>后来在浏览汇编源码时发现有个奇怪的现象:</p>
+<p>  奔溃的位置是一个地址跳转指令，但是我们调用的这个函数是被定义在一个函数库中，通过隐式调用方式进行调用的。</p>
+<p>那么所有隐式调用过程在汇编展开时都会是这样的:</p>
+<p>  128c:    ebfffe29     bl    b38 <a href="&#x6d;&#97;&#x69;&#x6c;&#116;&#x6f;&#x3a;&#x6d;&#101;&#x6d;&#115;&#x65;&#x74;&#64;&#112;&#108;&#116;">&#x6d;&#101;&#x6d;&#115;&#x65;&#x74;&#64;&#112;&#108;&#116;</a></p>
+<p>每个函数名的后面都有个@plt，这个是用来标识这个函数是定义在外部库中，通过BL 指令进行带链接方式的跳转。</p>
+<p>它会产生一次长调用过程切换到GOT中查找函数名的对应入口地址。</p>
+<p>如果发现该函数不存在有效的已链接地址，则引发加载器搜索对应的库文件将函数实现的汇编代码导出并生产一个有效地址，链接到可执行文件的GOT表中。</p>
+<p>关于GOT和PLT可参考 <a href="http://blog.sina.com.cn/s/blog_54f82cc201011oqy.html" title="GOT(全局偏移表)和PLT(过程链接表)" target="_blank" rel="external">[GOT(全局偏移表)和PLT(过程链接表)]</a></p>
 </li>
-<li><p>重定向你的ADB。如果你启动ADB的时候没有指定ADB的监听端口，就需要将ADB端口重定向到与你在gdbserver中所设置的相同的端口号上。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adb forward tcp:12345 tcp:12345</div></pre></td></tr></table></figure>
+</ul>
 </li>
-</ol>
-<p>此时adb服务将监听12345端口，并将端口上的内容转发到PC上这样就架设完成了device到PC之间的桥梁。</p>
-<ol>
-<li>接着在PC端启动你的gdb。<br>这里要注意的是，PC端的gdb程序与device上的gdbserver在要使用相同gcc版本编译出来的。<br>在NDK中已经为我们准备好了相应的版本。如果你不确定使用哪个版本，记得在编译你的native文件时，使用参数　<em>-d</em> ：<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ndk-build -d -C &lt;the path of your source code&gt;</div></pre></td></tr></table></figure>
+</ul>
+<h3 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h3><ul>
+<li><p>通过上述问题的分析我们可以大致分析出问题的原因，肯定是由于错误的链接方式导致的。</p>
+<p>  于是我查询了该函数所在的头文件，查看函数的声明方式:</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">extern int (*NDK_SysGetPosInfo)(EM_SYS_HWINFO emFlag,uint *punLen,char *psBuf);</div></pre></td></tr></table></figure>
+<p>  看到这里，真相大白。</p>
+<p>  我们看到这个函数在头文件中被声明为一个函数指针。但是我们在代码中一直都没有看到这个指针的赋值过程，所以编译器在初始化过程中任意赋值，就导致了一个错误地址被引入到代码中的。</p>
+<p>  这也是一个将显示调用和隐式调用混合调用的BUG。</p>
+<p>  所以,在C语言中，我们应该鼓励在调用函数指针时都使用指针解引用方式进行调用:</p>
+<pre><code>int ret = (*NDK_SysGetPosInfo)(/* 这里省略若干参数*/);
+</code></pre><p>  这样我们就在调用时很清楚地知道现在我们是通过显式调用方式进行函数调用，在查看问题时，我们就能够更容易且直接地发现问题的原因。</p>
 </li>
-</ol>
-<p>你就可以看到在编译你的工程时，所使用的gcc版本以及路径信息。在这个gcc工具同级目录下，你就可以找到对应gdb可执行文件。<br>直接执行它,将进入gdb的命令状态，并提示等待用户输入命令。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">(gdb):</div></pre></td></tr></table></figure></p>
-<p>在看到上述的命令行等待状态时，请输入:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">(gdb) target remote localhost:12345</div></pre></td></tr></table></figure></p>
-<p>然后等待gdb连接gdbserver即可。<br>如果在调试你的程序过程中，发现gdb上显示为:　<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">0xb77706840 in ???()</div></pre></td></tr></table></figure></p>
-<p>这表示你未导入你的程序的符号表，请在gdb命令状态下输入<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">(gdb) set solib-search-path &lt;path of gdb.setup&gt;</div></pre></td></tr></table></figure></p>
-<p>还记得之前生成的那个 <em>gdb.setup</em>　文件吗，在这里将　<em><path of="" gdb.setup=""></path></em> 替换成该文件的路径即可。</p>
-<h3 id="OK-ENJOY-YOUR-GDB"><a href="#OK-ENJOY-YOUR-GDB" class="headerlink" title="OK, ENJOY YOUR GDB!"></a>OK, ENJOY YOUR GDB!</h3>]]></content>
+</ul>
+]]></content>
     
     <summary type="html">
     
-      &lt;h2 id=&quot;使用GBD-调试你的C-C-程序&quot;&gt;&lt;a href=&quot;#使用GBD-调试你的C-C-程序&quot; class=&quot;headerlink&quot; title=&quot;使用GBD 调试你的Ｃ/C++程序&quot;&gt;&lt;/a&gt;使用GBD 调试你的Ｃ/C++程序&lt;/h2&gt;&lt;ol&gt;
-&lt;li&gt;首先使用如下
+      &lt;h1 id=&quot;疑难问题现象&quot;&gt;&lt;a href=&quot;#疑难问题现象&quot; class=&quot;headerlink&quot; title=&quot;疑难问题现象&quot;&gt;&lt;/a&gt;疑难问题现象&lt;/h1&gt;&lt;h3 id=&quot;现象&quot;&gt;&lt;a href=&quot;#现象&quot; class=&quot;headerlink&quot; title=&quot;现象&quot;&gt;&lt;
     
     </summary>
     
+      <category term="note" scheme="https://turbin.github.io/categories/note/"/>
+    
+    
+      <category term="note" scheme="https://turbin.github.io/tags/note/"/>
     
   </entry>
   
@@ -164,18 +453,24 @@
     <link href="https://turbin.github.io/2017/07/20/My_First_Powershell/"/>
     <id>https://turbin.github.io/2017/07/20/My_First_Powershell/</id>
     <published>2017-07-20T15:42:00.000Z</published>
-    <updated>2017-07-20T15:59:17.859Z</updated>
+    <updated>2017-08-27T13:34:25.825Z</updated>
     
-    <content type="html"><![CDATA[<h2 id="因为懒，也因为烦。"><a href="#因为懒，也因为烦。" class="headerlink" title="因为懒，也因为烦。"></a>因为懒，也因为烦。</h2><p>所以为了发布版本简单可靠，也因为基于window环境下，所以学着写了powershell。<br>一边搜示例，一面学着写。大概有shell的基础入门挺快。<br>闲话少叙，直接提码：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">$targe=&quot;N900_4G&quot;</div><div class="line">$dest_dir=&quot;build_$targe&quot;</div><div class="line"></div><div class="line">Copy-Item -Path &quot;./Pad&quot;  -Destination $dest_dir -Recurse -Force</div><div class="line"></div><div class="line">$obj_dir=&apos;obj\local\armeabi&apos;</div><div class="line">$dirs=&apos;sdtp&apos;,&apos;api&apos;,&apos;mpos&apos;</div><div class="line">$clean=&apos;ndk-build clean -C&apos;</div><div class="line">$make=&apos;ndk-build -C&apos;</div><div class="line"></div><div class="line">foreach($build in $dirs)&#123;</div><div class="line">	ndk-build clean -C &quot;$dest_dir/$build/jni&quot;</div><div class="line">	ndk-build DEVICE=$targe -C &quot;$dest_dir/$build/jni&quot; &gt;&gt; &quot;./$targe.build&quot;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>我是要把工程目录Pad下面sdtp,api,mpos这三个库文件的目录依顺序进行编译，然后将编译的文件打包。<br>因为一共要发布3款终端产品，有三个不同产品编译选项开关。同时有两个大的分支版本。所以正式发布版本时，需要3<em>2</em>3=18次目录进出，然后进行ndk-build操作。并且很恶心的是，原来设定的库文件之间还有依赖关系，所以需要严格按照sdtp,api,mpos这三个目录的顺序进行编译。还有就是每个目录每次选择不同机型编译前都需要执行清空操作，因为不同的机型包含进来的代码可能还有些许差异。所以没有用脚本执行前，每次发版本都是异常辛苦，并且要很认真注意每个操作步骤的。<br>目前这个脚本，还不完善。接下来打算添加自动拷贝生成的目标文件功能，并且支持自动打包成指定命名规范的.zip包。那么，我只要把生成的文件附到邮件发布即可。<br>所以学点脚本，还是有用的，效率杠杠的。<br>这里推荐两个不错的powershell学习网址：</p>
-<p><a href="http://www.pstips.net/cat/powershell/" target="_blank" rel="external">pstips</a> 这个是国内的一个不错的站点，中文。</p>
-<p><a href="https://msdn.microsoft.com/zh-cn/powershell/reference/5.1/microsoft.powershell.management/microsoft.powershell.management" target="_blank" rel="external">Microsoft</a> 这是微软官方的站点，资料更详实。微软文档都做得不错。</p>
+    <content type="html"><![CDATA[<h1 id="因为懒，也因为烦。"><a href="#因为懒，也因为烦。" class="headerlink" title="因为懒，也因为烦。"></a>因为懒，也因为烦。</h1><ul>
+<li><p>所以为了发布版本简单可靠，也因为基于window环境下，所以学着写了powershell。<br>  一边搜示例，一面学着写。大概有shell的基础入门挺快。<br>   闲话少叙，直接提码：</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div></pre></td><td class="code"><pre><div class="line">function build($target)&#123;</div><div class="line">	$dest_dir=&quot;build/build_$target&quot;</div><div class="line">	$output=&quot;$dest_dir/output&quot;</div><div class="line">	</div><div class="line">	# if exsit remove it </div><div class="line">	if(Test-Path $dest_dir)</div><div class="line">	&#123;	</div><div class="line">		echo &quot;rm $dest_dir&quot;</div><div class="line">		ri &quot;$dest_dir&quot; -recurse</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">	cpi -Path &quot;./Pad&quot;  -Destination $dest_dir -Recurse -Force</div><div class="line">	</div><div class="line">	if((Test-Path $output) -ne &apos;True&apos;)&#123;</div><div class="line">		echo &quot;mkdir $dest_dir/output&quot;</div><div class="line">		mkdir &quot;$dest_dir/output&quot;</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	$obj_dir=&apos;obj\local\armeabi&apos;</div><div class="line">	$dirs=&apos;sdtp&apos;,&apos;api&apos;,&apos;mpos&apos;</div><div class="line"></div><div class="line">	foreach($build in $dirs)&#123;</div><div class="line">		ndk-build clean -C &quot;$dest_dir/$build/jni&quot;</div><div class="line">		ndk-build -j3 DEVICE=$target -C &quot;$dest_dir/$build/jni&quot;</div><div class="line">		Copy-Item -Path &quot;$dest_dir/$build/$obj_dir/*.so&quot; -Destination $output</div><div class="line">		Copy-Item -Path &quot;$dest_dir/$build/$obj_dir/*.a&quot; -Destination $output</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">function argument_checker([string]$in_arg)&#123;</div><div class="line"></div><div class="line">&#125;</div><div class="line"></div><div class="line">function buildAll($in_devices)&#123;</div><div class="line">	foreach($device in $in_devices)&#123;</div><div class="line">		echo &quot;in_device=$device&quot;;</div><div class="line">		build($device);</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">#default build all type</div><div class="line">function main&#123;</div><div class="line">	param(</div><div class="line">	[ValidateSet(&apos;N900_3G&apos;,&apos;N900_4G&apos;,&apos;IM81&apos;)]</div><div class="line">	$in_args</div><div class="line">	)</div><div class="line">	</div><div class="line">	$devices=&apos;N900_3G&apos;,&apos;N900_4G&apos;,&apos;IM81&apos;</div><div class="line">	if($in_args.Count -eq 0)&#123;</div><div class="line">		echo &quot;build in default&quot;</div><div class="line">		buildAll($in_devices=$devices);</div><div class="line">	&#125;</div><div class="line">	else&#123;</div><div class="line">		buildAll($in_devices=$in_args);</div><div class="line">	&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">main($args);</div></pre></td></tr></table></figure>
+<p>  我是要把工程目录Pad下面sdtp,api,mpos这三个库文件的目录依顺序进行编译，然后将编译的文件打包。<br>  因为一共要发布3款终端产品，有三个不同产品编译选项开关。同时有两个大的分支版本。所以正式发布版本时，需要3<em>2</em>3=18次目录进出，然后进行ndk-build操作。并且很恶心的是，原来设定的库文件之间还有依赖关系，所以需要严格按照sdtp,api,mpos这三个目录的顺序进行编译。还有就是每个目录每次选择不同机型编译前都需要执行清空操作，因为不同的机型包含进来的代码可能还有些许差异。所以没有用脚本执行前，每次发版本都是异常辛苦，并且要很认真注意每个操作步骤的。<br>  目前这个脚本，还不完善。</p>
+<p>  最近抽时间增加publish脚本，用来进行自动将生成的so文件以及.a文件发布到我们的git服务器上，同时增加了cleanAll脚本用来清理编译生成的目标文件夹，方便提交svn。</p>
+<p>  后续计划会增加并发任务，加快编译的效率。同时也考验下新的i5机器的性能。</p>
+<p>  所以学点脚本，还是有用的，效率杠杠的。</p>
+<p>  这里推荐两个不错的powershell学习网址：<a href="http://www.pstips.net/cat/powershell/" title="pstips" target="_blank" rel="external">pstips</a> 以及<a href="https://msdn.microsoft.com/zh-cn/powershell/reference/5.1/microsoft.powershell.management/microsoft.powershell.management" title="Microsoft PowerShell Management" target="_blank" rel="external">Microsoft PowerShell Management</a></p>
+</li>
+</ul>
 ]]></content>
     
     <summary type="html">
     
-      &lt;h2 id=&quot;因为懒，也因为烦。&quot;&gt;&lt;a href=&quot;#因为懒，也因为烦。&quot; class=&quot;headerlink&quot; title=&quot;因为懒，也因为烦。&quot;&gt;&lt;/a&gt;因为懒，也因为烦。&lt;/h2&gt;&lt;p&gt;所以为了发布版本简单可靠，也因为基于window环境下，所以学着写了powershe
+      &lt;h1 id=&quot;因为懒，也因为烦。&quot;&gt;&lt;a href=&quot;#因为懒，也因为烦。&quot; class=&quot;headerlink&quot; title=&quot;因为懒，也因为烦。&quot;&gt;&lt;/a&gt;因为懒，也因为烦。&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;所以为了发布版本简单可靠，也因为基于window环境下，所以学着写
     
     </summary>
     
@@ -191,7 +486,7 @@
     <link href="https://turbin.github.io/2017/07/17/After%20Rebuilding%20My%20blog/"/>
     <id>https://turbin.github.io/2017/07/17/After Rebuilding My blog/</id>
     <published>2017-07-17T13:42:00.000Z</published>
-    <updated>2017-07-17T13:49:30.710Z</updated>
+    <updated>2017-08-27T13:34:25.801Z</updated>
     
     <content type="html"><![CDATA[<p><strong><em>终于</em></strong> 找回来原来博客的内容。很不容易，本来以为就这么丢了。<br>回头想来，还是要做好备份，不然自己辛辛苦苦积累的东西就这么容易地付之东流，着实可惜。<br>很久没有更新。只是因为懒癌犯了，不过因为前段时间自己的危机感，<br>促使自己要好好继续在码代码之余也要考虑下不断更新自己所思所想。<br>所以，后续会计划陆陆续续把原来的笔记整理出来，然后编写成博客文章填充这里，相对困乏的内容。</p>
 ]]></content>
@@ -248,7 +543,7 @@
     <link href="https://turbin.github.io/2017/02/05/QWebkit%E6%BA%90%E7%A0%81%E8%B5%B0%E8%AF%BB%E7%AC%94%E8%AE%B0(1)/"/>
     <id>https://turbin.github.io/2017/02/05/QWebkit源码走读笔记(1)/</id>
     <published>2017-02-05T03:45:45.000Z</published>
-    <updated>2017-02-05T06:04:37.020Z</updated>
+    <updated>2017-08-27T13:34:25.849Z</updated>
     
     <content type="html"><![CDATA[<h1 id="本文基于Qt5-5-1版本中的QWebkit"><a href="#本文基于Qt5-5-1版本中的QWebkit" class="headerlink" title="本文基于Qt5.5.1版本中的QWebkit"></a>本文基于Qt5.5.1版本中的QWebkit</h1><p>userAgent “Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/538.1 (KHTML, like Gecko) cordova Safari/538.1”</p>
 <h1 id="页面加载的过程"><a href="#页面加载的过程" class="headerlink" title="页面加载的过程"></a>页面加载的过程</h1><h2 id="FrameLoader"><a href="#FrameLoader" class="headerlink" title="FrameLoader"></a>FrameLoader</h2><h3 id="FrameLoader-状态定义"><a href="#FrameLoader-状态定义" class="headerlink" title="FrameLoader-状态定义"></a>FrameLoader-状态定义</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">enum FrameState &#123;</div><div class="line">    FrameStateProvisional,</div><div class="line">    // This state indicates we are ready to commit to a page,</div><div class="line">    // which means the view will transition to use the new data source.</div><div class="line">    FrameStateCommittedPage,</div><div class="line">    FrameStateComplete</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
@@ -323,17 +618,38 @@
   </entry>
   
   <entry>
-    <title>关于 no_new_privs 说明</title>
+    <title>关于 no　new　privs 翻译稿</title>
     <link href="https://turbin.github.io/2017/01/28/no_new_privs%E4%B8%AD%E6%96%87%E8%AF%B4%E6%98%8E%E7%BF%BB%E8%AF%91/"/>
     <id>https://turbin.github.io/2017/01/28/no_new_privs中文说明翻译/</id>
     <published>2017-01-28T12:30:45.000Z</published>
-    <updated>2017-02-05T05:20:26.603Z</updated>
+    <updated>2017-08-27T13:34:25.869Z</updated>
     
-    <content type="html"><![CDATA[<p>The original article, please reference here <a href="http://tomoyo.osdn.jp/cgi-bin/lxr/source/Documentation/prctl/no_new_privs.txt" target="_blank" rel="external">no_new_privs.txt</a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">The execve system call can grant a newly-started program privileges that</div><div class="line">its parent did not have.</div></pre></td></tr></table></figure></p>
-<p>execve 系统调用能够赋予最新启动的进程其父进程没有的权限。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">The most obvious examples are setuid/setgid</div><div class="line">programs and file capabilities.  To prevent the parent program from</div><div class="line">gaining these privileges as well, the kernel and user code must be</div><div class="line">careful to prevent the parent from doing anything that could subvert the</div><div class="line">child.</div></pre></td></tr></table></figure></p>
+    <content type="html"><![CDATA[<ul>
+<li><p>这是一篇关于内核如何限制通过fork方式提升进程特权的文章。是为了求解阅读了Android　init进程的源码中，关于prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)调用的缘由的。</p>
+</li>
+<li><p>以下是原文与翻译的内容:</p>
+<blockquote>
+<p>The execve system call can grant a newly-started program privileges that<br>its parent did not have.  </p>
+</blockquote>
+<p>execve 系统调用能够赋予最新启动的进程其父进程没有的权限。</p>
+<blockquote>
+<p>The most obvious examples are setuid/setgid<br>programs and file capabilities.  To prevent the parent program from<br>gaining these privileges as well, the kernel and user code must be<br>careful to prevent the parent from doing anything that could subvert the<br>child.  </p>
+</blockquote>
 <p>最常见的例子就是通过 setuid和setgid来设置程序进程的uid以及gid以及文件的访问权限。(子进程)同样继承了父进程的权限，在内核以及用户代码中必须小心这些权限信息，避免造成子进程崩溃。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">For example:</div><div class="line"></div><div class="line"> - The dynamic loader handles LD_* environment variables differently if</div><div class="line">   a program is setuid.</div><div class="line"></div><div class="line"> - chroot is disallowed to unprivileged processes, since it would allow</div><div class="line">   /etc/passwd to be replaced from the point of view of a process that</div><div class="line">   inherited chroot.</div><div class="line"></div><div class="line"> - The exec code has special handling for ptrace.</div></pre></td></tr></table></figure>
-<p>例如：</p>
+<blockquote>
+<p>For example:</p>
+<ul>
+<li><p>The dynamic loader handles LD_* environment variables differently if<br>a program is setuid.</p>
+</li>
+<li><p>chroot is disallowed to unprivileged processes, since it would allow<br>/etc/passwd to be replaced from the point of view of a process that<br>inherited chroot.</p>
+</li>
+<li><p>The exec code has special handling for ptrace.</p>
+</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<p>  例如：</p>
 <ul>
 <li><p>一个被重新设置了uid的程序，(启动运行时)动态链接器在处理这些以”LD_”为前缀的环境变量时，要注意(其文件路径的权限)差异；</p>
 </li>
@@ -342,25 +658,49 @@
 <li><p>使用ptrace来跟踪指定的代码；</p>
 </li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">These are all ad-hoc fixes.  The no_new_privs bit (since Linux 3.5) is a</div><div class="line">new, generic mechanism to make it safe for a process to modify its</div><div class="line">execution environment in a manner that persists across execve.  Any task</div><div class="line">can set no_new_privs.  Once the bit is set, it is inherited across fork,</div><div class="line">clone, and execve and cannot be unset.  With no_new_privs set, execve</div><div class="line">promises not to grant the privilege to do anything that could not have</div><div class="line">been done without the execve call.  For example, the setuid and setgid</div><div class="line">bits will no longer change the uid or gid; file capabilities will not</div><div class="line">add to the permitted set, and LSMs will not relax constraints after</div><div class="line">execve.</div></pre></td></tr></table></figure>
-<p>因此内核引入了一些临时性解决方案。到后来，内核(从 Linux3.5版本开始)引入(设置)”no_new_privs”位的全新的通用机制，提供给进程一种能够在execve()调用整个阶段都能持续有效且安全的方法。任何一个进程都可以设置”no_new_privs”位。然而一旦(当前进程)被置位，不论通过fork,clone,或者execve生成的子进程都无法将该位清零。因此通过”no_new_privs”置位的方式，execve函数可以确保所有的操作都必须调用execve()(判定)赋予权限后才被执行。比如，<br>  setuid和setgid操作将无法有效执行；<br>  文件访问权限无法被扩增，LINUX安全模块(LSM-Linux Security Module)在execve()执行后不会释放控制权限；</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">To set no_new_privs, use prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0).</div></pre></td></tr></table></figure>
-<p>设置”no_new_privs”位，可以这样调用:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)</div></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">Be careful, though: LSMs might also not tighten constraints on exec</div><div class="line">in no_new_privs mode.  (This means that setting up a general-purpose</div><div class="line">service launcher to set no_new_privs before execing daemons may</div><div class="line">interfere with LSM-based sandboxing.)</div></pre></td></tr></table></figure>
-<p>要注意到的是，因此：处于”no_new_privs”模式下,调用exec()函数时，Linux安全模块将收紧权限控制。<br>(这意味着建立一个通用启动器，在设置no_new_privs之前execing守护进程可能会受到LSM沙盒的影响)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Note that no_new_privs does not prevent privilege changes that do not</div><div class="line">involve execve.  An appropriately privileged task can still call</div><div class="line">setuid(2) and receive SCM_RIGHTS datagrams.</div></pre></td></tr></table></figure></p>
-<p>注意，通过execve调用，可以确保处于”no_new_privs”模式(下的进程)权限不发生变化。一个适当的特权任务，可以持续完成uid设置，以及接收SCM_RIGHTS报文数据。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">There are two main use cases for no_new_privs so far:</div><div class="line"></div><div class="line"> - Filters installed for the seccomp mode 2 sandbox persist across</div><div class="line">   execve and can change the behavior of newly-executed programs.</div><div class="line">   Unprivileged users are therefore only allowed to install such filters</div><div class="line">   if no_new_privs is set.</div><div class="line"></div><div class="line"> - By itself, no_new_privs can be used to reduce the attack surface</div><div class="line">   available to an unprivileged user.  If everything running with a</div><div class="line">   given uid has no_new_privs set, then that uid will be unable to</div><div class="line">   escalate its privileges by directly attacking setuid, setgid, and</div><div class="line">   fcap-using binaries; it will need to compromise something without the</div><div class="line">   no_new_privs bit set first.</div></pre></td></tr></table></figure></p>
-<p>“no_new_privs”主要应用在以下两个场景：</p>
+<blockquote>
+<p>These are all ad-hoc fixes.  The no_new_privs bit (since Linux 3.5) is a<br>new, generic mechanism to make it safe for a process to modify its<br>execution environment in a manner that persists across execve.  Any task<br>can set no_new_privs.  Once the bit is set, it is inherited across fork,<br>clone, and execve and cannot be unset.  With no_new_privs set, execve<br>promises not to grant the privilege to do anything that could not have<br>been done without the execve call.  For example, the setuid and setgid<br>bits will no longer change the uid or gid; file capabilities will not<br>add to the permitted set, and LSMs will not relax constraints after<br>execve.</p>
+</blockquote>
+<p>  因此内核引入了一些临时性解决方案。到后来，内核(从 Linux3.5版本开始)引入(设置)”no_new_privs”位的全新的通用机制，提供给进程一种能够在execve()调用整个阶段都能持续有效且安全的方法。任何一个进程都可以设置”no_new_privs”位。然而一旦(当前进程)被置位，不论通过fork,clone,或者execve生成的子进程都无法将该位清零。因此通过”no_new_privs”置位的方式，execve函数可以确保所有的操作都必须调用execve()(判定)赋予权限后才被执行。比如，<br>    setuid和setgid操作将无法有效执行；<br>    文件访问权限无法被扩增，LINUX安全模块(LSM-Linux Security Module)在execve()执行后不会释放控制权限；</p>
+<blockquote>
+<p>To set no_new_privs, use<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&gt; prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0).</div><div class="line">&gt;</div></pre></td></tr></table></figure></p>
+</blockquote>
+<p>  设置”no_new_privs”位，可以这样调用:<br>  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)</div></pre></td></tr></table></figure></p>
+<blockquote>
+<p>Be careful, though: LSMs might also not tighten constraints on exec<br>in no_new_privs mode.  (This means that setting up a general-purpose<br>service launcher to set no_new_privs before execing daemons may<br>interfere with LSM-based sandboxing.)</p>
+</blockquote>
+<p>  要注意到的是，因此：处于”no_new_privs”模式下,调用exec()函数时，Linux安全模块将收紧权限控制。<br>  (这意味着建立一个通用启动器，在设置no_new_privs之前execing守护进程可能会受到LSM沙盒的影响)</p>
+<blockquote>
+<p>Note that no_new_privs does not prevent privilege changes that do not<br>involve execve.  An appropriately privileged task can still call<br>setuid(2) and receive SCM_RIGHTS datagrams.</p>
+</blockquote>
+<p>  注意，通过execve调用，可以确保处于”no_new_privs”模式(下的进程)权限不发生变化。一个适当的特权任务，可以持续完成uid设置，以及接收SCM_RIGHTS报文数据。</p>
+<blockquote>
+<p>There are two main use cases for no_new_privs so far:</p>
 <ul>
-<li>已安装在seccomp模式2的沙盒过滤器可以持续在execve()(函数调用期间)改变新执行的程序的行为。no_new_privs设置后，只允许非特权用户安装过滤器。</li>
-<li>就其本身而言，”no_new_privs”能够减小非法用户可进行攻击的攻击面。如果每一个进程都能够运行在设置了”no_new_privs”的UID下，这个UID就不会被”setuid”,”setgid”以及”fcap-using binaries”这些攻击手段提升权限;(为了避免权限提升)首先确保”no_new_privs”位能够提前设置。<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">In the future, other potentially dangerous kernel features could become</div><div class="line">available to unprivileged tasks if no_new_privs is set.  In principle,</div><div class="line">several options to unshare(2) and clone(2) would be safe when</div><div class="line">no_new_privs is set, and no_new_privs + chroot is considerable less</div><div class="line">dangerous than chroot by itself.</div></pre></td></tr></table></figure>
+<li><p>Filters installed for the seccomp mode 2 sandbox persist across<br>execve and can change the behavior of newly-executed programs.<br>Unprivileged users are therefore only allowed to install such filters<br>if no_new_privs is set.</p>
+</li>
+<li><p>By itself, no_new_privs can be used to reduce the attack surface<br>available to an unprivileged user.  If everything running with a<br>given uid has no_new_privs set, then that uid will be unable to<br>escalate its privileges by directly attacking setuid, setgid, and<br>fcap-using binaries; it will need to compromise something without the<br>no_new_privs bit set first.</p>
 </li>
 </ul>
-<p>在未来，在”no_new_privs”模式下，将出现其他具有威胁内核的功能被非法的任务所应用。原则上，在”no_new_privs”模式下需要对unshare(2),以及clone(2)进行配置设置。实现”no_new_privs”与chroot的组合使用方式是一种相比与独立使用chroot的一种可实现的低风险方案。</p>
+</blockquote>
+<p>  “no_new_privs”更多地应用在以下两个场景：</p>
+<pre><code>- 已安装在seccomp模式2的沙盒过滤器可以持续在execve()(函数调用期间)改变新执行的程序的行为。no_new_privs设置后，只允许非特权用户安装过滤器。
+- 就其本身而言，&quot;no_new_privs&quot;能够减小非法用户可进行攻击的攻击面。如果每一个进程都能够运行在设置了&quot;no_new_privs&quot;的UID下，这个UID就不会被&quot;setuid&quot;,&quot;setgid&quot;以及&quot;fcap-using binaries&quot;这些攻击手段提升权限;(为了避免权限提升)首先确保&quot;no_new_privs&quot;位能够提前设置。
+</code></pre><blockquote>
+<p>In the future, other potentially dangerous kernel features could become<br>available to unprivileged tasks if no_new_privs is set.  In principle,<br>several options to unshare(2) and clone(2) would be safe when<br>no_new_privs is set, and no_new_privs + chroot is considerable less<br>dangerous than chroot by itself.</p>
+</blockquote>
+<p>  在未来，在”no_new_privs”模式下，将出现其他具有威胁内核的功能被非法的任务所应用。原则上，在”no_new_privs”模式下需要对unshare(2),以及clone(2)进行配置设置。实现”no_new_privs”与chroot的组合使用方式是一种相比与独立使用chroot的一种可实现的低风险方案。</p>
+<ul>
+<li>原始文档，请参考这里 <a href="http://tomoyo.osdn.jp/cgi-bin/lxr/source/Documentation/prctl/no_new_privs.txt" title="no_new_privs.txt" target="_blank" rel="external">no_new_privs.txt</a></li>
+</ul>
 ]]></content>
     
     <summary type="html">
     
-      &lt;p&gt;The original article, please reference here &lt;a href=&quot;http://tomoyo.osdn.jp/cgi-bin/lxr/source/Documentation/prctl/no_new_privs.txt&quot; targe
+      &lt;ul&gt;
+&lt;li&gt;&lt;p&gt;这是一篇关于内核如何限制通过fork方式提升进程特权的文章。是为了求解阅读了Android　init进程的源码中，关于prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)调用的缘由的。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;以下是原文与
     
     </summary>
     
@@ -376,17 +716,25 @@
     <link href="https://turbin.github.io/2016/09/14/Promise/"/>
     <id>https://turbin.github.io/2016/09/14/Promise/</id>
     <published>2016-09-14T12:30:45.000Z</published>
-    <updated>2017-02-05T05:22:50.289Z</updated>
+    <updated>2017-08-27T13:34:25.841Z</updated>
     
     <content type="html"><![CDATA[<p>由于项目开发需要解决JS同步的问题，但是受限在目前的框架里没有引用到jQuery，也就无法使用defered。也是自己嫌麻烦，于是开始重新造轮子的过程——服务于自己的测试代码，写了一个简易的promise的实现。</p>
-<p><a href="https://github.com/turbin/JavascriptUtility.git" target="_blank" rel="external">Promise</a>下面有个src/Promise.js<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * Created by turbineyan on 9/12/16.</div><div class="line"> */</div><div class="line">function Promise()&#123;</div><div class="line">&#125;</div><div class="line">Promise.prototype = &#123;</div><div class="line">    callback:null, caller:null,onDone:null,</div><div class="line">    when:function()&#123;</div><div class="line">        if(this.callbacks)&#123;</div><div class="line">            this.callbacks = null;</div><div class="line">        &#125;</div><div class="line">        this.callbacks = [];</div><div class="line">        this.caller = null;</div><div class="line">        for(var i=0; i!=arguments.length; i++)&#123;</div><div class="line">            this.callbacks.push(&#123;fn:arguments[i], onSuccess:this.onSuccess, onFail:this.fail&#125;);</div><div class="line">        &#125;</div><div class="line">        ///this.callbacks[this.idx].fn.call(this, this);</div><div class="line">        return this;</div><div class="line">    &#125;,</div><div class="line">    resolve:function()&#123;</div><div class="line">        this.next();</div><div class="line">        return this;</div><div class="line">    &#125;,</div><div class="line">    reject:function()&#123;</div><div class="line">        this.caller.onFail(this);</div><div class="line">        return this;</div><div class="line">    &#125;,</div><div class="line">    done:function(callback)&#123;</div><div class="line">        this.onDone = callback;</div><div class="line">        return this;</div><div class="line">    &#125;,</div><div class="line">    onSuccess:function(promise)&#123;</div><div class="line">        console.log(&apos;on success!&apos;);</div><div class="line">    &#125;,</div><div class="line">    next:function()&#123;</div><div class="line">        this.caller = null;</div><div class="line">        if(this.callbacks.length !== 0)&#123;</div><div class="line">            this.caller= this.callbacks.shift(1);</div><div class="line">            this.caller.fn(this);</div><div class="line">            return this;</div><div class="line">        &#125;</div><div class="line">        if(this.onDone)this.onDone(this);</div><div class="line">        return this;</div><div class="line">    &#125;,</div><div class="line">    fail:function(promise) &#123;</div><div class="line">        var fn =this.caller.fn;</div><div class="line">        this.caller = null;</div><div class="line">        throw new EvalError(&apos;promise call &apos; + fn + &apos; call fail!&apos;);</div><div class="line">    &#125;</div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
-<p>简单说明下，通过数组来组成一个链的结构。然后通过resovle和reject配合使用，实现类职责链的效果。<br>示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">var promise = new Promise();</div><div class="line">promise.when(</div><div class="line">   function(promise)&#123; // step 1</div><div class="line">      // 在这里调用具体的函数实现，</div><div class="line">      // 如果成功，则执行promise.resolve()后，</div><div class="line">      // 执行链上的下一个函数，</div><div class="line">      // 如果失败,则调用promise.reject(),随后fail()会被执行</div><div class="line">      // 如果链上的所有步骤都成功，则最终执行done   </div><div class="line">   &#125;,</div><div class="line">).next()</div></pre></td></tr></table></figure></p>
+<ul>
+<li><p><a href="https://github.com/turbin/JavascriptUtility.git" title="Promise" target="_blank" rel="external">Promise</a> 下面有个src/Promise.js</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div></pre></td><td class="code"><pre><div class="line">Promise.js</div><div class="line">/**</div><div class="line">* Created by turbineyan on 9/12/16.</div><div class="line">*/</div><div class="line">function Promise()&#123;</div><div class="line">&#125;</div><div class="line">Promise.prototype = &#123;</div><div class="line">    callback:null, caller:null,onDone:null,</div><div class="line">    when:function()&#123;</div><div class="line">        if(this.callbacks)&#123;</div><div class="line">            this.callbacks = null;</div><div class="line">        &#125;</div><div class="line">        this.callbacks = [];</div><div class="line">        this.caller = null;</div><div class="line">        for(var i=0; i!=arguments.length; i++)&#123;</div><div class="line">            this.callbacks.push(&#123;fn:arguments[i], onSuccess:this.onSuccess, onFail:this.fail&#125;);</div><div class="line">        &#125;</div><div class="line">        ///this.callbacks[this.idx].fn.call(this, this);</div><div class="line">        return this;</div><div class="line">    &#125;,</div><div class="line">    resolve:function()&#123;</div><div class="line">        this.next();</div><div class="line">        return this;</div><div class="line">    &#125;,</div><div class="line">    reject:function()&#123;</div><div class="line">        this.caller.onFail(this);</div><div class="line">        return this;</div><div class="line">    &#125;,</div><div class="line">    done:function(callback)&#123;</div><div class="line">        this.onDone = callback;</div><div class="line">        return this;</div><div class="line">    &#125;,</div><div class="line">    onSuccess:function(promise)&#123;</div><div class="line">        console.log(&apos;on success!&apos;);</div><div class="line">    &#125;,</div><div class="line">    next:function()&#123;</div><div class="line">        this.caller = null;</div><div class="line">        if(this.callbacks.length !== 0)&#123;</div><div class="line">            this.caller= this.callbacks.shift(1);</div><div class="line">            this.caller.fn(this);</div><div class="line">            return this;</div><div class="line">        &#125;</div><div class="line">        if(this.onDone)this.onDone(this);</div><div class="line">        return this;</div><div class="line">    &#125;,</div><div class="line">    fail:function(promise) &#123;</div><div class="line">        var fn =this.caller.fn;</div><div class="line">        this.caller = null;</div><div class="line">        throw new EvalError(&apos;promise call &apos; + fn + &apos; call fail!&apos;);</div><div class="line">    &#125;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+</li>
+<li><p>示例</p>
+<p>  简单说明下: 通过数组来组成一个链的结构。然后通过resovle和reject配合使用，实现类职责链的效果。</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">var promise = new Promise();</div><div class="line">promise.when(</div><div class="line">    function(promise)&#123; // step 1</div><div class="line">        // 在这里调用具体的函数实现，</div><div class="line">        // 如果成功，则执行promise.resolve()后，</div><div class="line">        // 执行链上的下一个函数，</div><div class="line">        // 如果失败,则调用promise.reject(),随后fail()会被执行</div><div class="line">        // 如果链上的所有步骤都成功，则最终执行done   </div><div class="line">    &#125;,</div><div class="line">).next()</div></pre></td></tr></table></figure>
+</li>
+</ul>
 ]]></content>
     
     <summary type="html">
     
       &lt;p&gt;由于项目开发需要解决JS同步的问题，但是受限在目前的框架里没有引用到jQuery，也就无法使用defered。也是自己嫌麻烦，于是开始重新造轮子的过程——服务于自己的测试代码，写了一个简易的promise的实现。&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;https://github
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&quot;https
     
     </summary>
     
@@ -402,19 +750,32 @@
     <link href="https://turbin.github.io/2016/09/13/Javascript-Examples/"/>
     <id>https://turbin.github.io/2016/09/13/Javascript-Examples/</id>
     <published>2016-09-13T12:46:36.000Z</published>
-    <updated>2017-02-05T05:23:06.301Z</updated>
+    <updated>2017-08-27T13:34:25.809Z</updated>
     
     <content type="html"><![CDATA[<p>摘自《Javascript权威教程》</p>
-<h3 id="Monkey-Path"><a href="#Monkey-Path" class="headerlink" title="Monkey Path"></a>Monkey Path</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">function trace(o, m)&#123;</div><div class="line">   var original = o[m];</div><div class="line">   o[m] = function()&#123;</div><div class="line">        console.log(new Date(), &quot;Entering:&quot;, m);</div><div class="line">        var result = original.apply(this, arguments);</div><div class="line">        console.log(new Date(), &quot;Exiting:&quot;, m);</div><div class="line">        return result;</div><div class="line">   &#125;;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>上面这种方法，更像是装饰器——动态添加了函数对象原本不支持的职责，缺不破坏函数本身。</p>
-<h3 id="Bind方法"><a href="#Bind方法" class="headerlink" title="Bind方法:"></a>Bind方法:</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">if(!Function.prototype.bind) &#123;</div><div class="line">   Function.prototype.bind = function(o /*, args */)&#123;</div><div class="line">      // 将this 和arguments 的值保存至变量中</div><div class="line">      // 以便后面嵌套的函数中可以使用它们</div><div class="line">      var self = this, boundArgs = arguments;</div><div class="line"></div><div class="line">      return function() &#123;</div><div class="line">           var args = [], i;</div><div class="line">           for(i=1; i &lt; boundArgs.length; i++) args.push(boundArgs[i]);</div><div class="line">           for(i=0; i &lt; arguments.length; i++) args.push(arguments[i]);</div><div class="line">           return self.apply(o, args);</div><div class="line">      &#125;;</div><div class="line">   &#125;;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>上面是对使用ECMA-Script3 标准对ECMA-Script5标准的扩展。支持动态绑定，就像jQuery中的on方法。</p>
-]]></content>
+<ul>
+<li><p>Monkey Path:<br>&gt;</p>
+<blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">&gt; function trace(o, m)&#123;</div><div class="line">&gt;    var original = o[m];</div><div class="line">&gt;    o[m] = function()&#123;</div><div class="line">&gt;         console.log(new Date(), &quot;Entering:&quot;, m);</div><div class="line">&gt;         var result = original.apply(this, arguments);</div><div class="line">&gt;         console.log(new Date(), &quot;Exiting:&quot;, m);</div><div class="line">&gt;         return result;</div><div class="line">&gt;    &#125;;</div><div class="line">&gt; &#125;</div><div class="line">&gt;</div></pre></td></tr></table></figure>
+</blockquote>
+<p>  上面这种方法，更像是装饰器——动态添加了函数对象原本不支持的职责，缺不破坏函数本身。</p>
+</li>
+<li><p>Bind方法:</p>
+</li>
+</ul>
+<blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">&gt; if(!Function.prototype.bind) &#123;</div><div class="line">&gt;    Function.prototype.bind = function(o /*, args */)&#123;</div><div class="line">&gt;       // 将this 和arguments 的值保存至变量中</div><div class="line">&gt;       // 以便后面嵌套的函数中可以使用它们</div><div class="line">&gt;       var self = this, boundArgs = arguments;</div><div class="line">&gt; </div><div class="line">&gt;       return function() &#123;</div><div class="line">&gt;            var args = [], i;</div><div class="line">&gt;            for(i=1; i &lt; boundArgs.length; i++) args.push(boundArgs[i]);</div><div class="line">&gt;            for(i=0; i &lt; arguments.length; i++) args.push(arguments[i]);</div><div class="line">&gt;            return self.apply(o, args);</div><div class="line">&gt;       &#125;;</div><div class="line">&gt;    &#125;;</div><div class="line">&gt; &#125;</div><div class="line">&gt;</div></pre></td></tr></table></figure>
+</blockquote>
+<pre><code>上面是对使用ECMA-Script3 标准对ECMA-Script5标准的扩展。支持动态绑定，就像jQuery中的on方法。
+</code></pre>]]></content>
     
     <summary type="html">
     
       &lt;p&gt;摘自《Javascript权威教程》&lt;/p&gt;
-&lt;h3 id=&quot;Monkey-Path&quot;&gt;&lt;a href=&quot;#Monkey-Path&quot; class=&quot;headerlink&quot; title=&quot;Monkey Path&quot;&gt;&lt;/a&gt;Monkey Path&lt;/h3&gt;&lt;figure cla
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Monkey Path:&lt;br&gt;&amp;gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;p
     
     </summary>
     
