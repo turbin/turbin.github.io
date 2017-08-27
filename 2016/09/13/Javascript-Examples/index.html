@@ -11,9 +11,10 @@
     
     <meta name="description" content="摘自《Javascript权威教程》
 
-Monkey Path:&amp;gt;
+Monkey Path:
 
-12345678910&amp;gt; function trace(o, m)&amp;#123;&amp;gt;    var original = o[m];&amp;gt;    o[m] = function()&amp;#123;&amp;gt;       ">
+
+12345678910&amp;gt; function trace(o, m)&amp;#123;&amp;gt;    var original = o[m];&amp;gt;    o[m] = function()&amp;#123;&amp;gt;         c">
     
     
     
@@ -111,20 +112,20 @@ var _hmt = _hmt || [];
 		
 		<p>摘自《Javascript权威教程》</p>
 <ul>
-<li><p>Monkey Path:<br>&gt;</p>
+<li>Monkey Path:</li>
+</ul>
 <blockquote>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">&gt; function trace(o, m)&#123;</div><div class="line">&gt;    var original = o[m];</div><div class="line">&gt;    o[m] = function()&#123;</div><div class="line">&gt;         console.log(new Date(), &quot;Entering:&quot;, m);</div><div class="line">&gt;         var result = original.apply(this, arguments);</div><div class="line">&gt;         console.log(new Date(), &quot;Exiting:&quot;, m);</div><div class="line">&gt;         return result;</div><div class="line">&gt;    &#125;;</div><div class="line">&gt; &#125;</div><div class="line">&gt;</div></pre></td></tr></table></figure>
 </blockquote>
-<p>  上面这种方法，更像是装饰器——动态添加了函数对象原本不支持的职责，缺不破坏函数本身。</p>
-</li>
-<li><p>Bind方法:</p>
-</li>
+<p>上面这种方法，更像是装饰器——动态添加了函数对象原本不支持的职责，缺不破坏函数本身。</p>
+<ul>
+<li>Bind方法:</li>
 </ul>
 <blockquote>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">&gt; if(!Function.prototype.bind) &#123;</div><div class="line">&gt;    Function.prototype.bind = function(o /*, args */)&#123;</div><div class="line">&gt;       // 将this 和arguments 的值保存至变量中</div><div class="line">&gt;       // 以便后面嵌套的函数中可以使用它们</div><div class="line">&gt;       var self = this, boundArgs = arguments;</div><div class="line">&gt; </div><div class="line">&gt;       return function() &#123;</div><div class="line">&gt;            var args = [], i;</div><div class="line">&gt;            for(i=1; i &lt; boundArgs.length; i++) args.push(boundArgs[i]);</div><div class="line">&gt;            for(i=0; i &lt; arguments.length; i++) args.push(arguments[i]);</div><div class="line">&gt;            return self.apply(o, args);</div><div class="line">&gt;       &#125;;</div><div class="line">&gt;    &#125;;</div><div class="line">&gt; &#125;</div><div class="line">&gt;</div></pre></td></tr></table></figure>
 </blockquote>
-<pre><code>上面是对使用ECMA-Script3 标准对ECMA-Script5标准的扩展。支持动态绑定，就像jQuery中的on方法。
-</code></pre>  
+<p>上面是对使用ECMA-Script3 标准对ECMA-Script5标准的扩展。支持动态绑定，就像jQuery中的on方法。</p>
+  
 	</div>
 		<footer class="article-footer clearfix">
 

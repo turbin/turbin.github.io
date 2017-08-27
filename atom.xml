@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://turbin.github.io/"/>
-  <updated>2017-08-27T13:34:25.873Z</updated>
+  <updated>2017-08-27T15:00:43.511Z</updated>
   <id>https://turbin.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="https://turbin.github.io/2017/08/27/note_for_reading_LinkerandLoader/"/>
     <id>https://turbin.github.io/2017/08/27/note_for_reading_LinkerandLoader/</id>
     <published>2017-08-27T09:40:00.000Z</published>
-    <updated>2017-08-27T13:34:25.873Z</updated>
+    <updated>2017-08-27T15:00:43.511Z</updated>
     
     <content type="html"><![CDATA[<h1 id="链接和加载"><a href="#链接和加载" class="headerlink" title="链接和加载"></a>链接和加载</h1><h3 id="链接与加载"><a href="#链接与加载" class="headerlink" title="链接与加载"></a>链接与加载</h3><ul>
 <li><p>程序加载:</p>
@@ -94,8 +94,8 @@
 </ul>
 <blockquote>
 <p>一个典型的例程调用序列。Rf 是框架指针,Rt 是表指针,Rx 是临时寄存器。调用者将自己的表指针保存到自己的栈框架中,然后将被调用例程的地址和它的指针表地址载入到寄存器中,再进行调用。<br>被调用的例程可以通过 Rt 中的表指针找到它需要的所有数据,包括它随后要调用的例程的地址和表指针。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">&gt;    @理想的调用过程</div><div class="line">&gt;        ... 将参数压入堆栈 ...</div><div class="line">&gt;        store Rt</div><div class="line">&gt;        xxx(Rf) ; save caller’s table pointer in caller’s stack frame</div><div class="line">&gt;        load Rx MMM(Rt) ; load address of called routine into temp register</div><div class="line">&gt;        load Rt NNN(Rt) ; load called routine’s table pointer</div><div class="line">&gt;        call (Rx) ; call routine at address in Rx</div><div class="line">&gt;        load Rt</div><div class="line">&gt;        xxx(Rf) ; restore caller’s table pointer</div><div class="line">&gt;</div></pre></td></tr></table></figure>
 </blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">@理想的调用过程</div><div class="line">    ... 将参数压入堆栈 ...</div><div class="line">    store Rt</div><div class="line">    xxx(Rf) ; save caller’s table pointer in caller’s stack frame</div><div class="line">    load Rx MMM(Rt) ; load address of called routine into temp register</div><div class="line">    load Rt NNN(Rt) ; load called routine’s table pointer</div><div class="line">    call (Rx) ; call routine at address in Rx</div><div class="line">    load Rt</div><div class="line">    xxx(Rf) ; restore caller’s table pointer</div></pre></td></tr></table></figure>
 <ul>
 <li>Q&amp;A:<ul>
 <li>按照上述描述的情况，在具体的CPU架构中是如何实现的？找到ARM以及X86中的具体实现机制进行说明。</li>
@@ -301,34 +301,30 @@
     <link href="https://turbin.github.io/2017/08/21/LinkageError/"/>
     <id>https://turbin.github.io/2017/08/21/LinkageError/</id>
     <published>2017-08-20T16:00:00.000Z</published>
-    <updated>2017-08-27T13:34:25.813Z</updated>
+    <updated>2017-08-27T14:51:31.795Z</updated>
     
     <content type="html"><![CDATA[<h1 id="疑难问题现象"><a href="#疑难问题现象" class="headerlink" title="疑难问题现象"></a>疑难问题现象</h1><h3 id="现象"><a href="#现象" class="headerlink" title="现象"></a>现象</h3><ul>
 <li><p>一个安卓程序需要调用一个so库实现加解密操作，但是在更新了新版本后一直发现程序崩溃。</p>
 <p>kernel pain:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">2017-08-21 10:43:58.724 F/libc    ( 4844): Fatal signal 11 (SIGSEGV), code 1, fault addr 0xf4c3eb4 in tid 4844 (test.app)</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): Build fingerprint: &apos;qcom/msm8909/msm8909:5.1.1/NewLand_N900/newland.20170815.163947:user/test-keys&apos;</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): Revision: &apos;0&apos;</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): ABI: &apos;arm&apos;</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): pid: 4844, tid: 4844, name: test.app  &gt;&gt;&gt; ./test.app &lt;&lt;&lt;</div><div class="line">2017-08-21 10:43:58.827 I/DEBUG   (  266): signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0xf4c3eb4</div><div class="line">2017-08-21 10:43:58.830 W/NativeCrashListener(  760): Couldn&apos;t find ProcessRecord for pid 4844</div><div class="line">2017-08-21 10:43:58.835 I/DEBUG   (  266):     r0 00000000  r1 becddf70  r2 becddf90  r3 0f4c3eb5</div><div class="line">2017-08-21 10:43:58.835 E/DEBUG   (  266): AM write failure (32 / Broken pipe)</div><div class="line">2017-08-21 10:43:58.835 I/DEBUG   (  266):     r4 b6f1efc8  r5 becde97c  r6 00000001  r7 b6f1cc34</div><div class="line">2017-08-21 10:43:58.835 I/DEBUG   (  266):     r8 00000000  r9 00000000  sl 00000000  fp becde81c</div><div class="line">2017-08-21 10:43:58.835 I/DEBUG   (  266):     ip 80000000  sp becddf50  lr b6f1d2b4  pc 0f4c3eb4  cpsr a00f0030</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266): </div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266): backtrace:</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #00 pc 0f4c3eb4  &lt;unknown&gt;</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #01 pc 000012b0  /data/test.app (mfg_request_auth+1196)</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #02 pc 00000ca8  /data/test.app (main+116)</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #03 pc 0000f3f9  /system/lib/libc.so (__libc_init+44)</div><div class="line">2017-08-21 10:43:58.836 I/DEBUG   (  266):     #04 pc 00000bfc  /data/test.app (_start+88)</div><div class="line">2017-08-21 10:43:58.994 I/DEBUG   (  266): </div><div class="line">2017-08-21 10:43:58.994 I/DEBUG   (  266): Tombstone written to: /data/tombstones/tombstone_09</div><div class="line">2017-08-21 10:43:58.994 I/BootReceiver(  760): Copying /data/tombstones/tombstone_09 to DropBox (SYSTEM_TOMBSTONE)</div></pre></td></tr></table></figure>
-<p>从日志上看到PC指针指向一个地址0xf4c3eb4,在kernel pain上可以看出这个地址是一个无效地址。</p>
+</li>
+<li><p>从日志上看到PC指针指向一个地址0xf4c3eb4,在kernel pain上可以看出这个地址是一个无效地址。</p>
 <p>这点我们可以从后面的程序的map里面可以看出来。</p>
 <p>观察brackstrace:中打印的调用栈的信息，在奔溃之前进入了一个叫做 <em>mgf_request_auth</em> 的函数中，调用位置在offet=1196的位置上。</p>
 <p>此时，我们反汇编这个函数所在的bin文件:</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">00000e04 &lt;mfg_request_auth&gt;:</div><div class="line">	e04:	e92d4810 	push	&#123;r4, fp, lr&#125;</div><div class="line">	e08:	e28db008 	add	fp, sp, #8</div><div class="line">	e0c:	e24ddd23 	sub	sp, sp, #2240	; 0x8c0</div><div class="line">	e10:	e24dd004 	sub	sp, sp, #4</div><div class="line">	e14:	e1a03000 	mov	r3, r0</div><div class="line">	@ ---- 此处省略若干行 ----</div></pre></td></tr></table></figure>
+<p>从这里我们可以看到函数的入口地址为:0x0E04，定位崩溃点位置为:0x0E04 + 1196(这个是十进制数) 得到偏移位置为,0x12B0。</p>
+<p>定位汇编文件中offset=12b0的位置:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">@ ----- 此处省略若干行　------</div><div class="line">128c:	ebfffe29 	bl	b38 &lt;memset@plt&gt;</div><div class="line">1290:	e59f32fc 	ldr	r3, [pc, #764]	; 1594 &lt;mfg_request_auth+0x790&gt;</div><div class="line">1294:	e7943003 	ldr	r3, [r4, r3]</div><div class="line">1298:	e5933000 	ldr	r3, [r3]</div><div class="line">129c:	e24b1e8a 	sub	r1, fp, #2208	; 0x8a0</div><div class="line">12a0:	e241100c 	sub	r1, r1, #12</div><div class="line">12a4:	e24b2d22 	sub	r2, fp, #2176	; 0x880</div><div class="line">12a8:	e242200c 	sub	r2, r2, #12</div><div class="line">12ac:	e3a00000 	mov	r0, #0</div><div class="line">12b0:	e12fff33 	blx	r3</div><div class="line">12b4:	e3a03f63 	mov	r3, #396	; 0x18c</div><div class="line">12b8:	e2833002 	add	r3, r3, #2</div><div class="line">12bc:	e58d3000 	str	r3, [sp]</div><div class="line">12c0:	e3a00003 	mov	r0, #3</div><div class="line">@ ----- 此处省略若干行　------</div></pre></td></tr></table></figure>
 </li>
 </ul>
-<pre><code>从这里我们可以看到函数的入口地址为:0x0E04，定位崩溃点位置为:0x0E04 + 1196(这个是十进制数) 得到偏移位置为,0x12B0。
-
-定位汇编文件中offset=12b0的位置：
-
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">@ ----- 此处省略若干行　------</div><div class="line">128c:	ebfffe29 	bl	b38 &lt;memset@plt&gt;</div><div class="line">1290:	e59f32fc 	ldr	r3, [pc, #764]	; 1594 &lt;mfg_request_auth+0x790&gt;</div><div class="line">1294:	e7943003 	ldr	r3, [r4, r3]</div><div class="line">1298:	e5933000 	ldr	r3, [r3]</div><div class="line">129c:	e24b1e8a 	sub	r1, fp, #2208	; 0x8a0</div><div class="line">12a0:	e241100c 	sub	r1, r1, #12</div><div class="line">12a4:	e24b2d22 	sub	r2, fp, #2176	; 0x880</div><div class="line">12a8:	e242200c 	sub	r2, r2, #12</div><div class="line">12ac:	e3a00000 	mov	r0, #0</div><div class="line">12b0:	e12fff33 	blx	r3</div><div class="line">12b4:	e3a03f63 	mov	r3, #396	; 0x18c</div><div class="line">12b8:	e2833002 	add	r3, r3, #2</div><div class="line">12bc:	e58d3000 	str	r3, [sp]</div><div class="line">12c0:	e3a00003 	mov	r0, #3</div><div class="line">@ ----- 此处省略若干行　------</div></pre></td></tr></table></figure>
-
-
-
-请注意这里:
-
-    12b0:    e12fff33     blx    r3 
-
-这是一条跳转指令，跳转地址存放在r3寄存器中。所以我们可以查看在kernel pain 中打印的r3寄存器的值，r3＝0f4c3eb5。
-BLX 本身是一条跳转并切换指令集的指令，跳转地址为0xf4c3eb5，但是这个地址是一个无效地址。(奔溃的时PC=0xf4c3eb4, r3=0x0f4c3eb5,但是为什么PC指针是跳转地址的上一个字节地址，可能和ARM32指令集切换到Thumb16指令集的地址对齐规则有关，后续查阅资料后将补充该内容。)
-</code></pre><h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><ul>
+<ul>
+<li><p>请注意这里:</p>
+<pre><code>12b0:    e12fff33     blx    r3 
+</code></pre><p>这是一条跳转指令，跳转地址存放在r3寄存器中。所以我们可以查看在kernel pain 中打印的r3寄存器的值，r3＝0f4c3eb5。<br>BLX 本身是一条跳转并切换指令集的指令，跳转地址为0xf4c3eb5，但是这个地址是一个无效地址。(奔溃的时PC=0xf4c3eb4, r3=0x0f4c3eb5,但是为什么PC指针是跳转地址的上一个字节地址，可能和ARM32指令集切换到Thumb16指令集的地址对齐规则有关，后续查阅资料后将补充该内容。)</p>
+</li>
+</ul>
+<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><ul>
 <li><p>从上述描述的现象看是崩溃的原因是由于跳转到错误的地址导致的。　</p>
 </li>
 <li><p>问题:</p>
@@ -338,9 +334,9 @@ BLX 本身是一条跳转并切换指令集的指令，跳转地址为0xf4c3eb5�
 <p>于是我们开始结合汇编代码查阅源码：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">int mfg_request_auth(uint8_t auth_code, uint8_t *obuf, uint32_t *olen)&#123;</div><div class="line">	// ... ... 此处省略Ｎ行　</div><div class="line">	TRACE(&quot;czl--------------------&quot;);</div><div class="line"></div><div class="line">	unsigned int nLen = 0;</div><div class="line">	char szPosType[123]=&#123;0&#125;;</div><div class="line"></div><div class="line">	NDK_SysGetPosInfo(SYS_HWINFO_GET_POS_TYPE, &amp;nLen, &amp;szPosType[0]);</div><div class="line">	// ..... 此处省略N行</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>发现崩溃位置就是调用了这个函数(NDK_SysGetPosInfo)的地方。(具体结合汇编定位源码位置的方法有很多种，靠谱的方式就是通过GDB单步调试的方式。限于一些商业上的问题所以不方便公布所有源码内容，只能摘取部分关键片段)初步以为是因为函数传参时候由于传递的参数不正确导致进出栈时出错而崩溃。后来我们全部按照参数表的规定进行了调整，并单独定义局部变量等方式进行了多种尝试后发现依然崩溃。奔溃点还是在相同的地方。百思不得其解。<br>后来在浏览汇编源码时发现有个奇怪的现象:</p>
-<p>  奔溃的位置是一个地址跳转指令，但是我们调用的这个函数是被定义在一个函数库中，通过隐式调用方式进行调用的。</p>
+<p>崩溃的位置是一个地址跳转指令，但是我们调用的这个函数是被定义在一个函数库中，通过隐式调用方式进行调用的。</p>
 <p>那么所有隐式调用过程在汇编展开时都会是这样的:</p>
-<p>  128c:    ebfffe29     bl    b38 <a href="&#x6d;&#97;&#105;&#108;&#116;&#111;&#x3a;&#109;&#101;&#x6d;&#x73;&#x65;&#x74;&#64;&#112;&#x6c;&#116;">&#109;&#101;&#x6d;&#x73;&#x65;&#x74;&#64;&#112;&#x6c;&#116;</a></p>
+<p>  128c:    ebfffe29     bl    b38 <a href="&#x6d;&#97;&#x69;&#108;&#116;&#111;&#58;&#x6d;&#101;&#109;&#x73;&#101;&#116;&#64;&#112;&#x6c;&#x74;">&#x6d;&#101;&#109;&#x73;&#101;&#116;&#64;&#112;&#x6c;&#x74;</a></p>
 <p>每个函数名的后面都有个@plt，这个是用来标识这个函数是定义在外部库中，通过BL 指令进行带链接方式的跳转。</p>
 <p>它会产生一次长调用过程切换到GOT中查找函数名的对应入口地址。</p>
 <p>如果发现该函数不存在有效的已链接地址，则引发加载器搜索对应的库文件将函数实现的汇编代码导出并生产一个有效地址，链接到可执行文件的GOT表中。</p>
@@ -550,7 +546,7 @@ BLX 本身是一条跳转并切换指令集的指令，跳转地址为0xf4c3eb5�
     <link href="https://turbin.github.io/2017/01/28/no_new_privs%E4%B8%AD%E6%96%87%E8%AF%B4%E6%98%8E%E7%BF%BB%E8%AF%91/"/>
     <id>https://turbin.github.io/2017/01/28/no_new_privs中文说明翻译/</id>
     <published>2017-01-28T12:30:45.000Z</published>
-    <updated>2017-08-27T13:34:25.869Z</updated>
+    <updated>2017-08-27T14:23:31.553Z</updated>
     
     <content type="html"><![CDATA[<ul>
 <li><p>这是一篇关于内核如何限制通过fork方式提升进程特权的文章。是为了求解阅读了Android　init进程的源码中，关于prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)调用的缘由的。</p>
@@ -591,7 +587,8 @@ BLX 本身是一条跳转并切换指令集的指令，跳转地址为0xf4c3eb5�
 </blockquote>
 <p>  因此内核引入了一些临时性解决方案。到后来，内核(从 Linux3.5版本开始)引入(设置)”no_new_privs”位的全新的通用机制，提供给进程一种能够在execve()调用整个阶段都能持续有效且安全的方法。任何一个进程都可以设置”no_new_privs”位。然而一旦(当前进程)被置位，不论通过fork,clone,或者execve生成的子进程都无法将该位清零。因此通过”no_new_privs”置位的方式，execve函数可以确保所有的操作都必须调用execve()(判定)赋予权限后才被执行。比如，<br>    setuid和setgid操作将无法有效执行；<br>    文件访问权限无法被扩增，LINUX安全模块(LSM-Linux Security Module)在execve()执行后不会释放控制权限；</p>
 <blockquote>
-<p>To set no_new_privs, use<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&gt; prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0).</div><div class="line">&gt;</div></pre></td></tr></table></figure></p>
+<p>To set no_new_privs, use </p>
+<p>  prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0).</p>
 </blockquote>
 <p>  设置”no_new_privs”位，可以这样调用:<br>  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)</div></pre></td></tr></table></figure></p>
 <blockquote>
@@ -612,9 +609,11 @@ BLX 本身是一条跳转并切换指令集的指令，跳转地址为0xf4c3eb5�
 </ul>
 </blockquote>
 <p>  “no_new_privs”更多地应用在以下两个场景：</p>
-<pre><code>- 已安装在seccomp模式2的沙盒过滤器可以持续在execve()(函数调用期间)改变新执行的程序的行为。no_new_privs设置后，只允许非特权用户安装过滤器。
-- 就其本身而言，&quot;no_new_privs&quot;能够减小非法用户可进行攻击的攻击面。如果每一个进程都能够运行在设置了&quot;no_new_privs&quot;的UID下，这个UID就不会被&quot;setuid&quot;,&quot;setgid&quot;以及&quot;fcap-using binaries&quot;这些攻击手段提升权限;(为了避免权限提升)首先确保&quot;no_new_privs&quot;位能够提前设置。
-</code></pre><blockquote>
+<ul>
+<li>已安装在seccomp模式2的沙盒过滤器可以持续在execve()(函数调用期间)改变新执行的程序的行为。no_new_privs设置后，只允许非特权用户安装过滤器。</li>
+<li>就其本身而言，”no_new_privs”能够减小非法用户可进行攻击的攻击面。如果每一个进程都能够运行在设置了”no_new_privs”的UID下，这个UID就不会被”setuid”,”setgid”以及”fcap-using binaries”这些攻击手段提升权限;(为了避免权限提升)首先确保”no_new_privs”位能够提前设置。</li>
+</ul>
+<blockquote>
 <p>In the future, other potentially dangerous kernel features could become<br>available to unprivileged tasks if no_new_privs is set.  In principle,<br>several options to unshare(2) and clone(2) would be safe when<br>no_new_privs is set, and no_new_privs + chroot is considerable less<br>dangerous than chroot by itself.</p>
 </blockquote>
 <p>  在未来，在”no_new_privs”模式下，将出现其他具有威胁内核的功能被非法的任务所应用。原则上，在”no_new_privs”模式下需要对unshare(2),以及clone(2)进行配置设置。实现”no_new_privs”与chroot的组合使用方式是一种相比与独立使用chroot的一种可实现的低风险方案。</p>
@@ -678,32 +677,33 @@ BLX 本身是一条跳转并切换指令集的指令，跳转地址为0xf4c3eb5�
     <link href="https://turbin.github.io/2016/09/13/Javascript-Examples/"/>
     <id>https://turbin.github.io/2016/09/13/Javascript-Examples/</id>
     <published>2016-09-13T12:46:36.000Z</published>
-    <updated>2017-08-27T13:34:25.809Z</updated>
+    <updated>2017-08-27T14:19:36.482Z</updated>
     
     <content type="html"><![CDATA[<p>摘自《Javascript权威教程》</p>
 <ul>
-<li><p>Monkey Path:<br>&gt;</p>
+<li>Monkey Path:</li>
+</ul>
 <blockquote>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">&gt; function trace(o, m)&#123;</div><div class="line">&gt;    var original = o[m];</div><div class="line">&gt;    o[m] = function()&#123;</div><div class="line">&gt;         console.log(new Date(), &quot;Entering:&quot;, m);</div><div class="line">&gt;         var result = original.apply(this, arguments);</div><div class="line">&gt;         console.log(new Date(), &quot;Exiting:&quot;, m);</div><div class="line">&gt;         return result;</div><div class="line">&gt;    &#125;;</div><div class="line">&gt; &#125;</div><div class="line">&gt;</div></pre></td></tr></table></figure>
 </blockquote>
-<p>  上面这种方法，更像是装饰器——动态添加了函数对象原本不支持的职责，缺不破坏函数本身。</p>
-</li>
-<li><p>Bind方法:</p>
-</li>
+<p>上面这种方法，更像是装饰器——动态添加了函数对象原本不支持的职责，缺不破坏函数本身。</p>
+<ul>
+<li>Bind方法:</li>
 </ul>
 <blockquote>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">&gt; if(!Function.prototype.bind) &#123;</div><div class="line">&gt;    Function.prototype.bind = function(o /*, args */)&#123;</div><div class="line">&gt;       // 将this 和arguments 的值保存至变量中</div><div class="line">&gt;       // 以便后面嵌套的函数中可以使用它们</div><div class="line">&gt;       var self = this, boundArgs = arguments;</div><div class="line">&gt; </div><div class="line">&gt;       return function() &#123;</div><div class="line">&gt;            var args = [], i;</div><div class="line">&gt;            for(i=1; i &lt; boundArgs.length; i++) args.push(boundArgs[i]);</div><div class="line">&gt;            for(i=0; i &lt; arguments.length; i++) args.push(arguments[i]);</div><div class="line">&gt;            return self.apply(o, args);</div><div class="line">&gt;       &#125;;</div><div class="line">&gt;    &#125;;</div><div class="line">&gt; &#125;</div><div class="line">&gt;</div></pre></td></tr></table></figure>
 </blockquote>
-<pre><code>上面是对使用ECMA-Script3 标准对ECMA-Script5标准的扩展。支持动态绑定，就像jQuery中的on方法。
-</code></pre>]]></content>
+<p>上面是对使用ECMA-Script3 标准对ECMA-Script5标准的扩展。支持动态绑定，就像jQuery中的on方法。</p>
+]]></content>
     
     <summary type="html">
     
       &lt;p&gt;摘自《Javascript权威教程》&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;p&gt;Monkey Path:&lt;br&gt;&amp;gt;&lt;/p&gt;
+&lt;li&gt;Monkey Path:&lt;/li&gt;
+&lt;/ul&gt;
 &lt;blockquote&gt;
-&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;p
+&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;
     
     </summary>
     

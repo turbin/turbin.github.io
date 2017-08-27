@@ -148,7 +148,8 @@ var _hmt = _hmt || [];
 </blockquote>
 <p>  因此内核引入了一些临时性解决方案。到后来，内核(从 Linux3.5版本开始)引入(设置)”no_new_privs”位的全新的通用机制，提供给进程一种能够在execve()调用整个阶段都能持续有效且安全的方法。任何一个进程都可以设置”no_new_privs”位。然而一旦(当前进程)被置位，不论通过fork,clone,或者execve生成的子进程都无法将该位清零。因此通过”no_new_privs”置位的方式，execve函数可以确保所有的操作都必须调用execve()(判定)赋予权限后才被执行。比如，<br>    setuid和setgid操作将无法有效执行；<br>    文件访问权限无法被扩增，LINUX安全模块(LSM-Linux Security Module)在execve()执行后不会释放控制权限；</p>
 <blockquote>
-<p>To set no_new_privs, use<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&gt; prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0).</div><div class="line">&gt;</div></pre></td></tr></table></figure></p>
+<p>To set no_new_privs, use </p>
+<p>  prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0).</p>
 </blockquote>
 <p>  设置”no_new_privs”位，可以这样调用:<br>  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)</div></pre></td></tr></table></figure></p>
 <blockquote>
@@ -169,9 +170,11 @@ var _hmt = _hmt || [];
 </ul>
 </blockquote>
 <p>  “no_new_privs”更多地应用在以下两个场景：</p>
-<pre><code>- 已安装在seccomp模式2的沙盒过滤器可以持续在execve()(函数调用期间)改变新执行的程序的行为。no_new_privs设置后，只允许非特权用户安装过滤器。
-- 就其本身而言，&quot;no_new_privs&quot;能够减小非法用户可进行攻击的攻击面。如果每一个进程都能够运行在设置了&quot;no_new_privs&quot;的UID下，这个UID就不会被&quot;setuid&quot;,&quot;setgid&quot;以及&quot;fcap-using binaries&quot;这些攻击手段提升权限;(为了避免权限提升)首先确保&quot;no_new_privs&quot;位能够提前设置。
-</code></pre><blockquote>
+<ul>
+<li>已安装在seccomp模式2的沙盒过滤器可以持续在execve()(函数调用期间)改变新执行的程序的行为。no_new_privs设置后，只允许非特权用户安装过滤器。</li>
+<li>就其本身而言，”no_new_privs”能够减小非法用户可进行攻击的攻击面。如果每一个进程都能够运行在设置了”no_new_privs”的UID下，这个UID就不会被”setuid”,”setgid”以及”fcap-using binaries”这些攻击手段提升权限;(为了避免权限提升)首先确保”no_new_privs”位能够提前设置。</li>
+</ul>
+<blockquote>
 <p>In the future, other potentially dangerous kernel features could become<br>available to unprivileged tasks if no_new_privs is set.  In principle,<br>several options to unshare(2) and clone(2) would be safe when<br>no_new_privs is set, and no_new_privs + chroot is considerable less<br>dangerous than chroot by itself.</p>
 </blockquote>
 <p>  在未来，在”no_new_privs”模式下，将出现其他具有威胁内核的功能被非法的任务所应用。原则上，在”no_new_privs”模式下需要对unshare(2),以及clone(2)进行配置设置。实现”no_new_privs”与chroot的组合使用方式是一种相比与独立使用chroot的一种可实现的低风险方案。</p>
