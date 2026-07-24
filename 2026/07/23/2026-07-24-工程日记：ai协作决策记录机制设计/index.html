@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>工程日记：AI协作决策记录机制设计 | Turbine&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="记录AI协作过程中决策记录机制的设计过程，包括ai-decisions目录、progress目录和Git提交模板的建立。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="工程日记：AI协作决策记录机制设计">
+<meta property="og:url" content="https://turbin.github.io/2026/07/23/2026-07-24-%E5%B7%A5%E7%A8%8B%E6%97%A5%E8%AE%B0%EF%BC%9Aai%E5%8D%8F%E4%BD%9C%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95%E6%9C%BA%E5%88%B6%E8%AE%BE%E8%AE%A1/index.html">
+<meta property="og:site_name" content="Turbine&#39;s Blog">
+<meta property="og:description" content="记录AI协作过程中决策记录机制的设计过程，包括ai-decisions目录、progress目录和Git提交模板的建立。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-23T08:15:00.000Z">
+<meta property="article:modified_time" content="2026-07-24T06:32:24.413Z">
+<meta property="article:author" content="Turbine Yan">
+<meta property="article:tag" content="AI协作">
+<meta property="article:tag" content="Git">
+<meta property="article:tag" content="决策记录">
+<meta property="article:tag" content="工程规范">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Turbine's Blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Turbine&#39;s Blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">一个会写C/C++，喜欢研究Linux的纯码农</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS 订阅"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="搜索"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜索"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://turbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-2026-07-24-工程日记：ai协作决策记录机制设计" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/07/23/2026-07-24-%E5%B7%A5%E7%A8%8B%E6%97%A5%E8%AE%B0%EF%BC%9Aai%E5%8D%8F%E4%BD%9C%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95%E6%9C%BA%E5%88%B6%E8%AE%BE%E8%AE%A1/" class="article-date">
+  <time class="dt-published" datetime="2026-07-23T08:15:00.000Z" itemprop="datePublished">2026-07-23</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/engineering/">工程博客</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      工程日记：AI协作决策记录机制设计
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="🌤️-今日天气-心情"><a href="#🌤️-今日天气-心情" class="headerlink" title="🌤️ 今日天气&#x2F;心情"></a>🌤️ 今日天气&#x2F;心情</h2><p>晴 | 🤔 思考模式（关于AI协作机制的深度思考）</p>
+<hr>
+<h2 id="💻-开发工作记录"><a href="#💻-开发工作记录" class="headerlink" title="💻 开发工作记录"></a>💻 开发工作记录</h2><h3 id="项目：AI协作机制设计"><a href="#项目：AI协作机制设计" class="headerlink" title="项目：AI协作机制设计"></a>项目：AI协作机制设计</h3><p><strong>工作内容</strong>：</p>
+<ul>
+<li>反思与AI协作过程中决策记录的流失问题</li>
+<li>设计一套完整的决策追溯机制</li>
+<li>规划工程目录结构与Git提交规范</li>
+</ul>
+<p><strong>遇到的问题</strong>：</p>
+<ul>
+<li>AI协作中的决策过程常被当作”过程记录”而舍弃</li>
+<li>决策文档散落在各个角落，容易遗漏</li>
+<li>Coding Agent提交的代码与设计决策的关联性丢失</li>
+<li>代码提交时缺乏与设计文档的关联</li>
+</ul>
+<p><strong>解决方案</strong>：设计了一套三层机制：</p>
+<h4 id="1-专用决策记录目录"><a href="#1-专用决策记录目录" class="headerlink" title="1. 专用决策记录目录"></a>1. 专用决策记录目录</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">project/</span><br><span class="line">├── src/                    # 源代码</span><br><span class="line">├── docs/                   # 文档</span><br><span class="line">├── ai-decisions/           # 🆕 AI决策记录专用目录</span><br><span class="line">│   ├── index.md            # 决策索引总览</span><br><span class="line">│   ├── 2026-07-23-决策1.md</span><br><span class="line">│   ├── 2026-07-23-决策2.md</span><br><span class="line">│   └── ...</span><br><span class="line">└── README.md</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-索引文件结构-index-md"><a href="#2-索引文件结构-index-md" class="headerlink" title="2. 索引文件结构 (index.md)"></a>2. 索引文件结构 (index.md)</h4><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="section"># AI决策索引</span></span><br><span class="line"></span><br><span class="line"><span class="section">## 项目发展历史</span></span><br><span class="line"></span><br><span class="line"><span class="section">### 2026-07</span></span><br><span class="line"><span class="bullet">-</span> [决策1] 采用Wren AI作为Text2SQL方案</span><br><span class="line"><span class="bullet">  -</span> 日期: 2026-07-23</span><br><span class="line"><span class="bullet">  -</span> 背景: 需要自然语言转SQL能力</span><br><span class="line"><span class="bullet">  -</span> 决策: 选用Wren AI而非其他方案</span><br><span class="line"><span class="bullet">  -</span> 影响: AI数据分析平台架构调整</span><br><span class="line">  </span><br><span class="line"><span class="bullet">-</span> [决策2] 建立AI协作决策记录机制</span><br><span class="line"><span class="bullet">  -</span> 日期: 2026-07-23</span><br><span class="line"><span class="bullet">  -</span> 背景: 决策记录流失，代码与设计脱节</span><br><span class="line"><span class="bullet">  -</span> 决策: 建立ai-decisions目录和提交规范</span><br><span class="line"><span class="bullet">  -</span> 影响: 工程规范、代码可追溯性</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-Git提交模板规范"><a href="#3-Git提交模板规范" class="headerlink" title="3. Git提交模板规范"></a>3. Git提交模板规范</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">TODO:</span><br><span class="line">- xxx 本次未完成的任务</span><br><span class="line">- xxx 待后续跟进的事项</span><br><span class="line"></span><br><span class="line">COMPLETED:</span><br><span class="line">- ✅ 已完成的任务1</span><br><span class="line">- ✅ 已完成的任务2</span><br><span class="line"></span><br><span class="line">REFER SPEC:</span><br><span class="line">- docs/ai-decisions/2026-07-23-决策1.md</span><br><span class="line">- docs/design/text2sql-architecture.md</span><br><span class="line"></span><br><span class="line">CHANGELOG:</span><br><span class="line">- 新增: xxx功能</span><br><span class="line">- 修改: xxx逻辑</span><br><span class="line">- 修复: xxx问题</span><br></pre></td></tr></table></figure>
+
+<h3 id="项目：工程目录结构优化"><a href="#项目：工程目录结构优化" class="headerlink" title="项目：工程目录结构优化"></a>项目：工程目录结构优化</h3><p><strong>工作内容</strong>：</p>
+<ul>
+<li>在design目录下新增progress子目录</li>
+<li>用于记录里程碑任务的运行状态</li>
+<li>实现任务断点续传能力</li>
+</ul>
+<p><strong>遇到的问题</strong>：</p>
+<ul>
+<li>任务执行过程中出现异常后，无法获取任务状态</li>
+<li>无法从断点处继续执行任务</li>
+<li>缺乏任务运行状态的持久化记录</li>
+</ul>
+<p><strong>解决方案</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">design/</span><br><span class="line">├── index.md                # 设计文档索引</span><br><span class="line">├── 2026-07-23-xxx.md       # 具体设计文档</span><br><span class="line">├── progress/               # 🆕 里程碑任务运行状态目录</span><br><span class="line">│   ├── milestone-1.json    # 里程碑1状态</span><br><span class="line">│   ├── milestone-2.json    # 里程碑2状态</span><br><span class="line">│   └── ...</span><br><span class="line">└── ...</span><br></pre></td></tr></table></figure>
+
+<p><strong>设计要点</strong>：</p>
+<ul>
+<li>progress目录专门记录里程碑任务的运行状态</li>
+<li>每个里程碑独立文件，便于单独更新</li>
+<li>状态信息包括：当前进度、已完成步骤、待执行步骤、异常信息</li>
+<li>支持从任意断点恢复执行</li>
+</ul>
+<p><strong>实施状态</strong>：</p>
+<ul>
+<li>✅ 目录结构已创建</li>
+<li>⏳ 状态记录格式待定义</li>
+<li>⏳ 断点续传逻辑待实现</li>
+</ul>
+<hr>
+<h2 id="🧠-技术心得"><a href="#🧠-技术心得" class="headerlink" title="🧠 技术心得"></a>🧠 技术心得</h2><h3 id="新学到的东西"><a href="#新学到的东西" class="headerlink" title="新学到的东西"></a>新学到的东西</h3><ul>
+<li><strong>决策即代码</strong>: 重要的设计决策应该像代码一样被版本控制</li>
+<li><strong>上下文连续性</strong>: AI协作需要保持上下文的连续性，决策记录是上下文的载体</li>
+<li><strong>可追溯性设计</strong>: 好的工程实践不仅是代码质量，还包括决策过程的可追溯</li>
+<li><strong>断点续传思维</strong>: 长任务执行需要考虑异常恢复，状态持久化是关键</li>
+</ul>
+<h3 id="踩过的坑"><a href="#踩过的坑" class="headerlink" title="踩过的坑"></a>踩过的坑</h3><ul>
+<li><strong>过程记录的误区</strong>: 以前认为”过程”不重要，只保留”结果”。实际上过程记录了为什么这样决策，比结果更重要</li>
+<li><strong>文档孤岛</strong>: 决策文档散落在各处，没有统一的索引，导致查找困难</li>
+<li><strong>代码与设计的断层</strong>: Coding Agent完成任务后，代码与设计文档的关联没有建立，后续Review困难</li>
+<li><strong>状态丢失</strong>: 任务执行异常后，运行状态丢失，只能从头开始，浪费时间和资源</li>
+</ul>
+<h3 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h3><ul>
+<li><strong>索引驱动</strong>: 建立索引文件，让决策历史一目了然</li>
+<li><strong>关联一切</strong>: 代码提交必须关联相关设计文档</li>
+<li><strong>模板约束</strong>: 用模板规范提交信息，确保关键信息不遗漏</li>
+<li><strong>状态持久化</strong>: 关键任务的状态要实时记录，支持断点续传</li>
+</ul>
+<hr>
+<h2 id="🤔-思考与总结"><a href="#🤔-思考与总结" class="headerlink" title="🤔 思考与总结"></a>🤔 思考与总结</h2><h3 id="今日收获"><a href="#今日收获" class="headerlink" title="今日收获"></a>今日收获</h3><ol>
+<li><strong>系统性思维</strong>: 不仅要解决当前问题，还要建立长期有效的机制</li>
+<li><strong>文档即对话</strong>: 与AI的交互过程本身就是有价值的知识，应该被记录</li>
+<li><strong>工程化思维</strong>: 将决策管理工程化，用工具和流程保障质量</li>
+<li><strong>容错设计</strong>: 任务执行要考虑异常场景，状态持久化是容错的基础</li>
+</ol>
+<h3 id="待改进的地方"><a href="#待改进的地方" class="headerlink" title="待改进的地方"></a>待改进的地方</h3><ul>
+<li>需要与团队讨论并推广这套规范</li>
+<li>考虑自动化工具辅助生成决策记录</li>
+<li>设计评审流程，确保决策质量</li>
+<li>定义progress目录的状态记录格式</li>
+<li>实现断点续传的自动化逻辑</li>
+</ul>
+<hr>
+<p><em>记录时间: 2026-07-23</em></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://turbin.github.io/2026/07/23/2026-07-24-%E5%B7%A5%E7%A8%8B%E6%97%A5%E8%AE%B0%EF%BC%9Aai%E5%8D%8F%E4%BD%9C%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95%E6%9C%BA%E5%88%B6%E8%AE%BE%E8%AE%A1/" data-id="cuidDYT57MKo3-4g7k46rPdKx" data-title="工程日记：AI协作决策记录机制设计" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI%E5%8D%8F%E4%BD%9C/" rel="tag">AI协作</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/" rel="tag">Git</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95/" rel="tag">决策记录</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E8%A7%84%E8%8C%83/" rel="tag">工程规范</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2026/07/24/hello-world/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前一篇</strong>
+      <div class="article-nav-title">
+        
+          Hello World
+        
+      </div>
+    </a>
+  
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/engineering/">工程博客</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E5%8D%8F%E4%BD%9C/" rel="tag">AI协作</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95/" rel="tag">决策记录</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E8%A7%84%E8%8C%83/" rel="tag">工程规范</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI%E5%8D%8F%E4%BD%9C/" style="font-size: 10px;">AI协作</a> <a href="/tags/Git/" style="font-size: 10px;">Git</a> <a href="/tags/%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95/" style="font-size: 10px;">决策记录</a> <a href="/tags/%E5%B7%A5%E7%A8%8B%E8%A7%84%E8%8C%83/" style="font-size: 10px;">工程规范</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/07/">七月 2026</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/07/24/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/23/2026-07-24-%E5%B7%A5%E7%A8%8B%E6%97%A5%E8%AE%B0%EF%BC%9Aai%E5%8D%8F%E4%BD%9C%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95%E6%9C%BA%E5%88%B6%E8%AE%BE%E8%AE%A1/">工程日记：AI协作决策记录机制设计</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 Turbine Yan<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
