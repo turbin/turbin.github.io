@@ -6,15 +6,15 @@
   
   <title>My First Powershell | Turbine&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="My First Powershell原文内容需要手动提取…">
+  <meta name="description" content="My first powershell  code   2017-07-20    	 	 	 		 	1. 因为懒，也因为烦。 	 	 	因为懒，也因为烦。  所以为了发布版本简单可靠，也因为基于window环境下，所以学着写了powershell。  一边搜示例，一面学着写。大概有shell的基础入门挺快。   闲话少叙，直接提码：  123456789101112131415161718">
 <meta property="og:type" content="article">
 <meta property="og:title" content="My First Powershell">
 <meta property="og:url" content="https://turbin.github.io/2017/07/20/2017-07-20-my-first-powershell/index.html">
 <meta property="og:site_name" content="Turbine&#39;s Blog">
-<meta property="og:description" content="My First Powershell原文内容需要手动提取…">
+<meta property="og:description" content="My first powershell  code   2017-07-20    	 	 	 		 	1. 因为懒，也因为烦。 	 	 	因为懒，也因为烦。  所以为了发布版本简单可靠，也因为基于window环境下，所以学着写了powershell。  一边搜示例，一面学着写。大概有shell的基础入门挺快。   闲话少叙，直接提码：  123456789101112131415161718">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2017-07-19T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-07-24T08:31:33.345Z">
+<meta property="article:modified_time" content="2026-07-24T08:45:17.113Z">
 <meta property="article:author" content="Turbine Yan">
 <meta property="article:tag" content="PowerShell">
 <meta property="article:tag" content="Windows">
@@ -109,12 +109,30 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="My-First-Powershell"><a href="#My-First-Powershell" class="headerlink" title="My First Powershell"></a>My First Powershell</h1><p>原文内容需要手动提取…</p>
+        <pre><code>  My first powershell  code
+
+
+2017-07-20
+
+
+
+	
+	
+	
+		
+	1. 因为懒，也因为烦。
+	
+	
+	因为懒，也因为烦。
+</code></pre>
+<p>所以为了发布版本简单可靠，也因为基于window环境下，所以学着写了powershell。  一边搜示例，一面学着写。大概有shell的基础入门挺快。   闲话少叙，直接提码：<br>  12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758function build($target)&#123;	$dest_dir&#x3D;”build&#x2F;build_$target”	$output&#x3D;”$dest_dir&#x2F;output”		# if exsit remove it 	if(Test-Path $dest_dir)	&#123;			echo “rm $dest_dir”		ri “$dest_dir” -recurse	&#125;		cpi -Path “.&#x2F;Pad”  -Destination $dest_dir -Recurse -Force		if((Test-Path $output) -ne &apos;True&apos;)&#123;		echo “mkdir $dest_dir&#x2F;output”		mkdir “$dest_dir&#x2F;output”	&#125;	$obj_dir&#x3D;&apos;obj\local\armeabi&apos;	$dirs&#x3D;&apos;sdtp&apos;,&apos;api&apos;,&apos;mpos&apos;	foreach($build in $dirs)&#123;		ndk-build clean -C “$dest_dir&#x2F;$build&#x2F;jni”		ndk-build -j3 DEVICE&#x3D;$target -C “$dest_dir&#x2F;$build&#x2F;jni”		Copy-Item -Path “$dest_dir&#x2F;$build&#x2F;$obj_dir&#x2F;<em>.so” -Destination $output		Copy-Item -Path “$dest_dir&#x2F;$build&#x2F;$obj_dir&#x2F;</em>.a” -Destination $output	&#125;&#125;function argument_checker([string]$in_arg)&#123;&#125;function buildAll($in_devices)&#123;	foreach($device in $in_devices)&#123;		echo “in_device&#x3D;$device”;		build($device);	&#125;&#125;#default build all typefunction main&#123;	param(	[ValidateSet(&apos;N900_3G&apos;,&apos;N900_4G&apos;,&apos;IM81&apos;)]	$in_args	)		$devices&#x3D;&apos;N900_3G&apos;,&apos;N900_4G&apos;,&apos;IM81&apos;	if($in_args.Count -eq 0)&#123;		echo “build in default”		buildAll($in_devices&#x3D;$devices);	&#125;	else&#123;		buildAll($in_devices&#x3D;$in_args);	&#125;&#125;main($args);<br>  我是要把工程目录Pad下面sdtp,api,mpos这三个库文件的目录依顺序进行编译，然后将编译的文件打包。  因为一共要发布3款终端产品，有三个不同产品编译选项开关。同时有两个大的分支版本。所以正式发布版本时，需要323&#x3D;18次目录进出，然后进行ndk-build操作。并且很恶心的是，原来设定的库文件之间还有依赖关系，所以需要严格按照sdtp,api,mpos这三个目录的顺序进行编译。还有就是每个目录每次选择不同机型编译前都需要执行清空操作，因为不同的机型包含进来的代码可能还有些许差异。所以没有用脚本执行前，每次发版本都是异常辛苦，并且要很认真注意每个操作步骤的。  目前这个脚本，还不完善。<br>  最近抽时间增加publish脚本，用来进行自动将生成的so文件以及.a文件发布到我们的git服务器上，同时增加了cleanAll脚本用来清理编译生成的目标文件夹，方便提交svn。<br>  后续计划会增加并发任务，加快编译的效率。同时也考验下新的i5机器的性能。<br>  所以学点脚本，还是有用的，效率杠杠的。<br>  这里推荐两个不错的powershell学习网址：pstips 以及Microsoft PowerShell Management</p>
+<p>   power shell</p>
+<p>  coding</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://turbin.github.io/2017/07/20/2017-07-20-my-first-powershell/" data-id="cuidgAag5KhkH3YqQySYxq53p" data-title="My First Powershell" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="https://turbin.github.io/2017/07/20/2017-07-20-my-first-powershell/" data-id="cuidnhjvo5EDrHZwkFnVGAqQV" data-title="My First Powershell" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       

@@ -6,15 +6,15 @@
   
   <title>Promise | Turbine&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="Promise原文内容需要手动提取…">
+  <meta name="description" content="Promise   2016-09-14    	 	 	 		 	 	 	 	由于项目开发需要解决JS同步的问题，但是受限在目前的框架里没有引用到jQuery，也就无法使用defered。也是自己嫌麻烦，于是开始重新造轮子的过程——服务于自己的测试代码，写了一个简易的promise的实现。  Promise 下面有个src&#x2F;Promise.js  12345678910111213">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Promise">
 <meta property="og:url" content="https://turbin.github.io/2016/09/14/2016-09-14-Promise/index.html">
 <meta property="og:site_name" content="Turbine&#39;s Blog">
-<meta property="og:description" content="Promise原文内容需要手动提取…">
+<meta property="og:description" content="Promise   2016-09-14    	 	 	 		 	 	 	 	由于项目开发需要解决JS同步的问题，但是受限在目前的框架里没有引用到jQuery，也就无法使用defered。也是自己嫌麻烦，于是开始重新造轮子的过程——服务于自己的测试代码，写了一个简易的promise的实现。  Promise 下面有个src&#x2F;Promise.js  12345678910111213">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2016-09-13T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-07-24T08:31:33.328Z">
+<meta property="article:modified_time" content="2026-07-24T08:45:17.067Z">
 <meta property="article:author" content="Turbine Yan">
 <meta property="article:tag" content="JavaScript">
 <meta property="article:tag" content="Promise">
@@ -109,12 +109,31 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="Promise"><a href="#Promise" class="headerlink" title="Promise"></a>Promise</h1><p>原文内容需要手动提取…</p>
+        <pre><code>  Promise
+
+
+2016-09-14
+
+
+
+	
+	
+	
+		
+	
+	
+	
+	由于项目开发需要解决JS同步的问题，但是受限在目前的框架里没有引用到jQuery，也就无法使用defered。也是自己嫌麻烦，于是开始重新造轮子的过程——服务于自己的测试代码，写了一个简易的promise的实现。
+</code></pre>
+<p>Promise 下面有个src&#x2F;Promise.js<br>  123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051Promise.js&#x2F;*** Created by turbineyan on 9&#x2F;12&#x2F;16.*&#x2F;function Promise()&#123;&#125;Promise.prototype &#x3D; &#123;    callback:null, caller:null,onDone:null,    when:function()&#123;        if(this.callbacks)&#123;            this.callbacks &#x3D; null;        &#125;        this.callbacks &#x3D; [];        this.caller &#x3D; null;        for(var i&#x3D;0; i!&#x3D;arguments.length; i++)&#123;            this.callbacks.push(&#123;fn:arguments[i], onSuccess:this.onSuccess, onFail:this.fail&#125;);        &#125;        &#x2F;&#x2F;&#x2F;this.callbacks[this.idx].fn.call(this, this);        return this;    &#125;,    resolve:function()&#123;        this.next();        return this;    &#125;,    reject:function()&#123;        this.caller.onFail(this);        return this;    &#125;,    done:function(callback)&#123;        this.onDone &#x3D; callback;        return this;    &#125;,    onSuccess:function(promise)&#123;        console.log(&apos;on success!&apos;);    &#125;,    next:function()&#123;        this.caller &#x3D; null;        if(this.callbacks.length !&#x3D;&#x3D; 0)&#123;            this.caller&#x3D; this.callbacks.shift(1);            this.caller.fn(this);            return this;        &#125;        if(this.onDone)this.onDone(this);        return this;    &#125;,    fail:function(promise) &#123;        var fn &#x3D;this.caller.fn;        this.caller &#x3D; null;        throw new EvalError(&apos;promise call &apos; + fn + &apos; call fail!&apos;);    &#125;&#125;;</p>
+<p>示例<br>  简单说明下: 通过数组来组成一个链的结构。然后通过resovle和reject配合使用，实现类职责链的效果。<br>  12345678910var promise &#x3D; new Promise();promise.when(    function(promise)&#123; &#x2F;&#x2F; step 1        &#x2F;&#x2F; 在这里调用具体的函数实现，        &#x2F;&#x2F; 如果成功，则执行promise.resolve()后，        &#x2F;&#x2F; 执行链上的下一个函数，        &#x2F;&#x2F; 如果失败,则调用promise.reject(),随后fail()会被执行        &#x2F;&#x2F; 如果链上的所有步骤都成功，则最终执行done       &#125;,).next()</p>
+<p>   JavaScript</p>
+<p>  coding</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://turbin.github.io/2016/09/14/2016-09-14-Promise/" data-id="cuidl8NNUPIaQjLxqsw_ypZrl" data-title="Promise" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="https://turbin.github.io/2016/09/14/2016-09-14-Promise/" data-id="cuid61oAj1oUNCVAV3ePm-4dI" data-title="Promise" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       

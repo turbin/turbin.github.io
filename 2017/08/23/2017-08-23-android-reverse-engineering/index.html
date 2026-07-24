@@ -6,15 +6,15 @@
   
   <title>Android Reverse Engineering reading note | Turbine&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="Android Reverse Engineering reading note原文内容需要手动提取…">
+  <meta name="description" content="《Android软件安全与逆向分析》阅读笔记   2017-08-23    	 	 	 		 	1. 原生程序的启动流程分析 (P194.) 	 	 	原生程序的启动流程分析 (P194.)  GCC命令参数说明 未使用默认C库:  Android 未使用glibc作为C库，而是采用了google自己开发的Bionic C因此编译时需要加入 -nostdlib 静态链接:  gcc 命令参数">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android Reverse Engineering reading note">
 <meta property="og:url" content="https://turbin.github.io/2017/08/23/2017-08-23-android-reverse-engineering/index.html">
 <meta property="og:site_name" content="Turbine&#39;s Blog">
-<meta property="og:description" content="Android Reverse Engineering reading note原文内容需要手动提取…">
+<meta property="og:description" content="《Android软件安全与逆向分析》阅读笔记   2017-08-23    	 	 	 		 	1. 原生程序的启动流程分析 (P194.) 	 	 	原生程序的启动流程分析 (P194.)  GCC命令参数说明 未使用默认C库:  Android 未使用glibc作为C库，而是采用了google自己开发的Bionic C因此编译时需要加入 -nostdlib 静态链接:  gcc 命令参数">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2017-08-22T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-07-24T08:31:33.353Z">
+<meta property="article:modified_time" content="2026-07-24T08:45:17.149Z">
 <meta property="article:author" content="Turbine Yan">
 <meta property="article:tag" content="Android">
 <meta property="article:tag" content="逆向工程">
@@ -109,12 +109,35 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="Android-Reverse-Engineering-reading-note"><a href="#Android-Reverse-Engineering-reading-note" class="headerlink" title="Android Reverse Engineering reading note"></a>Android Reverse Engineering reading note</h1><p>原文内容需要手动提取…</p>
+        <pre><code>  《Android软件安全与逆向分析》阅读笔记
+
+
+2017-08-23
+
+
+
+	
+	
+	
+		
+	1. 原生程序的启动流程分析 (P194.)
+	
+	
+	原生程序的启动流程分析 (P194.)
+</code></pre>
+<p>GCC命令参数说明</p>
+<p>未使用默认C库:<br>  Android 未使用glibc作为C库，而是采用了google自己开发的Bionic C因此编译时需要加入 -nostdlib</p>
+<p>静态链接:<br>  gcc 命令参数中指定 -Bstatic,在生成可执行程序时会链接 crtbegin_static.o 与 crtend_android.o。crtbegin_static.o 文件中定义了静态链接的启动函数 _start,这个函数是程序启动时的第一个函数。</p>
+<p>动态链接:<br>  需要在gcc命令中指定 -Bdynamic,在生成可执行文件时会链接 crtbegin_dynamic.o 与 crtend_android.o 目标文件，并且动态链接时需要通过 –dynamic-linker 指定 加载器，默认为 &#x2F;system&#x2F;bin&#x2F;linker。在生成的可执行程序中，每个程序都会包含一个 .interp 段存入程序的 加载器。 动态库的启动函数 _start 位于 crtbegin_dynamic.o 文件中。</p>
+<p>链接脚本:<br>  无论是动态链接还是静态链接Android原生程序，在链接时都会传入一个链接脚本根据链接时指定参数的不同，所传入的链接脚本也不一样，所有的链接脚本位于Android NDK的 toolchains\arm-linux-android-4.4.3\prebuilt\windows\arm-linux-androideabi\lib\ldscripts 目录。默认情况下链接时会传入 armelf_linux_eabi.x 脚本文件，该文件的第五行代码 ENTRY(_start) 指出程序入口函数为_start。<br>  123456 &#x2F;* 此处省略N行 <em>&#x2F; OUTPUT_FORMAT(“elf32-littlearm”, “elf32-bigarm”,”elf32-littlearm”) OUTPUT_ARCH(arm) ENTRY(_start) &#x2F;</em> 此处省略N行 *&#x2F;</p>
+<p>crtbegin_dynamic.S 与 crtbegin_static.S 位于Android源码位置:<br>  bionic\libc\arch-arm\bionic目录下</p>
+<p>   notes</p>
+<p>  notes</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://turbin.github.io/2017/08/23/2017-08-23-android-reverse-engineering/" data-id="cuidLUzdRnqR_BsBSrFVdberk" data-title="Android Reverse Engineering reading note" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      <a data-url="https://turbin.github.io/2017/08/23/2017-08-23-android-reverse-engineering/" data-id="cuidkqZ8TUcewGfUjGQyfeYQl" data-title="Android Reverse Engineering reading note" class="article-share-link"><span class="fa fa-share">分享</span></a>
       
       
       
