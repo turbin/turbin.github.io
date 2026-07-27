@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Graph Engineering vs Loop Engineering：从黑盒决策到显式结构 | Turbine&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="翻译自一篇关于 Graph Engineering 的英文文章，探讨为什么 Agent 循环存在天花板，以及图工程如何通过显式结构解决黑盒决策问题。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Graph Engineering vs Loop Engineering：从黑盒决策到显式结构">
+<meta property="og:url" content="https://turbin.github.io/2026/07/27/2026-07-27-graph-engineering-vs-loop/index.html">
+<meta property="og:site_name" content="Turbine&#39;s Blog">
+<meta property="og:description" content="翻译自一篇关于 Graph Engineering 的英文文章，探讨为什么 Agent 循环存在天花板，以及图工程如何通过显式结构解决黑盒决策问题。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://turbin.github.io/images/graph-engineering-course.jpg">
+<meta property="article:published_time" content="2026-07-27T06:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-27T05:56:21.639Z">
+<meta property="article:author" content="Turbine Yan">
+<meta property="article:tag" content="AI架构">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Graph Engineering">
+<meta property="article:tag" content="翻译">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://turbin.github.io/images/graph-engineering-course.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="Turbine's Blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Turbine&#39;s Blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">一个会写C/C++，喜欢研究Linux的纯码农</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS 订阅"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="搜索"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜索"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://turbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-2026-07-27-graph-engineering-vs-loop" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/07/27/2026-07-27-graph-engineering-vs-loop/" class="article-date">
+  <time class="dt-published" datetime="2026-07-27T06:00:00.000Z" itemprop="datePublished">2026-07-27</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/engineering/">工程博客</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      Graph Engineering vs Loop Engineering：从黑盒决策到显式结构
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p><strong>原文来源</strong>: <a target="_blank" rel="noopener" href="https://x.com/cyrilXBT/article/2081212504093446357">https://x.com/cyrilXBT/article/2081212504093446357</a><br><strong>翻译</strong>: A梦 (turbineyan)<br><strong>日期</strong>: 2026-07-27</p>
+</blockquote>
+<hr>
+<h2 id="英文原文"><a href="#英文原文" class="headerlink" title="英文原文"></a>英文原文</h2><p>A loop hides one decision inside a black box: what runs next.</p>
+<p>Every time an agent loop decides whether to retry, escalate, or move on, that decision happens inside the model’s own reasoning, invisible to you, unauditable after the fact, and impossible to inspect without re-reading the model’s raw output and hoping it explained itself honestly. A graph makes that same decision explicit. Written down. Inspectable before the run even starts.</p>
+<p>This is not a small distinction. It is the actual argument behind a real arXiv paper published in April 2026 that reframed how agentic systems should be built, and it is worth being upfront about something before this course goes any further. The paper’s own author includes a fairness disclaimer stating plainly that this is an unimplemented design, and whether it delivers its promised benefits in practice remains an open empirical question. This course teaches the framework honestly, including that caveat, because understanding a real, rigorously argued proposal that has not yet been proven at scale is more useful than pretending it is settled fact.</p>
+<p>By the end of this course you will understand what graph engineering actually is, why it exists as the layer above loops, the three commitments every graph in this framework rests on, and how to build your first one, along with an honest account of where the evidence currently stands and does not stand.</p>
+<h3 id="Why-Loops-Have-A-Ceiling"><a href="#Why-Loops-Have-A-Ceiling" class="headerlink" title="Why Loops Have A Ceiling"></a>Why Loops Have A Ceiling</h3><p>To understand why graphs exist, you need to understand precisely where loops stop being enough.</p>
+<p>A loop, in the agentic sense that matters here, is a cycle where an agent attempts a task, observes the result, and decides what to do next, repeated until some condition is met. This works remarkably well for a huge range of tasks. It is also, structurally, a black box at the exact moment that matters most: the decision of what happens next.</p>
+<p>When a loop’s agent decides to retry a failed step, that decision came from the model reasoning over its own context and producing a choice. You cannot inspect the decision before it happens. You can only observe the outcome after. If the agent retries the same failing approach five times in a row, burning cost each time, nothing in the loop’s structure prevented that, because the decision to retry lived entirely inside the model’s own judgment, not in any external, checkable rule.</p>
+<p>This is fine for low-stakes, cheap tasks where an occasional wasted retry costs nothing meaningful. It becomes a real liability for long-horizon, expensive, or high-stakes work, exactly the category of task agentic systems are increasingly being trusted with. The paper’s core argument is that as agentic systems take on more consequential work, the opacity of “what runs next” stops being an acceptable black box and starts being the actual point of failure worth engineering around directly.</p>
+<h3 id="What-A-Graph-Actually-Is"><a href="#What-A-Graph-Actually-Is" class="headerlink" title="What A Graph Actually Is"></a>What A Graph Actually Is</h3><p>A graph, in this framework, replaces the model’s implicit next-step decision with an explicit structure defined before the run starts.</p>
+<p>Instead of an agent reasoning its way to “I should retry” or “I should escalate” inside an opaque context window, the graph defines, in advance, exactly which states exist, which transitions between states are valid, and which specific conditions trigger each transition. The agent still does real work inside each state. What it no longer does is invisibly decide the shape of the overall process as it goes.</p>
+<p>The five-move structure that describes any single turn through a graph like this: Plan, Execute, Recover, Escalate, Repeat. Plan is where the task gets decomposed into a defined sequence. Execute is where the agent actually does the work for the current step. Recover is what happens when execution fails, following a defined protocol rather than an improvised retry. Escalate is the explicit, defined point where the graph hands control to a human rather than continuing to attempt automated recovery. Repeat closes the cycle, moving to the next step in the plan.</p>
+<p>Notice what changed from a loop. Every one of these five moves is now a named, inspectable state in a graph, with defined transitions between them, rather than a decision happening silently inside a single model call.</p>
+<h3 id="The-Three-Commitments"><a href="#The-Three-Commitments" class="headerlink" title="The Three Commitments"></a>The Three Commitments</h3><p>Every graph in this framework rests on three specific commitments. Understanding these three deeply is the actual core of graph engineering as a discipline, more so than any specific implementation detail.</p>
+<p><strong>Commitment One: Immutable Plan</strong></p>
+<p>The execution plan cannot shift mid-run. Once a plan is generated and locked, it exists as one fixed version for the duration of that run. The agent cannot silently revise its own plan halfway through execution based on something it noticed, the way an agent inside a loop often does without any external record of the revision happening.</p>
+<p>This sounds restrictive, and it is meant to. The restriction is the entire point. An agent that can freely revise its own plan mid-run is exactly the agent whose behavior becomes impossible to audit after the fact, because the plan you would review afterward is not the plan that was actually followed, it is whatever the plan drifted into by the end. Locking the plan trades real flexibility for real inspectability. That tradeoff is not free, and it is worth sitting with honestly rather than treating it as a strict improvement in every case. A genuinely novel situation that the original plan did not anticipate is handled worse by an immutable plan than by a loop that can adapt freely. The commitment is a deliberate bet that, for the category of task this framework targets, predictable and auditable beats maximally adaptive.</p>
+<p><strong>Commitment Two: Separated Layers</strong></p>
+<p>Planning, execution, and recovery live in three independent layers instead of one tangled loop where all three happen inside the same continuous reasoning process.</p>
+<p>The planning layer produces the immutable plan from commitment one and does nothing else, it does not execute steps and does not handle failures. The execution layer runs the defined steps and reports results, it does not decide what happens on failure, only what happened. The recovery layer receives failure reports and applies a defined protocol, it does not execute new work directly, only decides how to respond to what already happened.</p>
+<p>This separation mirrors, deliberately, the same principle behind separating a Builder from a Judge in a verification loop, a role that produces work should not be the same role that evaluates or decides on that work, because collapsing the two erodes the independence that makes the check meaningful in the first place. Here the separation is threefold instead of twofold, but the underlying reasoning is identical: a system that plans, executes, and recovers all inside one undifferentiated process cannot meaningfully audit any single one of those functions independently, because they are never actually distinct in the trace you would review afterward.</p>
+<p><strong>Commitment Three: Strict Escalation</strong></p>
+<p>Recovery follows a fixed protocol instead of retrying indefinitely and hoping something eventually works.</p>
+<p>This is the commitment that most directly addresses the token-blowout failure mode that plagues loops without real stop conditions. A strict escalation protocol defines, in advance, exactly how many recovery attempts are permitted, exactly what counts as a recovery attempt succeeding or failing, and exactly what happens the moment the defined limit is reached, handing control to a human, not attempting one more creative variation on the same failed approach.</p>
+<p>The paper’s analysis across 70 real-world systems found that a large share of Agent Loop implementations had no formal bounds on recovery attempts at all, meaning the actual behavior when something went wrong was determined by whatever the model happened to decide in the moment, not by any rule a human had actually reviewed and approved in advance. Strict escalation closes that specific gap directly.</p>
+<h3 id="Building-Your-First-Graph"><a href="#Building-Your-First-Graph" class="headerlink" title="Building Your First Graph"></a>Building Your First Graph</h3><p>Here is the practical path to actually building one of these, translating the three commitments into something you can implement rather than just understand conceptually.</p>
+<p>Start by defining your states explicitly, on paper, before writing any code or prompts. For a typical task, this usually looks like at minimum: Planning, Executing Step N, Recovering From Failure, Escalated, Complete. Write down, for each state, exactly what happens while the system is in that state and exactly what conditions cause a transition out of it.</p>
+<p>Write the plan-generation step so that its output is a fixed, versioned artifact, not a living document the rest of the system can silently edit. A simple, practical version of this is generating the plan as a numbered list of discrete steps, each with an explicit success criterion, and treating that list as read-only for the remainder of the run. Any genuine need to deviate from it should trigger an explicit escalation to a human, not a silent internal revision.</p>
+<p>Build the execution layer so it only ever reports outcomes, pass, fail, with specific detail, never makes a decision about what happens next itself. This mirrors exactly the Builder role from a verification loop, producing work and reporting on it honestly, without also being the role that decides whether to retry.</p>
+<p>Build the recovery layer with an explicit, numbered protocol. Attempt one specific alternate approach. If that fails, attempt a second, different specific approach. If that fails, escalate. The protocol should be concrete enough that a human reading it in advance can predict exactly what the system will do at each stage, rather than a vague instruction like “try to fix it a reasonable number of times.”</p>
+<p>Wire the escalation state so that reaching it is a real, visible event, not something quietly logged and forgotten. A human should be notified, with the full history of what was attempted and why each attempt failed, the same discipline recommended for stop conditions in verification loops generally.</p>
+<h3 id="Where-This-Framework-Genuinely-Helps-And-Where-It-Does-Not"><a href="#Where-This-Framework-Genuinely-Helps-And-Where-It-Does-Not" class="headerlink" title="Where This Framework Genuinely Helps, And Where It Does Not"></a>Where This Framework Genuinely Helps, And Where It Does Not</h3><p>Being honest about the limits of graph engineering is more useful than treating it as a universal upgrade over loops in every situation, and the paper itself supports this more measured framing.</p>
+<p>Graphs genuinely help on tasks where the space of things that can go wrong is reasonably well understood in advance, where auditability matters more than maximal adaptiveness, and where the cost of a runaway, unbounded retry cycle would be genuinely expensive, either in compute cost or in the consequence of a bad outcome reaching a real user or a real system.</p>
+<p>Graphs are a worse fit for genuinely open-ended, exploratory tasks where you cannot meaningfully predict the shape of failure in advance, and where the value of the system comes precisely from its ability to improvise a response to something nobody anticipated. Locking a plan immutable, for a task that fundamentally requires adaptive replanning as new information emerges, trades away the exact capability that made the task worth automating with an agent in the first place.</p>
+<p>The honest, defensible position, and the one the paper’s own author takes, is that this is a real tradeoff worth understanding deeply, not a strictly superior replacement for loops in every case. Use a loop where adaptiveness matters more than auditability. Use a graph where the reverse is true. Most real systems benefit from having both patterns available and choosing deliberately between them per task, rather than adopting either one as a permanent default.</p>
+<h3 id="A-Worked-Example-Graph-Structured-Code-Migration"><a href="#A-Worked-Example-Graph-Structured-Code-Migration" class="headerlink" title="A Worked Example: Graph-Structured Code Migration"></a>A Worked Example: Graph-Structured Code Migration</h3><p>To make the five-move structure and three commitments concrete, here is how they apply to a real, common task, migrating a legacy module to a new framework version across a codebase.</p>
+<p>The Planning state runs once, at the start. It analyzes the module, identifies every file that needs to change, and produces a fixed, numbered list of migration steps, each with an explicit success criterion, for instance, step 4 succeeds when the updated file compiles and the existing test suite for that file passes without modification. This plan gets locked. It is commitment one, immutable, in practice.</p>
+<p>The Executing state works through the plan’s steps in order. For each step, it applies the specific change defined in the plan and reports the outcome, pass or fail, with the actual compiler output or test result attached as evidence, never a self-assessed “looks correct.” This is the execution layer from commitment two, strictly separated from the decision about what happens if it fails.</p>
+<p>When a step fails, the graph transitions to Recovering, which follows a defined protocol rather than an improvised retry. Attempt one: reapply the same change with a narrower scope, isolating exactly which part of the file caused the compile failure. Attempt two, if the first fails: fall back to a documented alternate migration pattern for this specific kind of failure, drawn from a small library of known fixes rather than invented fresh each time. If both defined attempts fail, the graph transitions to Escalated, this is commitment three, strict escalation, not a third improvised attempt.</p>
+<p>The Escalated state notifies a human directly, with the complete history attached: which step failed, what both recovery attempts tried, and the specific error output from each. A human reviews this specific failure with full context, rather than discovering days later that an agent had been silently retrying the same broken approach in a loop the whole time, burning cost with no record of why.</p>
+<p>Repeat closes the cycle for successful steps, moving the graph to the next item in the locked plan until the list is exhausted, at which point the run reaches Complete.</p>
+<p>Notice what this buys you over the equivalent task run as an unstructured loop. Every decision, whether to retry, how, and when to give up, is visible in the graph’s defined structure before the run even starts, not discoverable only by reading through a transcript afterward and inferring what the model must have been thinking. A code reviewer, or a compliance auditor, can look at the graph’s definition alone and know exactly what the system is capable of doing in every failure scenario, without ever having watched it run.</p>
+<h3 id="Graph-Engineering-Versus-Loop-Engineering-When-To-Reach-For-Which"><a href="#Graph-Engineering-Versus-Loop-Engineering-When-To-Reach-For-Which" class="headerlink" title="Graph Engineering Versus Loop Engineering: When To Reach For Which"></a>Graph Engineering Versus Loop Engineering: When To Reach For Which</h3><p>Given that both patterns are real, documented, and each has genuine strengths, here is a practical decision framework for choosing between them for a specific task, rather than treating either as a permanent default.</p>
+<p>Reach for a loop when the task is genuinely exploratory, when you cannot predict in advance the shape of what might go wrong, and when the model’s ability to improvise a response to something unanticipated is exactly the capability you are relying on. Research tasks, open-ended debugging where the root cause is genuinely unknown at the start, and creative work where rigid structure would actively hurt the output, all favor a loop’s adaptiveness over a graph’s auditability.</p>
+<p>Reach for a graph when the task is well-enough understood in advance that you can actually enumerate the likely failure modes, when the cost of an unbounded, unaudited retry cycle would be genuinely expensive, and when a human reviewer, whether that is a compliance team, a security auditor, or simply your own future self debugging a production incident, will need to inspect exactly what the system was capable of doing without re-reading a full execution transcript. Migrations, financial transactions, anything touching regulated data, and long-running unattended agent work where a silent failure could compound for hours before anyone notices, all favor a graph’s structure over a loop’s flexibility.</p>
+<p>The two patterns are not mutually exclusive within a single larger system either. A common, pragmatic design uses a graph at the outer level, for the overall task structure and its stop conditions, while allowing a loop to run inside a single Execute state for the genuinely exploratory sub-task of figuring out how to implement one specific step. This gets you the auditability of a graph at the level where it matters most, the overall shape of what the system can do, while preserving a loop’s adaptiveness at the level where genuine improvisation is actually valuable, the details of one bounded piece of work.</p>
+<h3 id="Testing-A-Graph-Before-You-Trust-It"><a href="#Testing-A-Graph-Before-You-Trust-It" class="headerlink" title="Testing A Graph Before You Trust It"></a>Testing A Graph Before You Trust It</h3><p>Before relying on a graph-structured system for anything real, run it through stress tests specifically designed around the three commitments, since each commitment has its own way of quietly failing if implemented sloppily.</p>
+<p>To test the immutable plan commitment, deliberately construct a scenario partway through a run where the “obviously correct” next step, if the system were reasoning freely, would deviate from the locked plan. Confirm the system actually escalates to a human rather than silently adapting the plan on its own. If it adapts silently, the plan was never actually immutable in practice, regardless of how the code is structured.</p>
+<p>To test the separated layers commitment, check whether the execution layer’s failure reports contain any trace of a decision about what should happen next, phrases like “this probably needs a different approach” embedded in what should be a neutral pass or fail report. If the execution layer is already forming opinions about recovery, the separation from the recovery layer is not real, it has just been relabeled.</p>
+<p>To test strict escalation, deliberately feed the system a failure that neither defined recovery attempt can fix, and confirm it escalates cleanly at the defined limit rather than attempting an undefined third approach. This is the graph-engineering equivalent of testing a loop’s stop condition against a genuinely unsolvable task, and it catches the exact same class of quietly expensive failure.</p>
+<p>Beyond these three targeted tests, track one specific metric over real usage that the loop-based alternative typically cannot give you cleanly: the rate at which runs reach the Escalated state, broken down by which specific recovery attempt failed each time. A graph escalating constantly at the same specific recovery step is telling you that step’s defined protocol is miscalibrated, not that the underlying task is uniformly hard, the same diagnostic value that tracking stop-condition triggers provides for loops, just available here with more granularity because the failure point is a named, inspectable state rather than an inferred moment inside an opaque transcript.</p>
+<h3 id="Common-Mistakes-When-First-Building-A-Graph"><a href="#Common-Mistakes-When-First-Building-A-Graph" class="headerlink" title="Common Mistakes When First Building A Graph"></a>Common Mistakes When First Building A Graph</h3><p>A handful of specific mistakes show up repeatedly for people building their first graph-structured system, and knowing them in advance saves real debugging time later.</p>
+<p>Treating the plan as immutable in name only. Locking the plan on paper while still allowing the execution layer to quietly deviate from it in practice produces the worst of both worlds, no real adaptiveness and no real auditability either, since the trace no longer matches the locked plan you would review.</p>
+<p>Collapsing the three layers back into one because it feels faster to build. The temptation to let the execution layer also decide on recovery, skipping the separation from commitment two, defeats the actual purpose of the framework. If planning, execution, and recovery are not genuinely independent, you have built a loop wearing a graph’s vocabulary, not an actual graph.</p>
+<p>Writing a recovery protocol vague enough that it is not really a protocol. “Try a reasonable number of alternate approaches” is not a strict escalation protocol, it is a soft instruction with the same failure mode as an unbounded loop, just described using graph-engineering language. A real protocol names the specific number of attempts and the specific conditions for each one.</p>
+<p>Skipping the honest evaluation of fit. Building a graph for a genuinely open-ended, exploratory task because graph engineering is the newer, more rigorous-sounding framework, rather than because the task genuinely benefits from the tradeoffs graphs make, produces a system that is more complex than a loop without being more useful.</p>
+<hr>
+<h2 id="中文翻译"><a href="#中文翻译" class="headerlink" title="中文翻译"></a>中文翻译</h2><p>循环将一个决策隐藏在黑盒之中：下一步运行什么。</p>
+<p>每次 Agent 循环决定是重试、升级还是继续时，这个决策都发生在模型自身的推理过程中——对你不可见，事后无法审计，除非重新阅读模型的原始输出并指望它诚实地解释了自己，否则无法检查。图让同样的决策变得显式。写下来。在运行开始之前就可以检查。</p>
+<p>这不是一个小区别。它是 2026 年 4 月发表在 arXiv 上的一篇真实论文的核心论点，该论文重新构建了 Agent 系统应该如何构建的框架。在本课程进一步深入之前，有必要坦诚地说明一点。论文作者自己包含了一个公平性免责声明，明确指出这是一个未实现的设计，它在实践中是否能兑现其承诺的好处仍然是一个开放的经验性问题。本课程诚实地教授这个框架，包括这个警告，因为理解一个真实的、经过严格论证但尚未在大规模上被证明的提案，比假装它是既定事实更有用。</p>
+<p>到本课程结束时，你将理解图工程实际上是什么，为什么它作为循环之上的层而存在，这个框架中每个图所依赖的三个承诺，以及如何构建你的第一个图，同时诚实地说明证据目前站在哪里、不站在哪里。</p>
+<h3 id="为什么循环有天花板"><a href="#为什么循环有天花板" class="headerlink" title="为什么循环有天花板"></a>为什么循环有天花板</h3><p>要理解为什么图存在，你需要精确地理解循环在哪里变得不够用了。</p>
+<p>循环，在这里重要的 Agent 意义上，是一个周期：Agent 尝试任务、观察结果、决定下一步做什么，重复直到满足某个条件。这对大量任务来说非常有效。它在结构上也是一个黑盒，在最重要的那个时刻：下一步会发生什么的决策。</p>
+<p>当循环的 Agent 决定重试一个失败的步骤时，那个决策来自模型对其自身上下文的推理并产生一个选择。你无法在决策发生之前检查它。你只能事后观察结果。如果 Agent 连续五次重试同样的失败方法，每次都燃烧成本，循环的结构中没有任何东西阻止这一点，因为重试的决策完全活在模型自己的判断中，而不是任何外部的、可检查的规则中。</p>
+<p>对于低风险、低成本的任务，偶尔浪费的重试没有什么实质性成本，这没问题。对于长周期、昂贵或高风险的工作，这成为一个真正的负债——正是 Agent 系统越来越多被信任的这类任务。论文的核心论点是，随着 Agent 系统承担更有后果的工作，”下一步运行什么”的不透明性不再是一个可接受的黑盒，而开始成为值得直接围绕工程化的实际故障点。</p>
+<h3 id="图实际上是什么"><a href="#图实际上是什么" class="headerlink" title="图实际上是什么"></a>图实际上是什么</h3><p>在这个框架中，图用运行开始前定义的显式结构，替代了模型的隐式下一步决策。</p>
+<p>不是 Agent 在不透明的上下文窗口中推理出”我应该重试”或”我应该升级”，图预先定义了：存在哪些状态、哪些状态之间的转换是有效的、哪些具体条件触发每个转换。Agent 仍然在每个状态内做实际工作。它不再做的是在过程中不可见地决定整体流程的形状。</p>
+<p>描述这种图的单次运行的五动作结构：<strong>计划（Plan）、执行（Execute）、恢复（Recover）、升级（Escalate）、重复（Repeat）</strong>。</p>
+<ul>
+<li><strong>计划</strong>：任务被分解为定义的序列</li>
+<li><strong>执行</strong>：Agent 实际执行当前步骤的工作</li>
+<li><strong>恢复</strong>：执行失败时发生，遵循定义的协议而非即兴重试</li>
+<li><strong>升级</strong>：图将控制权交给人类的显式、定义的点，而不是继续尝试自动恢复</li>
+<li><strong>重复</strong>：关闭循环，移动到计划中的下一步</li>
+</ul>
+<p>注意与循环相比发生了什么变化。这五个动作中的每一个现在都是图中一个命名的、可检查的状态，它们之间有定义的转换，而不是在单个模型调用中默默发生的决策。</p>
+<h3 id="三个承诺"><a href="#三个承诺" class="headerlink" title="三个承诺"></a>三个承诺</h3><p>这个框架中的每个图都依赖于三个具体的承诺。深入理解这三个是图工程作为学科的实际核心，比任何具体的实现细节都重要。</p>
+<p><strong>承诺一：不可变计划</strong></p>
+<p>执行计划不能在运行中改变。一旦计划生成并锁定，它在整个运行期间作为一个固定版本存在。Agent 不能基于它注意到的东西，在执行中途默默地修改自己的计划——就像循环中的 Agent 经常做的那样，而没有任何修订发生的外部记录。</p>
+<p>这听起来很限制性，它就是故意的。限制就是全部意义所在。一个可以在运行中自由修改自己计划的 Agent，正是那种事后行为变得无法审计的 Agent，因为你之后要审查的计划不是实际遵循的计划，而是计划最终漂移成的样子。锁定计划用真正的灵活性换取真正的可检查性。这个权衡不是免费的，值得诚实地面对，而不是把它当作每种情况下的严格改进。原始计划没有预料到的真正新颖的情况，不可变计划处理得比可以自由适应的循环更差。这个承诺是一个深思熟虑的赌注：对于这个框架针对的任务类别，可预测和可审计胜过最大化适应性。</p>
+<p><strong>承诺二：分离层</strong></p>
+<p>计划、执行和恢复存在于三个独立的层中，而不是一个纠缠的循环中，三者都发生在同一个连续推理过程中。</p>
+<ul>
+<li><strong>计划层</strong>：产生承诺一的不可变计划，不做其他事情，不执行步骤，不处理失败</li>
+<li><strong>执行层</strong>：运行定义的步骤并报告结果，不决定失败时发生什么，只报告发生了什么</li>
+<li><strong>恢复层</strong>：接收失败报告并应用定义的协议，不直接执行新工作，只决定如何响应已经发生的事情</li>
+</ul>
+<p>这种分离故意模仿了验证循环中将构建者（Builder）与裁判（Judge）分离的相同原则——产生工作的角色不应该是评估或决定该工作的同一角色，因为将两者合并会侵蚀使检查有意义的那种独立性。这里的分离是三重的而不是二重的，但底层推理是相同的：一个在同一无差别过程中计划、执行和恢复的系统，无法有意义地独立审计这三个功能中的任何一个，因为它们在你之后要审查的跟踪中从未真正 distinct。</p>
+<p><strong>承诺三：严格升级</strong></p>
+<p>恢复遵循固定协议，而不是无限重试并希望某事最终奏效。</p>
+<p>这个承诺最直接地解决了困扰没有真正停止条件的循环的 token 爆炸故障模式。严格的升级协议预先定义了：允许多少次恢复尝试、什么算作恢复尝试成功或失败、达到定义限制时确切发生什么——将控制权交给人类，而不是对同样失败的方法尝试另一个创造性的变体。</p>
+<p>论文对 70 个真实世界系统的分析发现，很大一部分 Agent 循环实现根本没有对恢复尝试的正式界限，意味着出问题时实际行为由模型当时碰巧决定的任何东西决定，而不是由人类实际事先审查和批准的任何规则决定。严格升级直接关闭了这个特定的缺口。</p>
+<h3 id="构建你的第一个图"><a href="#构建你的第一个图" class="headerlink" title="构建你的第一个图"></a>构建你的第一个图</h3><p>以下是将三个承诺转化为可以实现的实际路径，而不仅仅是概念上理解。</p>
+<p><strong>第一步：显式定义状态</strong></p>
+<p>在编写任何代码或提示之前，在纸上显式定义你的状态。对于典型任务，这通常至少包括：计划、执行步骤 N、从失败恢复、已升级、完成。为每个状态写下：系统处于该状态时确切发生什么、导致从中转换出去的确切条件。</p>
+<p><strong>第二步：生成不可变计划</strong></p>
+<p>编写计划生成步骤，使其输出为固定的、版本化的产物，而不是系统其余部分可以默默编辑的活文档。一个简单的实际版本是：将计划生成为离散步骤的编号列表，每个步骤都有明确的成功标准，并在运行剩余期间将该列表视为只读。任何真正需要偏离它的情况应该触发显式升级到人类，而不是沉默的内部修订。</p>
+<p><strong>第三步：构建执行层</strong></p>
+<p>构建执行层，使其只报告结果——通过、失败，带有具体细节——从不自己决定下一步发生什么。这完全模仿了验证循环中的构建者角色，诚实地产生工作并报告它，而不同时也是决定是否需要重试的角色。</p>
+<p><strong>第四步：构建恢复层</strong></p>
+<p>用显式的、编号的协议构建恢复层。尝试一种特定的替代方法。如果失败，尝试第二种不同的特定方法。如果失败，升级。协议应该足够具体，使得提前阅读它的人类可以准确预测系统在每阶段会做什么，而不是像”尝试修复它合理次数”这样的模糊指令。</p>
+<p><strong>第五步：连接升级状态</strong></p>
+<p>连接升级状态，使其成为真正的、可见的事件，而不是被安静记录和遗忘的东西。应该通知人类，附带完整历史：尝试了什么、为什么每次尝试失败——与验证循环中通常推荐的停止条件纪律相同。</p>
+<h3 id="这个框架真正有帮助的地方，以及没有帮助的地方"><a href="#这个框架真正有帮助的地方，以及没有帮助的地方" class="headerlink" title="这个框架真正有帮助的地方，以及没有帮助的地方"></a>这个框架真正有帮助的地方，以及没有帮助的地方</h3><p>诚实地面对图工程的限制，比把它当作每种情况下循环的普遍升级更有用，论文本身支持这种更克制的框架。</p>
+<p><strong>图真正有帮助的情况</strong>：</p>
+<ul>
+<li>可能出错的空间事先被合理理解的任务</li>
+<li>可审计性比最大适应性更重要的任务</li>
+<li>失控的、无界重试循环的成本会真正昂贵的任务（无论是计算成本还是坏结果到达真实用户或系统的后果）</li>
+</ul>
+<p><strong>图不太适合的情况</strong>：</p>
+<ul>
+<li>真正开放的、探索性的任务，你无法事先有意义地预测失败的形状</li>
+<li>系统的价值恰恰来自其对无人预料的事情即兴响应的能力的任务</li>
+<li>锁定计划为不可变，对于本质上需要随着新信息出现而自适应重新规划的任务，交易掉了最初使任务值得用 Agent 自动化的确切能力</li>
+</ul>
+<p>诚实的、可辩护的立场——也是论文作者自己采取的立场——是这是一个值得深入理解的真正权衡，而不是每种情况下循环的严格优越替代品。在适应性比可审计性更重要的地方使用循环。在相反为真的地方使用图。大多数真实系统受益于两种模式都可用，并根据任务深思熟虑地选择，而不是将任何一种作为永久默认。</p>
+<h3 id="实际示例：图结构化的代码迁移"><a href="#实际示例：图结构化的代码迁移" class="headerlink" title="实际示例：图结构化的代码迁移"></a>实际示例：图结构化的代码迁移</h3><p>为了让五动作结构和三个承诺具体化，以下是如何将它们应用于一个真实的常见任务：将遗留模块迁移到新框架版本。</p>
+<p><strong>计划状态</strong>：运行一次，在开始时。分析模块，识别需要更改的每个文件，产生固定的、编号的迁移步骤列表，每个步骤都有明确的成功标准。例如，步骤 4 成功当更新的文件编译且该文件的现有测试套件无需修改即可通过。这个计划被锁定——承诺一，实际上不可变。</p>
+<p><strong>执行状态</strong>：按顺序执行计划的步骤。对于每个步骤，应用计划中定义的特定更改并报告结果——通过或失败——附带实际的编译器输出或测试结果作为证据，从不自我评估”看起来正确”。这是来自承诺二的执行层，严格与失败时发生什么的决策分离。</p>
+<p><strong>恢复状态</strong>：当步骤失败时，图转换到恢复，遵循定义的协议而非即兴重试。</p>
+<ul>
+<li>尝试一：以更窄的范围重新应用相同更改，隔离文件的哪部分导致编译失败</li>
+<li>尝试二：如果第一次失败，回退到针对这种特定失败类型的记录替代迁移模式，从已知修复的小库中提取，而不是每次新鲜发明</li>
+<li>如果两个定义的尝试都失败，图转换到已升级——承诺三，严格升级，不是第三次即兴尝试</li>
+</ul>
+<p><strong>升级状态</strong>：直接通知人类，附带完整历史：哪个步骤失败、两个恢复尝试尝试了什么、每个的具体错误输出。人类在完整上下文中审查这个特定失败，而不是几天后发现 Agent 一直在循环中默默重试同样损坏的方法，燃烧成本而没有为什么的记录。</p>
+<p><strong>重复</strong>：为成功的步骤关闭循环，将图移动到锁定计划中的下一个项目，直到列表耗尽，此时运行达到完成。</p>
+<p>注意这为你买到了什么，相比作为非结构化循环运行的等效任务。每个决策——是否重试、如何重试、何时放弃——在运行开始之前就在图的定义结构中可见，而不是只有在之后阅读完整记录并推断模型一定在想什么时才能发现。代码审查员或合规审计员可以单独查看图的定义，就知道系统在每个失败场景中能够做什么，而无需观看它运行。</p>
+<h3 id="图工程-vs-循环工程：何时选择哪个"><a href="#图工程-vs-循环工程：何时选择哪个" class="headerlink" title="图工程 vs 循环工程：何时选择哪个"></a>图工程 vs 循环工程：何时选择哪个</h3><p>鉴于两种模式都是真实的、有文档记录的，每种都有真正的优势，以下是为特定任务在它们之间选择的实用决策框架，而不是将任何一种作为永久默认。</p>
+<p><strong>选择循环的情况</strong>：</p>
+<ul>
+<li>任务真正是探索性的</li>
+<li>你无法事先预测可能出错的事情的形状</li>
+<li>模型对未预料的事情即兴响应的能力正是你依赖的能力</li>
+<li>研究任务、根本原因真正未知的开放式调试、刚性结构会积极伤害输出的创造性工作</li>
+</ul>
+<p><strong>选择图的情况</strong>：</p>
+<ul>
+<li>任务事先被充分理解，你可以实际枚举可能的失败模式</li>
+<li>无界、未审计重试循环的成本会真正昂贵</li>
+<li>人类审查员（无论是合规团队、安全审计员，还是仅仅是你自己在调试生产事故时的未来自我）需要检查系统能够做什么，而无需重新阅读完整执行记录</li>
+<li>迁移、金融交易、任何接触受监管数据的东西、长时间无人值守的 Agent 工作（静默失败可能在任何人注意到之前复合数小时）</li>
+</ul>
+<p><strong>混合设计</strong>：<br>两种模式在单个更大的系统中也不是互斥的。一种常见的实用设计在外层使用图，用于整体任务结构及其停止条件，同时允许循环在单个执行状态内运行，用于真正探索性的子任务——弄清楚如何实现一个特定步骤。这让你在最重要的层面获得图的可审计性（系统能够做什么的整体形状），同时在真正有价值的层面保留循环的适应性（一个有限工作片段的细节）。</p>
+<h3 id="在信任图之前测试它"><a href="#在信任图之前测试它" class="headerlink" title="在信任图之前测试它"></a>在信任图之前测试它</h3><p>在依赖图结构化系统处理任何真实事务之前，围绕三个承诺运行压力测试，因为每个承诺如果实现 sloppy 都有自己的安静失败方式。</p>
+<p><strong>测试不可变计划承诺</strong>：<br>故意构建一个场景，在运行中途，如果系统自由推理，”明显正确”的下一步会偏离锁定计划。确认系统实际升级到人类，而不是默默自行适应计划。如果它默默适应，计划在实践中从未真正不可变，无论代码结构如何。</p>
+<p><strong>测试分离层承诺</strong>：<br>检查执行层的失败报告是否包含关于下一步应该发生什么的决策痕迹——像”这可能需要不同的方法”这样的短语嵌入在应该是中性的通过或失败报告中。如果执行层已经在形成关于恢复的意见，与恢复层的分离就不是真实的，它只是被重新标记了。</p>
+<p><strong>测试严格升级</strong>：<br>故意给系统一个两个定义的恢复尝试都无法修复的失败，确认它在定义的限制处干净地升级，而不是尝试未定义的第三次方法。这是图工程等价于针对真正无法解决的任务测试循环的停止条件，它捕捉到完全相同的安静昂贵失败类别。</p>
+<p>除了这些三个针对性测试之外，跟踪真实使用中循环替代方案通常无法干净给你的一个特定指标：运行达到升级状态的比率，按每次失败的特定恢复尝试细分。图在相同特定恢复步骤不断升级，告诉你该步骤的定义协议未校准，而不是底层任务 uniformly 困难——与跟踪循环的停止条件触发器提供的相同诊断价值，只是在这里更细粒度，因为失败点是一个命名的、可检查的状态，而不是不透明记录中推断的时刻。</p>
+<h3 id="首次构建图时的常见错误"><a href="#首次构建图时的常见错误" class="headerlink" title="首次构建图时的常见错误"></a>首次构建图时的常见错误</h3><p>人们在构建第一个图结构化系统时，一些特定错误反复出现，提前知道它们可以节省以后的实际调试时间。</p>
+<p><strong>名义上不可变的计划</strong>：<br>在纸上锁定计划，同时仍然允许执行层在实践中悄悄偏离它，产生了两个世界中最糟糕的情况——没有真正的适应性，也没有真正的可审计性，因为跟踪不再匹配你要审查的锁定计划。</p>
+<p><strong>将三层折叠回一层</strong>：<br>因为感觉构建更快，让执行层也决定恢复，跳过承诺二的分离，挫败了框架的实际目的。如果计划、执行和恢复不是真正独立的，你构建的是一个穿着图词汇的循环，而不是一个真正的图。</p>
+<p><strong>恢复协议太模糊</strong>：<br>“尝试合理数量的替代方法”不是严格的升级协议，它是一个软指令，与无界循环有相同的故障模式，只是用图工程语言描述。真正的协议命名具体的尝试次数和每个的具体条件。</p>
+<p><strong>跳过诚实的适配评估</strong>：<br>因为图工程是更新、听起来更严格的框架，而为真正开放的、探索性的任务构建图，而不是因为任务真正受益于图所做的权衡，产生了一个比循环更复杂但没有更有用的系统。</p>
+<hr>
+<h2 id="配图"><a href="#配图" class="headerlink" title="配图"></a>配图</h2><p><img src="/images/graph-engineering-course.jpg" alt="Graph Engineering Course Overview"></p>
+<blockquote>
+<p><strong>图片来源</strong>: <a target="_blank" rel="noopener" href="https://x.com/cyrilXBT/article/2081212504093446357">https://x.com/cyrilXBT/article/2081212504093446357</a></p>
+</blockquote>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h3 id="核心要点"><a href="#核心要点" class="headerlink" title="核心要点"></a>核心要点</h3><ol>
+<li><strong>循环的问题</strong>：下一步决策是黑盒，不可审计</li>
+<li><strong>图的解决方案</strong>：显式定义状态、转换和条件</li>
+<li><strong>五动作结构</strong>：计划 → 执行 → 恢复 → 升级 → 重复</li>
+<li><strong>三个承诺</strong>：不可变计划、分离层、严格升级</li>
+<li><strong>适用场景</strong>：审计性 &gt; 适应性，成本敏感，高风险</li>
+<li><strong>不适用场景</strong>：探索性任务，需要即兴适应</li>
+</ol>
+<h3 id="实践建议"><a href="#实践建议" class="headerlink" title="实践建议"></a>实践建议</h3><ul>
+<li><strong>诚实评估</strong>：根据任务特性选择循环或图</li>
+<li><strong>混合设计</strong>：外层图 + 内层循环是常见实用模式</li>
+<li><strong>严格测试</strong>：针对三个承诺设计压力测试</li>
+<li><strong>避免常见错误</strong>：真正分离层，真正不可变计划，真正严格升级</li>
+</ul>
+<hr>
+<p><em>翻译整理：A梦 (turbineyan)</em><br><em>原文来源：<a target="_blank" rel="noopener" href="https://x.com/cyrilXBT/article/2081212504093446357">https://x.com/cyrilXBT/article/2081212504093446357</a></em><br><em>标签：#GraphEngineering #Agent #AI架构 #翻译</em></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://turbin.github.io/2026/07/27/2026-07-27-graph-engineering-vs-loop/" data-id="cuid08ihs58HxCPYGE3NVB-oh" data-title="Graph Engineering vs Loop Engineering：从黑盒决策到显式结构" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI%E6%9E%B6%E6%9E%84/" rel="tag">AI架构</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Agent/" rel="tag">Agent</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Graph-Engineering/" rel="tag">Graph Engineering</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%BF%BB%E8%AF%91/" rel="tag">翻译</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2026/07/27/2026-07-27-competitive-strategy-notes/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">后一篇</strong>
+      <div class="article-nav-title">《竞争战略》学习笔记：从价值链到持续性</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/mba/">MBA学习</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/engineering/">工程博客</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E5%8D%8F%E4%BD%9C/" rel="tag">AI协作</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E6%9E%B6%E6%9E%84/" rel="tag">AI架构</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Agent/" rel="tag">Agent</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/" rel="tag">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Graph-Engineering/" rel="tag">Graph Engineering</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PowerShell/" rel="tag">PowerShell</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Promise/" rel="tag">Promise</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/" rel="tag">Qt</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webkit/" rel="tag">Webkit</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Windows/" rel="tag">Windows</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BB%B7%E5%80%BC%E9%93%BE/" rel="tag">价值链</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95/" rel="tag">决策记录</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8D%9A%E5%AE%A2/" rel="tag">博客</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E8%A7%84%E8%8C%83/" rel="tag">工程规范</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%BC%82%E5%B8%B8/" rel="tag">异常</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%88%98%E7%95%A5%E7%AE%A1%E7%90%86/" rel="tag">战略管理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AB%9E%E4%BA%89%E4%BC%98%E5%8A%BF/" rel="tag">竞争优势</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BF%BB%E8%AF%91/" rel="tag">翻译</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" rel="tag">读书笔记</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%BF%88%E5%85%8B%E5%B0%94%E6%B3%A2%E7%89%B9/" rel="tag">迈克尔波特</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/" rel="tag">逆向工程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%93%BE%E6%8E%A5/" rel="tag">链接</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%93%BE%E6%8E%A5%E5%99%A8/" rel="tag">链接器</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI%E5%8D%8F%E4%BD%9C/" style="font-size: 10px;">AI协作</a> <a href="/tags/AI%E6%9E%B6%E6%9E%84/" style="font-size: 10px;">AI架构</a> <a href="/tags/Agent/" style="font-size: 10px;">Agent</a> <a href="/tags/Android/" style="font-size: 10px;">Android</a> <a href="/tags/Git/" style="font-size: 10px;">Git</a> <a href="/tags/Graph-Engineering/" style="font-size: 10px;">Graph Engineering</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/JavaScript/" style="font-size: 20px;">JavaScript</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/PowerShell/" style="font-size: 10px;">PowerShell</a> <a href="/tags/Promise/" style="font-size: 10px;">Promise</a> <a href="/tags/Qt/" style="font-size: 10px;">Qt</a> <a href="/tags/Webkit/" style="font-size: 10px;">Webkit</a> <a href="/tags/Windows/" style="font-size: 10px;">Windows</a> <a href="/tags/%E4%BB%B7%E5%80%BC%E9%93%BE/" style="font-size: 10px;">价值链</a> <a href="/tags/%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95/" style="font-size: 10px;">决策记录</a> <a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 20px;">博客</a> <a href="/tags/%E5%B7%A5%E7%A8%8B%E8%A7%84%E8%8C%83/" style="font-size: 10px;">工程规范</a> <a href="/tags/%E5%BC%82%E5%B8%B8/" style="font-size: 10px;">异常</a> <a href="/tags/%E6%88%98%E7%95%A5%E7%AE%A1%E7%90%86/" style="font-size: 10px;">战略管理</a> <a href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" style="font-size: 10px;">源码分析</a> <a href="/tags/%E7%AB%9E%E4%BA%89%E4%BC%98%E5%8A%BF/" style="font-size: 10px;">竞争优势</a> <a href="/tags/%E7%BF%BB%E8%AF%91/" style="font-size: 20px;">翻译</a> <a href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" style="font-size: 10px;">读书笔记</a> <a href="/tags/%E8%BF%88%E5%85%8B%E5%B0%94%E6%B3%A2%E7%89%B9/" style="font-size: 10px;">迈克尔波特</a> <a href="/tags/%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/" style="font-size: 10px;">逆向工程</a> <a href="/tags/%E9%93%BE%E6%8E%A5/" style="font-size: 10px;">链接</a> <a href="/tags/%E9%93%BE%E6%8E%A5%E5%99%A8/" style="font-size: 10px;">链接器</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/07/">七月 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/07/27/2026-07-27-graph-engineering-vs-loop/">Graph Engineering vs Loop Engineering：从黑盒决策到显式结构</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/27/2026-07-27-competitive-strategy-notes/">《竞争战略》学习笔记：从价值链到持续性</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/24/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/23/2026-07-24-%E5%B7%A5%E7%A8%8B%E6%97%A5%E8%AE%B0%EF%BC%9Aai%E5%8D%8F%E4%BD%9C%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95%E6%9C%BA%E5%88%B6%E8%AE%BE%E8%AE%A1/">工程日记：AI协作决策记录机制设计</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/27/2017-08-27-linker-and-loader-notes/">《Linker and Loader》阅读笔记(1)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 Turbine Yan<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
