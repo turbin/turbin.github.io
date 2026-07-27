@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>技术反思：Replay Memory vs HarnessX 协同进化 | Turbine&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="深入对比 Replay Memory 方案与 HarnessX 协同进化机制，探讨 Agent 持续学习的三个层次：记忆、结构、参数。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="技术反思：Replay Memory vs HarnessX 协同进化">
+<meta property="og:url" content="https://turbin.github.io/2026/07/28/2026-07-28-replay-memory-vs-harnessx/index.html">
+<meta property="og:site_name" content="Turbine&#39;s Blog">
+<meta property="og:description" content="深入对比 Replay Memory 方案与 HarnessX 协同进化机制，探讨 Agent 持续学习的三个层次：记忆、结构、参数。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-27T23:20:00.000Z">
+<meta property="article:modified_time" content="2026-07-27T23:20:03.898Z">
+<meta property="article:author" content="Turbine Yan">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="HarnessX">
+<meta property="article:tag" content="ReplayMemory">
+<meta property="article:tag" content="反思">
+<meta property="article:tag" content="持续学习">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Turbine's Blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Turbine&#39;s Blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">一个会写C/C++，喜欢研究Linux的纯码农</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS 订阅"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="搜索"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜索"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://turbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-2026-07-28-replay-memory-vs-harnessx" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/07/28/2026-07-28-replay-memory-vs-harnessx/" class="article-date">
+  <time class="dt-published" datetime="2026-07-27T23:20:00.000Z" itemprop="datePublished">2026-07-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/engineering/">工程博客</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      技术反思：Replay Memory vs HarnessX 协同进化
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="技术反思：Replay-Memory-vs-HarnessX-协同进化"><a href="#技术反思：Replay-Memory-vs-HarnessX-协同进化" class="headerlink" title="技术反思：Replay Memory vs HarnessX 协同进化"></a>技术反思：Replay Memory vs HarnessX 协同进化</h1><blockquote>
+<p><strong>日期</strong>: 2026-07-28<br><strong>主题</strong>: Agent 持续学习机制的深度对比与工程思考</p>
+</blockquote>
+<hr>
+<h2 id="一、今日核心议题"><a href="#一、今日核心议题" class="headerlink" title="一、今日核心议题"></a>一、今日核心议题</h2><p>今天围绕两个关键问题展开了深入讨论：</p>
+<ol>
+<li><strong>Replay Learning + Agent Memory 能否实现无微调的持续学习？</strong></li>
+<li><strong>HarnessX 的协同进化机制与简单重复优化的本质区别</strong></li>
+</ol>
+<hr>
+<h2 id="二、Replay-Memory-方案：经验复用的天花板"><a href="#二、Replay-Memory-方案：经验复用的天花板" class="headerlink" title="二、Replay Memory 方案：经验复用的天花板"></a>二、Replay Memory 方案：经验复用的天花板</h2><h3 id="2-1-方案架构"><a href="#2-1-方案架构" class="headerlink" title="2.1 方案架构"></a>2.1 方案架构</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────┐</span><br><span class="line">│      Replay Learning + Agent Memory      │</span><br><span class="line">├─────────────────────────────────────────┤</span><br><span class="line">│  短期记忆：当前对话上下文                  │</span><br><span class="line">│  中期记忆：Replay Buffer (s, a, r, s&#x27;)   │</span><br><span class="line">│  长期记忆：向量数据库 + RAG 检索           │</span><br><span class="line">├─────────────────────────────────────────┤</span><br><span class="line">│  预训练模型 (Frozen)                      │</span><br><span class="line">│  └── 权重不变，只通过 Prompt 注入记忆      │</span><br><span class="line">└─────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-能实现的效果"><a href="#2-2-能实现的效果" class="headerlink" title="2.2 能实现的效果"></a>2.2 能实现的效果</h3><table>
+<thead>
+<tr>
+<th>能力</th>
+<th>机制</th>
+<th>效果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>避免重复犯错</td>
+<td>Replay Buffer 检索相似失败</td>
+<td>✅ 有效</td>
+</tr>
+<tr>
+<td>经验复用</td>
+<td>RAG 检索相关经验</td>
+<td>✅ 有效</td>
+</tr>
+<tr>
+<td>个性化适应</td>
+<td>用户偏好记忆</td>
+<td>✅ 有效</td>
+</tr>
+<tr>
+<td>上下文扩展</td>
+<td>外部记忆弥补窗口限制</td>
+<td>✅ 有效</td>
+</tr>
+</tbody></table>
+<h3 id="2-3-无法突破的天花板"><a href="#2-3-无法突破的天花板" class="headerlink" title="2.3 无法突破的天花板"></a>2.3 无法突破的天花板</h3><table>
+<thead>
+<tr>
+<th>限制</th>
+<th>原因</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>无法学习新能力</strong></td>
+<td>权重冻结，不能形成新神经连接</td>
+<td>❌ 核心瓶颈</td>
+</tr>
+<tr>
+<td><strong>无法深度理解</strong></td>
+<td>记忆是”提示”而非”内化”</td>
+<td>❌ 浅层学习</td>
+</tr>
+<tr>
+<td><strong>上下文污染</strong></td>
+<td>记忆注入增加噪声</td>
+<td>⚠️ 副作用</td>
+</tr>
+<tr>
+<td><strong>检索精度瓶颈</strong></td>
+<td>相似度匹配不完美</td>
+<td>⚠️ 技术局限</td>
+</tr>
+</tbody></table>
+<h3 id="2-4-核心结论"><a href="#2-4-核心结论" class="headerlink" title="2.4 核心结论"></a>2.4 核心结论</h3><blockquote>
+<p><strong>Replay + Memory &#x3D; “经验丰富的顾问”，而非”不断成长的学生”</strong></p>
+</blockquote>
+<ul>
+<li>能：避免重复犯错、复用历史经验、适应用户偏好</li>
+<li>不能：获得全新能力、深度理解复杂概念、突破模型智能天花板</li>
+</ul>
+<hr>
+<h2 id="三、HarnessX-协同进化：双变量优化的新范式"><a href="#三、HarnessX-协同进化：双变量优化的新范式" class="headerlink" title="三、HarnessX 协同进化：双变量优化的新范式"></a>三、HarnessX 协同进化：双变量优化的新范式</h2><h3 id="3-1-核心思想"><a href="#3-1-核心思想" class="headerlink" title="3.1 核心思想"></a>3.1 核心思想</h3><p><strong>不是简单重复优化，而是 Harness 和模型交替&#x2F;并行提升，互相解锁对方的天花板。</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">初始: Harness₀ + 模型₀</span><br><span class="line">  ↓</span><br><span class="line">Round 1: Harness₀ 运行 → 轨迹 → AEGIS → Harness₁</span><br><span class="line">         同时: 轨迹 → Buffer → GRPO → 模型₁</span><br><span class="line">  ↓</span><br><span class="line">Round 2: Harness₁ + 模型₁ → 新轨迹 → Harness₂ + 模型₂</span><br><span class="line">  ↓</span><br><span class="line">...持续迭代</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-七步循环详解"><a href="#3-2-七步循环详解" class="headerlink" title="3.2 七步循环详解"></a>3.2 七步循环详解</h3><table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>动作</th>
+<th>产出</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1. Rollout</td>
+<td>Harness + 模型运行</td>
+<td>完整轨迹</td>
+</tr>
+<tr>
+<td>2. Verification</td>
+<td>验证器评分</td>
+<td>标量奖励</td>
+</tr>
+<tr>
+<td>3. Buffer Insertion</td>
+<td>写入共享 FIFO</td>
+<td>带版本标记的轨迹</td>
+</tr>
+<tr>
+<td>4a. Digester</td>
+<td>压缩为结构化摘要</td>
+<td>失败类别、组件、证据</td>
+</tr>
+<tr>
+<td>5a. Planner</td>
+<td>构建适应景观</td>
+<td>全局优化方向</td>
+</tr>
+<tr>
+<td>6a. Evolver</td>
+<td>产出候选 Harness</td>
+<td>变更清单</td>
+</tr>
+<tr>
+<td>7a. Critic+门控</td>
+<td>验证后上线</td>
+<td>新 Harness</td>
+</tr>
+<tr>
+<td>4b-7b. GRPO</td>
+<td>跨 Harness 训练</td>
+<td>新模型</td>
+</tr>
+</tbody></table>
+<h3 id="3-3-Cross-Harness-GRPO-的核心创新"><a href="#3-3-Cross-Harness-GRPO-的核心创新" class="headerlink" title="3.3 Cross-Harness GRPO 的核心创新"></a>3.3 Cross-Harness GRPO 的核心创新</h3><p><strong>传统 GRPO</strong>: 同一模型、同一 Harness → 多次采样 → 组内比较</p>
+<p><strong>Cross-Harness GRPO</strong>: 同一任务、不同 Harness 版本 → 所有轨迹放一起 → 只看最终验证器分数</p>
+<blockquote>
+<p>“不管你怎么跑的，只看最终验证器分数”</p>
+</blockquote>
+<p><strong>为什么这样设计？</strong></p>
+<ul>
+<li>Harness 进化改变动作空间 → 按任务分组，无需动作级对齐</li>
+<li>不同版本工具 Schema 不同 → 只比较最终奖励</li>
+<li>模型需要适应新 Harness → 在多种配置下训练，提升鲁棒性</li>
+</ul>
+<h3 id="3-4-关键实验结果"><a href="#3-4-关键实验结果" class="headerlink" title="3.4 关键实验结果"></a>3.4 关键实验结果</h3><table>
+<thead>
+<tr>
+<th>基准</th>
+<th>模型</th>
+<th>Harness-only</th>
+<th>协同进化</th>
+<th>额外增益</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GAIA</td>
+<td>Qwen3.5-9B</td>
+<td>~37%</td>
+<td>~39.8%</td>
+<td>+2.8%</td>
+</tr>
+<tr>
+<td>WebShop</td>
+<td>Qwen3.5-9B</td>
+<td>~49%</td>
+<td>~50.0%</td>
+<td>+1.0%</td>
+</tr>
+<tr>
+<td>ALFWorld</td>
+<td>Qwen3.5-9B</td>
+<td>53.0%</td>
+<td>97.0%</td>
+<td>+44.0%*</td>
+</tr>
+</tbody></table>
+<p>*注: ALFWorld 的 +44% 主要是 Harness-only 贡献，协同进化在触顶后提供额外提升</p>
+<h3 id="3-5-两种天花板的互相解锁"><a href="#3-5-两种天花板的互相解锁" class="headerlink" title="3.5 两种天花板的互相解锁"></a>3.5 两种天花板的互相解锁</h3><table>
+<thead>
+<tr>
+<th>天花板</th>
+<th>表现</th>
+<th>解锁方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Scaffolding Ceiling</strong></td>
+<td>Harness 已优化，模型无法利用</td>
+<td>训练模型学会利用新 Harness</td>
+</tr>
+<tr>
+<td><strong>Training-Signal Ceiling</strong></td>
+<td>模型变强，Harness 不调用新能力</td>
+<td>进化 Harness 暴露新能力给模型</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="四、深度对比：三种方案的本质差异"><a href="#四、深度对比：三种方案的本质差异" class="headerlink" title="四、深度对比：三种方案的本质差异"></a>四、深度对比：三种方案的本质差异</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Replay + Memory</th>
+<th>HarnessX AEGIS</th>
+<th>微调 (SFT&#x2F;RL)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>学习对象</strong></td>
+<td>经验检索</td>
+<td>结构优化</td>
+<td>参数更新</td>
+</tr>
+<tr>
+<td><strong>优化空间</strong></td>
+<td>提示工程</td>
+<td>符号空间</td>
+<td>连续梯度</td>
+</tr>
+<tr>
+<td><strong>新能力获取</strong></td>
+<td>❌ 不能</td>
+<td>❌ 不能</td>
+<td>✅ 能</td>
+</tr>
+<tr>
+<td><strong>避免重复犯错</strong></td>
+<td>✅ 能</td>
+<td>✅ 能</td>
+<td>✅ 能</td>
+</tr>
+<tr>
+<td><strong>可解释性</strong></td>
+<td>中</td>
+<td>高 (变更清单)</td>
+<td>低</td>
+</tr>
+<tr>
+<td><strong>成本</strong></td>
+<td>低</td>
+<td>中</td>
+<td>高</td>
+</tr>
+<tr>
+<td><strong>天花板</strong></td>
+<td>模型能力上限</td>
+<td>结构+模型双重上限</td>
+<td>数据质量上限</td>
+</tr>
+</tbody></table>
+<h3 id="关键洞察"><a href="#关键洞察" class="headerlink" title="关键洞察"></a>关键洞察</h3><blockquote>
+<p><strong>Replay + Memory 是”低成本近似”，HarnessX 是”结构优化”，微调是”能力进化”——三者互补，而非替代。</strong></p>
+</blockquote>
+<hr>
+<h2 id="五、工程落地的实际调整"><a href="#五、工程落地的实际调整" class="headerlink" title="五、工程落地的实际调整"></a>五、工程落地的实际调整</h2><h3 id="5-1-论文理想-vs-工程现实"><a href="#5-1-论文理想-vs-工程现实" class="headerlink" title="5.1 论文理想 vs 工程现实"></a>5.1 论文理想 vs 工程现实</h3><table>
+<thead>
+<tr>
+<th>方面</th>
+<th>论文方案</th>
+<th>实际调整</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Buffer 管理</td>
+<td>固定 FIFO</td>
+<td>分层 Buffer (hot&#x2F;warm&#x2F;cold)</td>
+</tr>
+<tr>
+<td>版本兼容</td>
+<td>版本标记</td>
+<td>兼容性检查 + 轨迹归一化</td>
+</tr>
+<tr>
+<td>门控策略</td>
+<td>确定性 Seesaw</td>
+<td>自适应阈值 + ε-greedy 探索</td>
+</tr>
+<tr>
+<td>资源调度</td>
+<td>Meta-Agent 四阶段</td>
+<td>K8s 独立部署 + 资源隔离</td>
+</tr>
+<tr>
+<td>监控运维</td>
+<td>未涉及</td>
+<td>实时监控 + 自动回滚</td>
+</tr>
+</tbody></table>
+<h3 id="5-2-最小可行部署-MVP"><a href="#5-2-最小可行部署-MVP" class="headerlink" title="5.2 最小可行部署 (MVP)"></a>5.2 最小可行部署 (MVP)</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Phase 1 (1-2周): 静态 Harness + 记忆</span><br><span class="line">  └── 人工设计种子 Harness</span><br><span class="line">  └── 向量数据库存储历史</span><br><span class="line">  └── RAG 检索注入 Prompt</span><br><span class="line"></span><br><span class="line">Phase 2 (1个月): 自动进化</span><br><span class="line">  └── 接入 AEGIS Digester + Planner</span><br><span class="line">  └── 人工审核 Evolver 产出</span><br><span class="line">  └── 小流量 A/B 测试</span><br><span class="line"></span><br><span class="line">Phase 3 (2-3个月): 协同进化</span><br><span class="line">  └── 部署 GRPO 训练管线</span><br><span class="line">  └── 完整监控体系</span><br><span class="line">  └── 自动化门控上线</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="六、个人反思与心得"><a href="#六、个人反思与心得" class="headerlink" title="六、个人反思与心得"></a>六、个人反思与心得</h2><h3 id="6-1-关于”持续学习”的本质"><a href="#6-1-关于”持续学习”的本质" class="headerlink" title="6.1 关于”持续学习”的本质"></a>6.1 关于”持续学习”的本质</h3><p>今天的讨论让我意识到，<strong>“持续学习”有三个层次</strong>：</p>
+<ol>
+<li><strong>记忆层</strong> (Replay + Memory): 记住过去，避免重复犯错</li>
+<li><strong>结构层</strong> (HarnessX): 优化流程，提升执行效率  </li>
+<li><strong>能力层</strong> (微调): 真正学会新技能，突破能力边界</li>
+</ol>
+<p>大多数产品停留在第 1 层，HarnessX 探索第 2 层，第 3 层仍是难题。</p>
+<h3 id="6-2-工程哲学：妥协的艺术"><a href="#6-2-工程哲学：妥协的艺术" class="headerlink" title="6.2 工程哲学：妥协的艺术"></a>6.2 工程哲学：妥协的艺术</h3><blockquote>
+<p><strong>论文是”理想模型”，工程是”妥协艺术”。</strong></p>
+</blockquote>
+<p>实际部署必须：</p>
+<ul>
+<li>保留人工干预的逃生通道</li>
+<li>接受不完美的近似解</li>
+<li>优先跑起来，再逐步优化</li>
+</ul>
+<h3 id="6-3-对当前工作的启发"><a href="#6-3-对当前工作的启发" class="headerlink" title="6.3 对当前工作的启发"></a>6.3 对当前工作的启发</h3><table>
+<thead>
+<tr>
+<th>启发</th>
+<th>应用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>分层记忆设计</td>
+<td>AI 助手可以引入 hot&#x2F;warm&#x2F;cold 三级记忆</td>
+</tr>
+<tr>
+<td>变更清单审计</td>
+<td>任何自动化调整都应该产出可读的变更说明</td>
+</tr>
+<tr>
+<td>跨版本比较</td>
+<td>系统升级时，应该能比较不同版本的性能差异</td>
+</tr>
+<tr>
+<td>灰度发布</td>
+<td>新策略必须支持小流量验证</td>
+</tr>
+</tbody></table>
+<h3 id="6-4-开放问题"><a href="#6-4-开放问题" class="headerlink" title="6.4 开放问题"></a>6.4 开放问题</h3><ol>
+<li><strong>如何量化”结构优化” vs “参数优化”的 ROI？</strong></li>
+<li><strong>在资源受限场景下，优先投资 Harness 还是模型？</strong></li>
+<li><strong>如何设计有效的”回归测试集”防止灾难性遗忘？</strong></li>
+<li><strong>人机协作的边界在哪里？哪些编辑必须人工审核？</strong></li>
+</ol>
+<hr>
+<h2 id="七、延伸阅读与参考"><a href="#七、延伸阅读与参考" class="headerlink" title="七、延伸阅读与参考"></a>七、延伸阅读与参考</h2><h3 id="今日讨论的论文"><a href="#今日讨论的论文" class="headerlink" title="今日讨论的论文"></a>今日讨论的论文</h3><table>
+<thead>
+<tr>
+<th>论文</th>
+<th>链接</th>
+<th>核心贡献</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HarnessX</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2606.14249">https://arxiv.org/abs/2606.14249</a></td>
+<td>可组合、可进化的 Agent Harness</td>
+</tr>
+<tr>
+<td>SkillOS</td>
+<td>arXiv:2605.06614</td>
+<td>训练 Curator 管理 Skill</td>
+</tr>
+<tr>
+<td>Graph Engineering</td>
+<td><a target="_blank" rel="noopener" href="https://x.com/cyrilXBT/article/2081212504093446357">https://x.com/cyrilXBT/article/2081212504093446357</a></td>
+<td>显式结构替代黑盒循环</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="八、总结"><a href="#八、总结" class="headerlink" title="八、总结"></a>八、总结</h2><blockquote>
+<p><strong>Agent 的持续学习不是单一技术的胜利，而是记忆、结构、参数三个层面的协同优化。</strong></p>
+<p>HarnessX 的价值在于：它证明了<strong>运行时接口和模型权重是同等重要的优化变量</strong>——当大家都在卷参数时，优化结构可能是一条被严重低估的捷径。</p>
+</blockquote>
+<hr>
+<p><em>整理时间: 2026-07-28</em><br><em>飞书文档: <a target="_blank" rel="noopener" href="https://www.feishu.cn/docx/DjWJdBG4toQT5bxcCOacr31OnJf">https://www.feishu.cn/docx/DjWJdBG4toQT5bxcCOacr31OnJf</a></em></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://turbin.github.io/2026/07/28/2026-07-28-replay-memory-vs-harnessx/" data-id="cuid5E3LsVF52JvYu0yhZgUii" data-title="技术反思：Replay Memory vs HarnessX 协同进化" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Agent/" rel="tag">Agent</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/HarnessX/" rel="tag">HarnessX</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ReplayMemory/" rel="tag">ReplayMemory</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%8F%8D%E6%80%9D/" rel="tag">反思</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%8C%81%E7%BB%AD%E5%AD%A6%E4%B9%A0/" rel="tag">持续学习</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2026/07/27/2026-07-27-graph-engineering-vs-loop/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">后一篇</strong>
+      <div class="article-nav-title">Graph Engineering vs Loop Engineering：从黑盒决策到显式结构</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/mba/">MBA学习</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/engineering/">工程博客</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E5%8D%8F%E4%BD%9C/" rel="tag">AI协作</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E6%9E%B6%E6%9E%84/" rel="tag">AI架构</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Agent/" rel="tag">Agent</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/" rel="tag">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Graph-Engineering/" rel="tag">Graph Engineering</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HarnessX/" rel="tag">HarnessX</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PowerShell/" rel="tag">PowerShell</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Promise/" rel="tag">Promise</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/" rel="tag">Qt</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ReplayMemory/" rel="tag">ReplayMemory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webkit/" rel="tag">Webkit</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Windows/" rel="tag">Windows</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BB%B7%E5%80%BC%E9%93%BE/" rel="tag">价值链</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95/" rel="tag">决策记录</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8D%9A%E5%AE%A2/" rel="tag">博客</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8F%8D%E6%80%9D/" rel="tag">反思</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E8%A7%84%E8%8C%83/" rel="tag">工程规范</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%BC%82%E5%B8%B8/" rel="tag">异常</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%88%98%E7%95%A5%E7%AE%A1%E7%90%86/" rel="tag">战略管理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8C%81%E7%BB%AD%E5%AD%A6%E4%B9%A0/" rel="tag">持续学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AB%9E%E4%BA%89%E4%BC%98%E5%8A%BF/" rel="tag">竞争优势</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BF%BB%E8%AF%91/" rel="tag">翻译</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" rel="tag">读书笔记</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%BF%88%E5%85%8B%E5%B0%94%E6%B3%A2%E7%89%B9/" rel="tag">迈克尔波特</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/" rel="tag">逆向工程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%93%BE%E6%8E%A5/" rel="tag">链接</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%93%BE%E6%8E%A5%E5%99%A8/" rel="tag">链接器</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI%E5%8D%8F%E4%BD%9C/" style="font-size: 10px;">AI协作</a> <a href="/tags/AI%E6%9E%B6%E6%9E%84/" style="font-size: 10px;">AI架构</a> <a href="/tags/Agent/" style="font-size: 20px;">Agent</a> <a href="/tags/Android/" style="font-size: 10px;">Android</a> <a href="/tags/Git/" style="font-size: 10px;">Git</a> <a href="/tags/Graph-Engineering/" style="font-size: 10px;">Graph Engineering</a> <a href="/tags/HarnessX/" style="font-size: 10px;">HarnessX</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/JavaScript/" style="font-size: 20px;">JavaScript</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/PowerShell/" style="font-size: 10px;">PowerShell</a> <a href="/tags/Promise/" style="font-size: 10px;">Promise</a> <a href="/tags/Qt/" style="font-size: 10px;">Qt</a> <a href="/tags/ReplayMemory/" style="font-size: 10px;">ReplayMemory</a> <a href="/tags/Webkit/" style="font-size: 10px;">Webkit</a> <a href="/tags/Windows/" style="font-size: 10px;">Windows</a> <a href="/tags/%E4%BB%B7%E5%80%BC%E9%93%BE/" style="font-size: 10px;">价值链</a> <a href="/tags/%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95/" style="font-size: 10px;">决策记录</a> <a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 20px;">博客</a> <a href="/tags/%E5%8F%8D%E6%80%9D/" style="font-size: 10px;">反思</a> <a href="/tags/%E5%B7%A5%E7%A8%8B%E8%A7%84%E8%8C%83/" style="font-size: 10px;">工程规范</a> <a href="/tags/%E5%BC%82%E5%B8%B8/" style="font-size: 10px;">异常</a> <a href="/tags/%E6%88%98%E7%95%A5%E7%AE%A1%E7%90%86/" style="font-size: 10px;">战略管理</a> <a href="/tags/%E6%8C%81%E7%BB%AD%E5%AD%A6%E4%B9%A0/" style="font-size: 10px;">持续学习</a> <a href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" style="font-size: 10px;">源码分析</a> <a href="/tags/%E7%AB%9E%E4%BA%89%E4%BC%98%E5%8A%BF/" style="font-size: 10px;">竞争优势</a> <a href="/tags/%E7%BF%BB%E8%AF%91/" style="font-size: 20px;">翻译</a> <a href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" style="font-size: 10px;">读书笔记</a> <a href="/tags/%E8%BF%88%E5%85%8B%E5%B0%94%E6%B3%A2%E7%89%B9/" style="font-size: 10px;">迈克尔波特</a> <a href="/tags/%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/" style="font-size: 10px;">逆向工程</a> <a href="/tags/%E9%93%BE%E6%8E%A5/" style="font-size: 10px;">链接</a> <a href="/tags/%E9%93%BE%E6%8E%A5%E5%99%A8/" style="font-size: 10px;">链接器</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/07/">七月 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/07/28/2026-07-28-replay-memory-vs-harnessx/">技术反思：Replay Memory vs HarnessX 协同进化</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/27/2026-07-27-graph-engineering-vs-loop/">Graph Engineering vs Loop Engineering：从黑盒决策到显式结构</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/27/2026-07-27-competitive-strategy-notes/">《竞争战略》学习笔记：从价值链到持续性</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/24/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/23/2026-07-24-%E5%B7%A5%E7%A8%8B%E6%97%A5%E8%AE%B0%EF%BC%9Aai%E5%8D%8F%E4%BD%9C%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95%E6%9C%BA%E5%88%B6%E8%AE%BE%E8%AE%A1/">工程日记：AI协作决策记录机制设计</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 Turbine Yan<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
