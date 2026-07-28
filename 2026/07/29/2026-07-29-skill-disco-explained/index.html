@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>🎮 SKILL-DISCO：教 AI 记住聪明的做事方法 | Turbine&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="论文: SKILL-DISCO: Distilling and Compiling Agent Traces into Reusable Procedural Skills作者: Zhongxin Guo, Danrui Qi, Hanwen Gu, Peng Cheng, Yongqiang Xiong机构: Microsoft Research &amp; Beijing Foreign S">
+<meta property="og:type" content="article">
+<meta property="og:title" content="🎮 SKILL-DISCO：教 AI 记住聪明的做事方法">
+<meta property="og:url" content="https://turbin.github.io/2026/07/29/2026-07-29-skill-disco-explained/index.html">
+<meta property="og:site_name" content="Turbine&#39;s Blog">
+<meta property="og:description" content="论文: SKILL-DISCO: Distilling and Compiling Agent Traces into Reusable Procedural Skills作者: Zhongxin Guo, Danrui Qi, Hanwen Gu, Peng Cheng, Yongqiang Xiong机构: Microsoft Research &amp; Beijing Foreign S">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-28T23:45:00.000Z">
+<meta property="article:modified_time" content="2026-07-28T23:47:30.819Z">
+<meta property="article:author" content="Turbine Yan">
+<meta property="article:tag" content="AI Agent">
+<meta property="article:tag" content="PFSM">
+<meta property="article:tag" content="SKILL-DISCO">
+<meta property="article:tag" content="技能蒸馏">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Turbine's Blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Turbine&#39;s Blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">一个会写C/C++，喜欢研究Linux的纯码农</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS 订阅"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="搜索"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜索"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://turbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-2026-07-29-skill-disco-explained" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/07/29/2026-07-29-skill-disco-explained/" class="article-date">
+  <time class="dt-published" datetime="2026-07-28T23:45:00.000Z" itemprop="datePublished">2026-07-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/engineering/">工程博客</a>►<a class="article-category-link" href="/categories/engineering/AI/">AI</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      🎮 SKILL-DISCO：教 AI 记住聪明的做事方法
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p><strong>论文</strong>: SKILL-DISCO: Distilling and Compiling Agent Traces into Reusable Procedural Skills<br><strong>作者</strong>: Zhongxin Guo, Danrui Qi, Hanwen Gu, Peng Cheng, Yongqiang Xiong<br><strong>机构</strong>: Microsoft Research &amp; Beijing Foreign Studies University<br><strong>arXiv</strong>: 2606.26669<br><strong>整理时间</strong>: 2026-07-29</p>
+</blockquote>
+<hr>
+<h2 id="🤔-AI-遇到了什么问题？"><a href="#🤔-AI-遇到了什么问题？" class="headerlink" title="🤔 AI 遇到了什么问题？"></a>🤔 AI 遇到了什么问题？</h2><p><strong>想象你是一个聪明的小机器人 🤖</strong></p>
+<p>你每天都要做很多家务：</p>
+<ul>
+<li>🍳 热牛奶 → 去厨房 → 打开冰箱 → 拿出牛奶 → 放微波炉 → 加热</li>
+<li>📖 找书 → 去书房 → 打开抽屉 → 翻找 → 拿到书</li>
+</ul>
+<p><strong>但是！</strong> 每次做类似的事情，你都要从头想一遍，就像从来没做过一样！</p>
+<h3 id="前后对比"><a href="#前后对比" class="headerlink" title="前后对比"></a>前后对比</h3><table>
+<thead>
+<tr>
+<th>😫 以前的样子</th>
+<th>😊 有了 SKILL-DISCO 后</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>每次找东西都要重新想：”去这里… 然后打开… 然后找…” <strong>又慢又累！</strong></td>
+<td>记住了一个万能公式：<strong>“找东西 &#x3D; 去房间 → 翻找 → 拿到”</strong> <strong>以后直接套用！</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🧠-三个重要的”魔法概念”"><a href="#🧠-三个重要的”魔法概念”" class="headerlink" title="🧠 三个重要的”魔法概念”"></a>🧠 三个重要的”魔法概念”</h2><h3 id="📍-概念-1：任务就像走迷宫（FSM）"><a href="#📍-概念-1：任务就像走迷宫（FSM）" class="headerlink" title="📍 概念 1：任务就像走迷宫（FSM）"></a>📍 概念 1：任务就像走迷宫（FSM）</h3><p><strong>大人说：</strong> FSM（有限状态机）是一个数学模型，描述任务由有限的状态和确定性的转移组成。</p>
+<blockquote>
+<p>🧒 <strong>小朋友理解：</strong> 想象你在玩一个闯关游戏！每个房间就是一个”状态”，你做的每个动作（开门、拿东西）就是从一个房间走到另一个房间。只要你知道规则和路线，就能顺利通关！</p>
+</blockquote>
+<h4 id="🎮-游戏闯关-状态机"><a href="#🎮-游戏闯关-状态机" class="headerlink" title="🎮 游戏闯关 &#x3D; 状态机"></a>🎮 游戏闯关 &#x3D; 状态机</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">起点 🏠 → 找房间 🔍 → 拿东西 📦 → 完成 🎉</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="🎭-概念-2：万能公式（PFSM）"><a href="#🎭-概念-2：万能公式（PFSM）" class="headerlink" title="🎭 概念 2：万能公式（PFSM）"></a>🎭 概念 2：万能公式（PFSM）</h3><p><strong>大人说：</strong> PFSM（参数化有限状态机）把具体的状态和动作抽象为带参数的状态和算子，使得不同轨迹可以实例化为相同的执行模式。</p>
+<blockquote>
+<p>🧒 <strong>小朋友理解：</strong> 就像你学会了一个万能句型：”去__[地方]<strong>拿</strong>[东西]__”。不管是”去冰箱拿牛奶”还是”去抽屉拿铅笔”，用的都是同一个句型！只是里面的”地方”和”东西”换了一下。</p>
+</blockquote>
+<h4 id="📝-万能公式示例"><a href="#📝-万能公式示例" class="headerlink" title="📝 万能公式示例"></a>📝 万能公式示例</h4><p><strong>万能技能：找东西 🔍</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">去 [地方] → 翻找 [东西] → 拿到 [目标] 🎯</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>实例</th>
+<th>地方</th>
+<th>东西</th>
+<th>动作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>🥛 找牛奶</td>
+<td>厨房</td>
+<td>牛奶</td>
+<td>拿起来</td>
+</tr>
+<tr>
+<td>📖 找书</td>
+<td>书房</td>
+<td>书</td>
+<td>捧起来</td>
+</tr>
+<tr>
+<td>🧸 找玩具</td>
+<td>卧室</td>
+<td>玩具熊</td>
+<td>抱起来</td>
+</tr>
+</tbody></table>
+<p><strong>都是同一个”找东西”技能！</strong></p>
+<hr>
+<h4 id="🎭-深入理解-PFSM：像玩”填空题”一样"><a href="#🎭-深入理解-PFSM：像玩”填空题”一样" class="headerlink" title="🎭 深入理解 PFSM：像玩”填空题”一样"></a>🎭 深入理解 PFSM：像玩”填空题”一样</h4><blockquote>
+<p>🧒 <strong>最最最简单的理解：</strong><br>PFSM 就像一个你最喜欢的**”填空题游戏本”** 📔！<br>每一页都印着同一个故事模板，只是有些地方是空白的，需要你填上不同的答案。<br>填不同的答案，就变成了不同的故事，但<strong>讲故事的方法是一样的</strong>！</p>
+</blockquote>
+<p><strong>📖 故事模板（PFSM 技能）</strong></p>
+<blockquote>
+<p>从前，有一个小机器人要去 <strong>_____</strong> 找 <strong>_____</strong>。<br>它先去了第一个房间，打开门看了看。<br>如果找到了，就 <strong>_____</strong>。<br>如果没找到，就去下一个房间继续找。<br>最后，小机器人开心地完成任务！🎉</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>故事</th>
+<th>地方</th>
+<th>东西</th>
+<th>动作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>故事 A：找牛奶</strong></td>
+<td>厨房</td>
+<td>牛奶</td>
+<td>拿起来</td>
+</tr>
+<tr>
+<td><strong>故事 B：找故事书</strong></td>
+<td>书房</td>
+<td>故事书</td>
+<td>捧起来</td>
+</tr>
+<tr>
+<td><strong>故事 C：找小熊</strong></td>
+<td>卧室</td>
+<td>玩具熊</td>
+<td>抱起来</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <strong>发现了吗？</strong><br>三个故事虽然讲的事情不同（找牛奶、找书、找玩具熊），但是<strong>讲故事的套路完全一样</strong>！<br>就像你学会了唱一首歌的旋律 🎵，只要换一换歌词，就能唱出很多首不同的歌！<br>PFSM 就是这个”旋律”，参数就是可以换的”歌词”！</p>
+</blockquote>
+<hr>
+<h4 id="🏗️-PFSM-就像”乐高积木”"><a href="#🏗️-PFSM-就像”乐高积木”" class="headerlink" title="🏗️ PFSM 就像”乐高积木”"></a>🏗️ PFSM 就像”乐高积木”</h4><table>
+<thead>
+<tr>
+<th>🧱 以前的方法</th>
+<th>🏰 PFSM 方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>每次都要造一座全新的房子</td>
+<td>先造一个”万能城堡模板”</td>
+</tr>
+<tr>
+<td>📝 “去厨房拿牛奶”</td>
+<td>🧩 “去__[地方]<strong>拿</strong>[东西]__”</td>
+</tr>
+<tr>
+<td>📝 “去书房拿铅笔”</td>
+<td><strong>一个模板，千变万化！</strong></td>
+</tr>
+<tr>
+<td>📝 “去卧室拿袜子”</td>
+<td>填什么就是什么！✨</td>
+</tr>
+<tr>
+<td><strong>每句话都是独立的！</strong></td>
+<td></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>🧒 <strong>小朋友想一想：</strong><br>如果你有 100 个不同的小玩具要找，用以前的方法要写 100 句不同的话。<br>但是有了 PFSM 的万能公式，你只需要<strong>一句话 + 100 种填空答案</strong>！<br>就像你有一个魔法印章 🪄，只要在空格里盖不同的图案，就能变出不同的东西！<br><strong>这就是 PFSM 聪明的地方 —— 用一个”空框框”装下无数种可能！</strong></p>
+</blockquote>
+<hr>
+<h4 id="🚦-PFSM-还有”红绿灯”"><a href="#🚦-PFSM-还有”红绿灯”" class="headerlink" title="🚦 PFSM 还有”红绿灯”"></a>🚦 PFSM 还有”红绿灯”</h4><p>PFSM 不只是填空，它还能<strong>根据情况做不同的选择</strong>！就像过马路要看红绿灯 🚦</p>
+<p><strong>🎮 小游戏：找东西的”智能路线”</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">🏁 开始 → 去房间 🚪 → 🔍 找到了吗？ → ❌ 没有 → 去下一个房间</span><br><span class="line">                                    ↓</span><br><span class="line">                              ✅ 找到了！ → 拿走它 🎁 → 🎉 完成任务</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>🧒 <strong>看这个”红绿灯”路线：</strong><br>小机器人不是傻傻地一条道走到黑，它会<strong>一边走一边看</strong>：<br>“找到了吗？” → 如果红灯（没找到），就换条路继续找 🔄<br>“找到了吗？” → 如果绿灯（找到了），就拿走完成任务 ✅<br>PFSM 就是包含了这些”红绿灯判断”的万能路线图！</p>
+</blockquote>
+<hr>
+<h3 id="🧪-概念-3：技能工厂（SKILL-DISCO）"><a href="#🧪-概念-3：技能工厂（SKILL-DISCO）" class="headerlink" title="🧪 概念 3：技能工厂（SKILL-DISCO）"></a>🧪 概念 3：技能工厂（SKILL-DISCO）</h3><p><strong>大人说：</strong> SKILL-DISCO 是一个蒸馏-编译框架，从成功轨迹中蒸馏可复用的 PFSM 子图，并将其编译为可调用、可执行、可验证的程序性技能。</p>
+<blockquote>
+<p>🧒 <strong>小朋友理解：</strong> 想象你有一个”聪明药水工厂” 🏭！你把以前成功做过的事情（比如成功找到过牛奶、成功找到过书）倒进工厂里。工厂会自动找出这些事情中相同的部分，做成一个个”技能药丸” 💊。以后遇到类似的事情，直接吞一颗药丸就知道怎么做了！</p>
+</blockquote>
+<hr>
+<h2 id="⚙️-SKILL-DISCO-是怎么工作的？"><a href="#⚙️-SKILL-DISCO-是怎么工作的？" class="headerlink" title="⚙️ SKILL-DISCO 是怎么工作的？"></a>⚙️ SKILL-DISCO 是怎么工作的？</h2><p>整个框架就像一座**”技能工厂”**，有两个大车间：</p>
+<table>
+<thead>
+<tr>
+<th>🔥 第一车间：蒸馏（Distillation）</th>
+<th>🔧 第二车间：编译（Compilation）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>把成功经验”煮”出精华</td>
+<td>把精华做成可用的工具</td>
+</tr>
+<tr>
+<td>⚗️</td>
+<td>🛠️</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="📋-详细步骤"><a href="#📋-详细步骤" class="headerlink" title="📋 详细步骤"></a>📋 详细步骤</h3><h4 id="步骤-1：📝-记录成功故事（轨迹规范化）"><a href="#步骤-1：📝-记录成功故事（轨迹规范化）" class="headerlink" title="步骤 1：📝 记录成功故事（轨迹规范化）"></a>步骤 1：📝 记录成功故事（轨迹规范化）</h4><p>把 AI 做过的事情整理成清晰的步骤清单。</p>
+<blockquote>
+<p>🧒 就像你写日记，把”今天我做了什么”一步一步写清楚，不能漏掉任何一个动作！</p>
+</blockquote>
+<hr>
+<h4 id="步骤-2：✂️-切成小片段（子目标提取）"><a href="#步骤-2：✂️-切成小片段（子目标提取）" class="headerlink" title="步骤 2：✂️ 切成小片段（子目标提取）"></a>步骤 2：✂️ 切成小片段（子目标提取）</h4><p>把一个长故事切成几个可以单独使用的小故事。</p>
+<blockquote>
+<p>🧒 就像把一本厚书分成几个章节，每个章节讲一个小主题。这样你可以单独看任何一个章节！</p>
+</blockquote>
+<p><strong>示例：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">长故事：去厨房 → 开冰箱 → 拿牛奶 → 关冰箱 → 去客厅 → 放微波炉 → 加热 → 拿出来</span><br><span class="line"></span><br><span class="line">切成：</span><br><span class="line">  [找东西]：去厨房 → 开冰箱 → 拿牛奶</span><br><span class="line">  [用电器]：放微波炉 → 加热 → 拿出来</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h4 id="步骤-3：🧩-找出相同的拼图块（技能整合）"><a href="#步骤-3：🧩-找出相同的拼图块（技能整合）" class="headerlink" title="步骤 3：🧩 找出相同的拼图块（技能整合）"></a>步骤 3：🧩 找出相同的拼图块（技能整合）</h4><p>看看哪些小片段在不同故事里反复出现。</p>
+<blockquote>
+<p>🧒 你有很多次”找东西”的经历，虽然找的东西不同，但步骤都差不多！工厂就把这些相似的步骤打包成一个”找东西”技能包。</p>
+</blockquote>
+<blockquote>
+<p>🎯 <strong>聪明之处：</strong> 只保留那些在很多次成功中都出现过的步骤组合，这样技能才可靠！</p>
+</blockquote>
+<hr>
+<h4 id="步骤-4：📋-写说明书（技能规范）"><a href="#步骤-4：📋-写说明书（技能规范）" class="headerlink" title="步骤 4：📋 写说明书（技能规范）"></a>步骤 4：📋 写说明书（技能规范）</h4><p>给每个技能写一个详细的说明书：叫什么名字、需要什么、能做什么、不能做什么。</p>
+<blockquote>
+<p>🧒 就像乐高积木的说明书，告诉你这个积木块是什么形状、可以拼在哪里、能用来做什么！</p>
+</blockquote>
+<hr>
+<h4 id="步骤-5：🧪-考试验证（合成与验证）"><a href="#步骤-5：🧪-考试验证（合成与验证）" class="headerlink" title="步骤 5：🧪 考试验证（合成与验证）"></a>步骤 5：🧪 考试验证（合成与验证）</h4><p>把技能写成真正的程序代码，然后在新的任务上测试，看看是不是真的好用。</p>
+<blockquote>
+<p>🧒 就像你学会了一个新游戏技巧，要在真正的游戏里试一试，看是不是真的好用！不好用就再改一改，直到好用为止！</p>
+</blockquote>
+<hr>
+<h2 id="🔬-技术深入：FSM、PFSM-与合并机制"><a href="#🔬-技术深入：FSM、PFSM-与合并机制" class="headerlink" title="🔬 技术深入：FSM、PFSM 与合并机制"></a>🔬 技术深入：FSM、PFSM 与合并机制</h2><h3 id="📍-从-FSM-到-PFSM：从”精确地图”到”万能模板”"><a href="#📍-从-FSM-到-PFSM：从”精确地图”到”万能模板”" class="headerlink" title="📍 从 FSM 到 PFSM：从”精确地图”到”万能模板”"></a>📍 从 FSM 到 PFSM：从”精确地图”到”万能模板”</h3><p><strong>大人说：</strong> FSM（有限状态机）记录的是具体执行路径，而 PFSM（参数化有限状态机）通过引入参数空间 Θ，将具体状态&#x2F;动作抽象为参数化状态&#x2F;算子，使得不同轨迹可以实例化为相同的执行模式。</p>
+<blockquote>
+<p>🧒 <strong>小朋友理解：</strong><br>想象你有两张藏宝图 🗺️：</p>
+<p><strong>图 A（FSM）</strong>：”从家出发 → 走到第3棵橡树 → 向左转 → 挖开泥土 → 找到金币”</p>
+<p><strong>图 B（FSM）</strong>：”从家出发 → 走到河边 → 向右转 → 搬开石头 → 找到银币”</p>
+<p>这两张图看起来完全不同！</p>
+<p>但是 <strong>PFSM</strong> 把两张图变成了同一个万能模板：<br>“从家出发 → 走到[地标] → [转向] → [移动障碍] → 找到[宝藏]”</p>
+<p>填上不同的参数，就是不同的寻宝路线！</p>
+</blockquote>
+<h4 id="🗺️-FSM-vs-PFSM-对比"><a href="#🗺️-FSM-vs-PFSM-对比" class="headerlink" title="🗺️ FSM vs PFSM 对比"></a>🗺️ FSM vs PFSM 对比</h4><table>
+<thead>
+<tr>
+<th>📍 FSM：精确地图</th>
+<th>🎯 PFSM：万能模板</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>🏠 → 🌳橡树3 → ⬅️左转 → ⛏️挖土 → 🪙金币</td>
+<td>🏠 → [地标] → [转向] → [移障碍] → [宝藏]</td>
+</tr>
+<tr>
+<td>🏠 → 🌊河边 → ➡️右转 → 🪨搬石头 → 🪙银币</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>每条路线都是独立的！</strong></td>
+<td><strong>一个模板，千变万化！</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="🔗-不同-Trace-的合并机制"><a href="#🔗-不同-Trace-的合并机制" class="headerlink" title="🔗 不同 Trace 的合并机制"></a>🔗 不同 Trace 的合并机制</h3><p><strong>大人说：</strong> Stage 3（Procedural Skill Consolidation）通过语义聚类将共享相同参数化控制流结构的子目标操作归为一类。合并判断基于参数绑定下的子图匹配，而非表面文本相似性。</p>
+<blockquote>
+<p>🧒 <strong>小朋友理解：</strong><br>想象你是一个拼图大师 🧩。你有很多张不同任务的完成照片，你要找出<strong>哪些照片拍的是同一个”套路”</strong>。</p>
+<p>判断标准不是”照片里有什么东西”，而是**”做事情的方法是不是一样”**：</p>
+<ul>
+<li>照片 A：小明去厨房翻冰箱找牛奶 ✅</li>
+<li>照片 B：小红去书房翻抽屉找铅笔 ✅</li>
+<li>照片 C：小刚直接坐在沙发上看电视 ❌</li>
+</ul>
+<p>A 和 B 虽然找的东西不同，但是<strong>方法一样</strong>（去地方 → 翻找 → 拿到），所以可以合并！<br>C 的方法完全不同，不能合并。</p>
+</blockquote>
+<h4 id="📐-合并的数学判断公式"><a href="#📐-合并的数学判断公式" class="headerlink" title="📐 合并的数学判断公式"></a>📐 合并的数学判断公式</h4><p>每个候选聚类得到一个**”可复用性评分”**：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rₖ ≈ (1/N) × (能匹配的轨迹数量)</span><br></pre></td></tr></table></figure>
+
+<p>意思是：<strong>这个”套路”在多少条成功轨迹里出现过？</strong></p>
+<p>出现得越多，评分越高，越值得做成一个技能！</p>
+<h4 id="🧩-合并效果对比"><a href="#🧩-合并效果对比" class="headerlink" title="🧩 合并效果对比"></a>🧩 合并效果对比</h4><table>
+<thead>
+<tr>
+<th>📚 不合并（ASI 方法）</th>
+<th>🎯 合并后（SKILL-DISCO）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ALFWorld: <strong>110</strong> 个技能</td>
+<td>ALFWorld: <strong>5</strong> 个技能</td>
+</tr>
+<tr>
+<td>WebArena: <strong>146</strong> 个技能</td>
+<td>WebArena: <strong>20</strong> 个技能</td>
+</tr>
+<tr>
+<td>每个轨迹一个技能，重复太多！</td>
+<td>相似的合并成一个，精简 5~22 倍！</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="⚗️-蒸馏（Distillation）：三步煮出精华"><a href="#⚗️-蒸馏（Distillation）：三步煮出精华" class="headerlink" title="⚗️ 蒸馏（Distillation）：三步煮出精华"></a>⚗️ 蒸馏（Distillation）：三步煮出精华</h3><p><strong>大人说：</strong> 蒸馏阶段通过 Trace Normalization → Subgoal-level Operation Extraction → Procedural Skill Consolidation 三个阶段，将原始轨迹提升为可复用的 PFSM 子图。每个阶段由 LLM 驱动，逐步抽象参数化控制流结构。</p>
+<h4 id="三步流水线"><a href="#三步流水线" class="headerlink" title="三步流水线"></a>三步流水线</h4><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>名称</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>📝 Stage 1</td>
+<td>轨迹规范化</td>
+<td>把杂乱的执行日志变成整齐的程序</td>
+</tr>
+<tr>
+<td>✂️ Stage 2</td>
+<td>子目标提取</td>
+<td>把长程序切成可复用的小块</td>
+</tr>
+<tr>
+<td>🧩 Stage 3</td>
+<td>技能整合</td>
+<td>把相似的小块打包成万能技能</td>
+</tr>
+</tbody></table>
+<p><strong>示例：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">输入：原始日志</span><br><span class="line">&quot;嗯...让我想想...先去厨房吧...哦冰箱在那...打开它...&quot;</span><br><span class="line"></span><br><span class="line">输出：规范化程序</span><br><span class="line">go_to(厨房) → open(冰箱) → take(牛奶)</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>🧒 <strong>小朋友理解”蒸馏”：</strong><br>想象你在煮一锅<strong>超级浓缩汤</strong> 🍲：<br>1️⃣ <strong>Stage 1</strong>：先把所有食材（原始轨迹）洗干净、切好<br>2️⃣ <strong>Stage 2</strong>：把食材按种类分开（肉放一起、菜放一起）<br>3️⃣ <strong>Stage 3</strong>：把相同的食材合并，做成”万能汤底”</p>
+<p>最后你得到的是一小碗<strong>超级浓缩的精华汤底</strong>，只要加一点水就能变出一大锅汤！</p>
+</blockquote>
+<hr>
+<h3 id="🔧-编译（Compilation）：把图纸变成真工具"><a href="#🔧-编译（Compilation）：把图纸变成真工具" class="headerlink" title="🔧 编译（Compilation）：把图纸变成真工具"></a>🔧 编译（Compilation）：把图纸变成真工具</h3><p><strong>大人说：</strong> 编译阶段通过 Skill Specification → Synthesis and Verification 两个阶段，将 PFSM 子图转化为可调用、可执行、可验证的 Python 程序。规范定义调用接口和行为约束，合成生成代码，验证在 held-out 任务上检验正确性。</p>
+<h4 id="Stage-4-技能规范"><a href="#Stage-4-技能规范" class="headerlink" title="Stage 4: 技能规范"></a>Stage 4: 技能规范</h4><p>给技能写”身份证”和”说明书”：</p>
+<table>
+<thead>
+<tr>
+<th>属性</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>🆔 名字</td>
+<td>search_and_take</td>
+</tr>
+<tr>
+<td>📥 输入</td>
+<td>地点 l，对象 o</td>
+</tr>
+<tr>
+<td>📤 输出</td>
+<td>是否找到（True&#x2F;False）</td>
+</tr>
+<tr>
+<td>⚠️ 前提</td>
+<td>对象必须在某个地方</td>
+</tr>
+<tr>
+<td>✅ 保证</td>
+<td>如果成功，对象被拿到</td>
+</tr>
+<tr>
+<td>⭐ 置信度</td>
+<td>0.95（95%可靠）</td>
+</tr>
+</tbody></table>
+<h4 id="Stage-5-合成与验证"><a href="#Stage-5-合成与验证" class="headerlink" title="Stage 5: 合成与验证"></a>Stage 5: 合成与验证</h4><p>LLM 合成 Python 代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">search_and_take</span>(<span class="params">l, o</span>):</span><br><span class="line">    go_to(l)</span><br><span class="line">    <span class="keyword">if</span> can_open(l):</span><br><span class="line">        <span class="built_in">open</span>(l)</span><br><span class="line">    <span class="keyword">if</span> found(o):</span><br><span class="line">        <span class="keyword">return</span> take(o)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">False</span></span><br></pre></td></tr></table></figure>
+
+<p>在新任务上测试 ✅ → 通过！</p>
+<blockquote>
+<p>🧒 <strong>小朋友理解”编译”：</strong><br>想象你要做一把<strong>真真正正能用的玩具锤子</strong> 🔨：</p>
+<p><strong>Stage 4（写说明书）</strong>：<br>先画图纸，写清楚：锤子长什么样？用什么材料？能钉多大的钉子？</p>
+<p><strong>Stage 5（做锤子 + 考试）</strong>：<br>按照图纸做出真锤子，然后去钉钉子试试：</p>
+<ul>
+<li>能钉进去？✅ 通过！</li>
+<li>钉不进去？❌ 重做！</li>
+<li>最多重做 R 次，还不行就扔掉</li>
+</ul>
+<p>最后只有<strong>真正好用的锤子</strong>才会放进工具箱里！</p>
+</blockquote>
+<hr>
+<h4 id="🎯-完整流水线总览"><a href="#🎯-完整流水线总览" class="headerlink" title="🎯 完整流水线总览"></a>🎯 完整流水线总览</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">📥 输入：N 条成功轨迹</span><br><span class="line">    ↓</span><br><span class="line">📝 规范化 → ✂️ 提取 → 🧩 整合</span><br><span class="line">    【🔥 蒸馏：煮出精华】</span><br><span class="line">    ↓</span><br><span class="line">📋 规范 → 🧪 合成验证</span><br><span class="line">    【🔧 编译：做成真工具】</span><br><span class="line">    ↓</span><br><span class="line">📤 输出：可调用技能库</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="🏆-效果怎么样？"><a href="#🏆-效果怎么样？" class="headerlink" title="🏆 效果怎么样？"></a>🏆 效果怎么样？</h2><p>科学家在两个测试场地上做了实验：</p>
+<ul>
+<li>🏠 <strong>ALFWorld</strong>：文字版的家务任务</li>
+<li>🌐 <strong>WebArena</strong>：真实的网页浏览任务</li>
+</ul>
+<h3 id="📊-实验结果"><a href="#📊-实验结果" class="headerlink" title="📊 实验结果"></a>📊 实验结果</h3><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>数值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>ALFWorld 成功率</strong></td>
+<td>99.3%</td>
+<td>之前 96.3%</td>
+</tr>
+<tr>
+<td><strong>平均交互轮数</strong></td>
+<td>3.2</td>
+<td>之前 3.6 轮</td>
+</tr>
+<tr>
+<td><strong>小模型性能提升</strong></td>
+<td>+85%</td>
+<td>Qwen3.5-4B</td>
+</tr>
+<tr>
+<td><strong>学到的技能数</strong></td>
+<td>5</td>
+<td>对手需要 110 个</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>🎉 <strong>最厉害的地方：</strong> 用 GPT-4o 学到的技能，可以直接给更小的模型（比如 Qwen3.5-9B）使用，小模型用了之后成功率从 54.5% 飙升到 98.5%！就像学霸的笔记借给学渣，学渣也能考高分！</p>
+</blockquote>
+<hr>
+<h2 id="🌟-一句话总结"><a href="#🌟-一句话总结" class="headerlink" title="🌟 一句话总结"></a>🌟 一句话总结</h2><blockquote>
+<p>🧒 <strong>SKILL-DISCO 就像一个”聪明药水工厂” 🏭</strong></p>
+<p>它把 AI 以前成功做过的事情<br>提炼成一个个”万能技能药丸” 💊</p>
+<p>以后遇到类似的事情<br>直接吞一颗药丸就知道怎么做<br><strong>又快又准！</strong> 🚀</p>
+</blockquote>
+<hr>
+<h2 id="📄-论文信息"><a href="#📄-论文信息" class="headerlink" title="📄 论文信息"></a>📄 论文信息</h2><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>论文标题</strong></td>
+<td>SKILL-DISCO: Distilling and Compiling Agent Traces into Reusable Procedural Skills</td>
+</tr>
+<tr>
+<td><strong>作者</strong></td>
+<td>Zhongxin Guo, Danrui Qi, Hanwen Gu, Peng Cheng, Yongqiang Xiong</td>
+</tr>
+<tr>
+<td><strong>机构</strong></td>
+<td>Microsoft Research &amp; Beijing Foreign Studies University</td>
+</tr>
+<tr>
+<td><strong>发布时间</strong></td>
+<td>2026年6月</td>
+</tr>
+<tr>
+<td><strong>arXiv</strong></td>
+<td>2606.26669</td>
+</tr>
+</tbody></table>
+<hr>
+<p><em>整理：A梦 (turbineyan)</em><br><em>来源：HTML 文件转换</em><br><em>原文：skill_disco_explained.html</em></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://turbin.github.io/2026/07/29/2026-07-29-skill-disco-explained/" data-id="cuids2Q2hgOlJC9Ogmj6IwAj5" data-title="🎮 SKILL-DISCO：教 AI 记住聪明的做事方法" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI-Agent/" rel="tag">AI Agent</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PFSM/" rel="tag">PFSM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SKILL-DISCO/" rel="tag">SKILL-DISCO</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%8A%80%E8%83%BD%E8%92%B8%E9%A6%8F/" rel="tag">技能蒸馏</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2026/07/28/2026-07-28-replay-memory-vs-harnessx/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">后一篇</strong>
+      <div class="article-nav-title">技术反思：Replay Memory vs HarnessX 协同进化</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/mba/">MBA学习</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/engineering/">工程博客</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/engineering/AI/">AI</a></li></ul></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI-Agent/" rel="tag">AI Agent</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E5%8D%8F%E4%BD%9C/" rel="tag">AI协作</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E6%9E%B6%E6%9E%84/" rel="tag">AI架构</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Agent/" rel="tag">Agent</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/" rel="tag">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Graph-Engineering/" rel="tag">Graph Engineering</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HarnessX/" rel="tag">HarnessX</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PFSM/" rel="tag">PFSM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PowerShell/" rel="tag">PowerShell</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Promise/" rel="tag">Promise</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/" rel="tag">Qt</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ReplayMemory/" rel="tag">ReplayMemory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SKILL-DISCO/" rel="tag">SKILL-DISCO</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webkit/" rel="tag">Webkit</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Windows/" rel="tag">Windows</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BB%B7%E5%80%BC%E9%93%BE/" rel="tag">价值链</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95/" rel="tag">决策记录</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8D%9A%E5%AE%A2/" rel="tag">博客</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8F%8D%E6%80%9D/" rel="tag">反思</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E8%A7%84%E8%8C%83/" rel="tag">工程规范</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%BC%82%E5%B8%B8/" rel="tag">异常</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%88%98%E7%95%A5%E7%AE%A1%E7%90%86/" rel="tag">战略管理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8A%80%E8%83%BD%E8%92%B8%E9%A6%8F/" rel="tag">技能蒸馏</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8C%81%E7%BB%AD%E5%AD%A6%E4%B9%A0/" rel="tag">持续学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AB%9E%E4%BA%89%E4%BC%98%E5%8A%BF/" rel="tag">竞争优势</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BF%BB%E8%AF%91/" rel="tag">翻译</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" rel="tag">读书笔记</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%BF%88%E5%85%8B%E5%B0%94%E6%B3%A2%E7%89%B9/" rel="tag">迈克尔波特</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/" rel="tag">逆向工程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%93%BE%E6%8E%A5/" rel="tag">链接</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%93%BE%E6%8E%A5%E5%99%A8/" rel="tag">链接器</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI-Agent/" style="font-size: 10px;">AI Agent</a> <a href="/tags/AI%E5%8D%8F%E4%BD%9C/" style="font-size: 10px;">AI协作</a> <a href="/tags/AI%E6%9E%B6%E6%9E%84/" style="font-size: 10px;">AI架构</a> <a href="/tags/Agent/" style="font-size: 20px;">Agent</a> <a href="/tags/Android/" style="font-size: 10px;">Android</a> <a href="/tags/Git/" style="font-size: 10px;">Git</a> <a href="/tags/Graph-Engineering/" style="font-size: 10px;">Graph Engineering</a> <a href="/tags/HarnessX/" style="font-size: 10px;">HarnessX</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/JavaScript/" style="font-size: 20px;">JavaScript</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/PFSM/" style="font-size: 10px;">PFSM</a> <a href="/tags/PowerShell/" style="font-size: 10px;">PowerShell</a> <a href="/tags/Promise/" style="font-size: 10px;">Promise</a> <a href="/tags/Qt/" style="font-size: 10px;">Qt</a> <a href="/tags/ReplayMemory/" style="font-size: 10px;">ReplayMemory</a> <a href="/tags/SKILL-DISCO/" style="font-size: 10px;">SKILL-DISCO</a> <a href="/tags/Webkit/" style="font-size: 10px;">Webkit</a> <a href="/tags/Windows/" style="font-size: 10px;">Windows</a> <a href="/tags/%E4%BB%B7%E5%80%BC%E9%93%BE/" style="font-size: 10px;">价值链</a> <a href="/tags/%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95/" style="font-size: 10px;">决策记录</a> <a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 20px;">博客</a> <a href="/tags/%E5%8F%8D%E6%80%9D/" style="font-size: 10px;">反思</a> <a href="/tags/%E5%B7%A5%E7%A8%8B%E8%A7%84%E8%8C%83/" style="font-size: 10px;">工程规范</a> <a href="/tags/%E5%BC%82%E5%B8%B8/" style="font-size: 10px;">异常</a> <a href="/tags/%E6%88%98%E7%95%A5%E7%AE%A1%E7%90%86/" style="font-size: 10px;">战略管理</a> <a href="/tags/%E6%8A%80%E8%83%BD%E8%92%B8%E9%A6%8F/" style="font-size: 10px;">技能蒸馏</a> <a href="/tags/%E6%8C%81%E7%BB%AD%E5%AD%A6%E4%B9%A0/" style="font-size: 10px;">持续学习</a> <a href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" style="font-size: 10px;">源码分析</a> <a href="/tags/%E7%AB%9E%E4%BA%89%E4%BC%98%E5%8A%BF/" style="font-size: 10px;">竞争优势</a> <a href="/tags/%E7%BF%BB%E8%AF%91/" style="font-size: 20px;">翻译</a> <a href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" style="font-size: 10px;">读书笔记</a> <a href="/tags/%E8%BF%88%E5%85%8B%E5%B0%94%E6%B3%A2%E7%89%B9/" style="font-size: 10px;">迈克尔波特</a> <a href="/tags/%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/" style="font-size: 10px;">逆向工程</a> <a href="/tags/%E9%93%BE%E6%8E%A5/" style="font-size: 10px;">链接</a> <a href="/tags/%E9%93%BE%E6%8E%A5%E5%99%A8/" style="font-size: 10px;">链接器</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/07/">七月 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/07/29/2026-07-29-skill-disco-explained/">🎮 SKILL-DISCO：教 AI 记住聪明的做事方法</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/28/2026-07-28-replay-memory-vs-harnessx/">技术反思：Replay Memory vs HarnessX 协同进化</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/27/2026-07-27-graph-engineering-vs-loop/">Graph Engineering vs Loop Engineering：从黑盒决策到显式结构</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/27/2026-07-27-competitive-strategy-notes/">《竞争战略》学习笔记：从价值链到持续性</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/24/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 Turbine Yan<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
