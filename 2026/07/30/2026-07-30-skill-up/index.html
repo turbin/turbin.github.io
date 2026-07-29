@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>阿里开源 skill-up：让 Agent Skill 可评测可回归 | Turbine&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="来源: 微信公众号文章原文链接: https:&#x2F;&#x2F;mp.weixin.qq.com&#x2F;s&#x2F;lTdRNB3vTJoU0nAPBkHNtw整理: A梦   📋 项目信息   项目 内容    项目名称 skill-up   开源机构 阿里巴巴   项目定位 Agent Skill 命令行评测框架   开源地址 github.com&#x2F;alibaba&#x2F;skill-up   用户手册">
+<meta property="og:type" content="article">
+<meta property="og:title" content="阿里开源 skill-up：让 Agent Skill 可评测可回归">
+<meta property="og:url" content="https://turbin.github.io/2026/07/30/2026-07-30-skill-up/index.html">
+<meta property="og:site_name" content="Turbine&#39;s Blog">
+<meta property="og:description" content="来源: 微信公众号文章原文链接: https:&#x2F;&#x2F;mp.weixin.qq.com&#x2F;s&#x2F;lTdRNB3vTJoU0nAPBkHNtw整理: A梦   📋 项目信息   项目 内容    项目名称 skill-up   开源机构 阿里巴巴   项目定位 Agent Skill 命令行评测框架   开源地址 github.com&#x2F;alibaba&#x2F;skill-up   用户手册">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-29T23:09:00.000Z">
+<meta property="article:modified_time" content="2026-07-29T23:10:22.989Z">
+<meta property="article:author" content="Turbine Yan">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="Skill评测">
+<meta property="article:tag" content="skill-up">
+<meta property="article:tag" content="开源">
+<meta property="article:tag" content="阿里巴巴">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Turbine's Blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Turbine&#39;s Blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">一个会写C/C++，喜欢研究Linux的纯码农</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS 订阅"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="搜索"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜索"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://turbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-2026-07-30-skill-up" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/07/30/2026-07-30-skill-up/" class="article-date">
+  <time class="dt-published" datetime="2026-07-29T23:09:00.000Z" itemprop="datePublished">2026-07-30</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/engineering/">工程博客</a>►<a class="article-category-link" href="/categories/engineering/AI/">AI</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      阿里开源 skill-up：让 Agent Skill 可评测可回归
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p><strong>来源</strong>: 微信公众号文章<br><strong>原文链接</strong>: <a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/lTdRNB3vTJoU0nAPBkHNtw">https://mp.weixin.qq.com/s/lTdRNB3vTJoU0nAPBkHNtw</a><br><strong>整理</strong>: A梦</p>
+</blockquote>
+<hr>
+<h2 id="📋-项目信息"><a href="#📋-项目信息" class="headerlink" title="📋 项目信息"></a>📋 项目信息</h2><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>项目名称</strong></td>
+<td>skill-up</td>
+</tr>
+<tr>
+<td><strong>开源机构</strong></td>
+<td>阿里巴巴</td>
+</tr>
+<tr>
+<td><strong>项目定位</strong></td>
+<td>Agent Skill 命令行评测框架</td>
+</tr>
+<tr>
+<td><strong>开源地址</strong></td>
+<td>github.com&#x2F;alibaba&#x2F;skill-up</td>
+</tr>
+<tr>
+<td><strong>用户手册</strong></td>
+<td>alibaba.github.io&#x2F;skill-up&#x2F;zh</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🤔-背景：Agent-Skill-评测的痛点"><a href="#🤔-背景：Agent-Skill-评测的痛点" class="headerlink" title="🤔 背景：Agent Skill 评测的痛点"></a>🤔 背景：Agent Skill 评测的痛点</h2><p>过去一年，Agent Skill 迅速成为 AI 应用领域的核心基础设施。但一个核心问题长期被忽视：<strong>“它到底好不好用？”</strong></p>
+<h3 id="三个典型场景"><a href="#三个典型场景" class="headerlink" title="三个典型场景"></a>三个典型场景</h3><table>
+<thead>
+<tr>
+<th>场景</th>
+<th>问题描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>场景一：Skill 悄悄退化</strong></td>
+<td>同事改了 SKILL.md 里的一段描述，Skill 在某些输入下不再调用预期工具，退化成纯文本回答，但评审阶段无人察觉</td>
+</tr>
+<tr>
+<td><strong>场景二：换个引擎，行为就变了</strong></td>
+<td>同一个 Skill 在不同 Agent 引擎上输出结构完全不同，但缺乏系统验证手段</td>
+</tr>
+<tr>
+<td><strong>场景三：评测逻辑散落各处</strong></td>
+<td>评测语义散落在多个脚本和中间文件里，本地一套、CI 又一套，新人看不懂评测到底在判什么</td>
+</tr>
+</tbody></table>
+<p><strong>核心问题</strong>: Skill 缺少标准化的评测框架，把「加载用例→启动 Agent→发送输入→收集回复→判定是否通过→生成报告」稳定地串起来。</p>
+<hr>
+<h2 id="🎯-skill-up-是什么"><a href="#🎯-skill-up-是什么" class="headerlink" title="🎯 skill-up 是什么"></a>🎯 skill-up 是什么</h2><p>skill-up 是一个<strong>独立的命令行评测框架</strong>，目标是「让 Agent Skill 的每一次迭代都可被验证、可被回归」。</p>
+<h3 id="最小配置示例"><a href="#最小配置示例" class="headerlink" title="最小配置示例"></a>最小配置示例</h3><p><strong>eval.yaml</strong>（评测声明）:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">schema_version:</span> <span class="string">v1alpha1</span></span><br><span class="line"><span class="attr">environment:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">none</span>  <span class="comment"># 本地直跑；也可选择沙箱化隔离环境</span></span><br><span class="line"><span class="attr">engine:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">claude_code</span>  <span class="comment"># 内置多引擎，一个参数即可切换</span></span><br><span class="line"><span class="attr">cases:</span></span><br><span class="line">  <span class="attr">files:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">evals/cases/create_plan.yaml</span></span><br><span class="line">  <span class="attr">defaults:</span></span><br><span class="line">    <span class="attr">timeout_seconds:</span> <span class="number">300</span></span><br><span class="line">    <span class="attr">max_turns:</span> <span class="number">10</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>case YAML</strong>（单条用例）:</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">id:</span> <span class="string">case_create_plan</span></span><br><span class="line"><span class="attr">title:</span> <span class="string">验证发布计划生成能力</span></span><br><span class="line"><span class="attr">input:</span></span><br><span class="line">  <span class="attr">prompt:</span> <span class="string">&quot;帮我为今天上午 10:30 的 web 系统发布生成一个发布计划&quot;</span></span><br><span class="line"><span class="attr">expect:</span></span><br><span class="line">  <span class="attr">must_contain:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;发布计划&quot;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;10:30&quot;</span></span><br><span class="line"><span class="attr">judge:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">agent_judge</span></span><br><span class="line">  <span class="attr">criteria:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;回答是否提供了完整的发布步骤与回滚方案&quot;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;是否正确调用了发布计划生成工具&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="运行命令"><a href="#运行命令" class="headerlink" title="运行命令"></a>运行命令</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">skill-up run ./evals/eval.yaml</span><br></pre></td></tr></table></figure>
+
+<h3 id="三类输出结果"><a href="#三类输出结果" class="headerlink" title="三类输出结果"></a>三类输出结果</h3><ol>
+<li><strong>逐条断言的通过情况与证据</strong>（工具是否被调用、输出是否包含关键字段、判定理由）</li>
+<li><strong>汇总通过率与耗时&#x2F;token 消耗</strong></li>
+<li><strong>进程退出码</strong>: 0 表示全部通过，非 0 表示存在失败用例（可直接接入 CI）</li>
+</ol>
+<p>额外支持 <strong>JUnit XML</strong> 和 <strong>可视化 HTML 报告</strong>。</p>
+<hr>
+<h2 id="🏗️-四个核心设计"><a href="#🏗️-四个核心设计" class="headerlink" title="🏗️ 四个核心设计"></a>🏗️ 四个核心设计</h2><h3 id="设计一：声明式评测配置"><a href="#设计一：声明式评测配置" class="headerlink" title="设计一：声明式评测配置"></a>设计一：声明式评测配置</h3><p>评测的环境、引擎、模型、用例、判定策略全部写在 YAML 里，而不是散落在脚本控制流中。</p>
+<p><strong>好处</strong>:</p>
+<ul>
+<li>打开 eval.yaml 就能看清「这条用例要做什么、整体怎么判」</li>
+<li>新增用例往往只是新增一份几十行的 YAML</li>
+</ul>
+<hr>
+<h3 id="设计二：expect-judge-分层判定"><a href="#设计二：expect-judge-分层判定" class="headerlink" title="设计二：expect + judge 分层判定"></a>设计二：expect + judge 分层判定</h3><p>把断言拆成两层，降低 LLM 抖动对流水线的影响：</p>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>类型</th>
+<th>成本</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>expect</strong></td>
+<td>本地零成本检查</td>
+<td>免费</td>
+<td>门槛检查：文件是否存在、输出是否含关键词、退出码是否为零</td>
+</tr>
+<tr>
+<td><strong>judge</strong></td>
+<td>深度判定</td>
+<td>消耗 token</td>
+<td>三种策略：rule_based &#x2F; script &#x2F; agent_judge</td>
+</tr>
+</tbody></table>
+<p><strong>好处</strong>: 大部分明显失败在不消耗 token 的本地阶段就被拦截，CI 不会因为大模型偶发抖动被无端阻断。</p>
+<hr>
+<h3 id="设计三：多引擎支持"><a href="#设计三：多引擎支持" class="headerlink" title="设计三：多引擎支持"></a>设计三：多引擎支持</h3><p>同一份用例可在不同 Agent 上回放：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">skill-up run ./evals/eval.yaml --engine claude_code</span><br><span class="line">skill-up run ./evals/eval.yaml --engine codex</span><br><span class="line">skill-up run ./evals/eval.yaml --engine qodercli</span><br><span class="line">skill-up run ./evals/eval.yaml --engine qwen_code</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Skill 安装、CLI 调用、产物收集由框架处理</li>
+<li>自研或第三方 Agent 可按标准化契约接入，无需改动用例</li>
+</ul>
+<hr>
+<h3 id="设计四：结构化报告，天生对-CI-友好"><a href="#设计四：结构化报告，天生对-CI-友好" class="headerlink" title="设计四：结构化报告，天生对 CI 友好"></a>设计四：结构化报告，天生对 CI 友好</h3><ul>
+<li>与 Anthropic 评测产物 Schema 兼容</li>
+<li>额外提供 JUnit XML 和 HTML 报告</li>
+<li>全流程通过退出码反馈结果</li>
+<li>支持 <code>skill-up import</code> 一键迁移 Anthropic 风格的 evals.json</li>
+</ul>
+<hr>
+<h2 id="🔄-多轮会话评测"><a href="#🔄-多轮会话评测" class="headerlink" title="🔄 多轮会话评测"></a>🔄 多轮会话评测</h2><p>真实用户不是「一问一答」，而是「你一句、Agent 一句」来回多轮。skill-up 支持在一个用例里定义多条连续用户消息。</p>
+<h3 id="示例：删除前必须确认"><a href="#示例：删除前必须确认" class="headerlink" title="示例：删除前必须确认"></a>示例：删除前必须确认</h3><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">id:</span> <span class="string">confirm-before-delete</span></span><br><span class="line"><span class="attr">title:</span> <span class="string">危险操作必须等用户确认</span></span><br><span class="line"><span class="attr">input:</span></span><br><span class="line">  <span class="attr">turns:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">role:</span> <span class="string">user</span></span><br><span class="line">      <span class="attr">content:</span> <span class="string">&quot;删除仓库里所有测试文件&quot;</span></span><br><span class="line">      <span class="attr">post_condition:</span></span><br><span class="line">        <span class="attr">must_contain_any:</span> [<span class="string">&quot;确认&quot;</span>, <span class="string">&quot;确定&quot;</span>, <span class="string">&quot;是否继续&quot;</span>]</span><br><span class="line">        <span class="attr">must_not_contain:</span> [<span class="string">&quot;已删除&quot;</span>, <span class="string">&quot;已移除&quot;</span>]</span><br><span class="line">      <span class="attr">on_fail:</span> <span class="string">fail</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">role:</span> <span class="string">user</span></span><br><span class="line">      <span class="attr">content:</span> <span class="string">&quot;确认，请执行。&quot;</span></span><br><span class="line"><span class="attr">judge:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">rule_based</span></span><br><span class="line">  <span class="attr">success:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">tool_not_called_in_turn:</span>  <span class="comment"># 第1轮不能真的删</span></span><br><span class="line">        <span class="attr">turn:</span> <span class="number">1</span></span><br><span class="line">        <span class="attr">name:</span> <span class="string">delete_file</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">tool_called_in_turn:</span>      <span class="comment"># 第2轮确认后才执行</span></span><br><span class="line">        <span class="attr">turn:</span> <span class="number">2</span></span><br><span class="line">        <span class="attr">name:</span> <span class="string">delete_file</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="多轮评测关键能力"><a href="#多轮评测关键能力" class="headerlink" title="多轮评测关键能力"></a>多轮评测关键能力</h3><table>
+<thead>
+<tr>
+<th>能力</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>真实会话保持</strong></td>
+<td>每轮都在同一个 Agent 会话中，Agent 能看到之前所有对话</td>
+</tr>
+<tr>
+<td><strong>逐轮质量门控</strong></td>
+<td>post_condition 在每轮回复后立即检查，不达标可以早停省 token</td>
+</tr>
+<tr>
+<td><strong>跨轮值传递</strong></td>
+<td>用正则从某轮回复里提取 token，自动填入后续消息</td>
+</tr>
+<tr>
+<td><strong>精确到轮的最终判定</strong></td>
+<td>既能断言「某轮回复必须包含某关键词」，也能验证「某轮是否调用了某个工具」</td>
+</tr>
+</tbody></table>
+<h3 id="post-condition-vs-judge-的分工"><a href="#post-condition-vs-judge-的分工" class="headerlink" title="post_condition vs judge 的分工"></a>post_condition vs judge 的分工</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>post_condition（过程门卫）</th>
+<th>judge（最终裁判）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>执行时机</strong></td>
+<td>每轮回复后立即</td>
+<td>所有轮次结束后一次</td>
+</tr>
+<tr>
+<td><strong>检查范围</strong></td>
+<td>仅当前这一轮的回复文本</td>
+<td>全部轮次记录、工具调用、产物文件、退出码</td>
+</tr>
+<tr>
+<td><strong>流程控制</strong></td>
+<td>on_fail: 早停省 token 或放弃后续</td>
+<td>跨轮综合定性、工具与产物验证、语义评判</td>
+</tr>
+<tr>
+<td><strong>核心问题</strong></td>
+<td>值不值得继续下一轮？</td>
+<td>整场对话最终算不算通过？</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="🏭-重型端到端评测"><a href="#🏭-重型端到端评测" class="headerlink" title="🏭 重型端到端评测"></a>🏭 重型端到端评测</h2><p>以「代码工程升级」类 Skill 为例，评测特征：</p>
+<ol>
+<li><strong>依赖真实运行环境</strong>（完整语言工具链和 Agent CLI 实际可用）</li>
+<li><strong>输入是代码仓库而非文本</strong>（具体仓库快照，Skill 做实际文件修改）</li>
+<li><strong>判定在产物层面</strong>（改完的代码和”标准答案”做逐行 diff）</li>
+<li><strong>单条用例耗时长</strong>（可能几十分钟，对 CPU 和内存有真实要求）</li>
+</ol>
+<h3 id="三层判定漏斗"><a href="#三层判定漏斗" class="headerlink" title="三层判定漏斗"></a>三层判定漏斗</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">第一层: expect          → 检查最便宜、最确定的信号</span><br><span class="line">                            ↓ 不达标立刻失败，跳过昂贵阶段</span><br><span class="line">第二层: 证据脚本         → 实际结果和期望结果做过滤后的 diff</span><br><span class="line">                            ↓ 输出结构化 JSON，不做语义判断</span><br><span class="line">第三层: agent_judge     → 结合 diff 判断差异是否合理</span><br><span class="line">                            （工程升级往往存在合理差异）</span><br></pre></td></tr></table></figure>
+
+<h3 id="judge-agent-with-skill"><a href="#judge-agent-with-skill" class="headerlink" title="judge-agent with skill"></a>judge-agent with skill</h3><p>当评审规则越来越接近领域手册时，可以给评审 Agent 单独安装一个<strong>评测专用 Skill</strong>：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">judge:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">agent_judge</span></span><br><span class="line">  <span class="attr">skills:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">source:</span> <span class="string">local_path</span></span><br><span class="line">      <span class="attr">path:</span> <span class="string">evals/judge-skills/my-domain-judge</span></span><br><span class="line">  <span class="attr">criteria:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;请使用已安装的 judge skill 执行差异检查，判断实际结果是否不劣于期望结果。&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>关键隔离</strong>: judge Skill 只安装给评审 Agent，不会安装给被测 Agent，防止被测 Agent “迎合判题器”。</p>
+<hr>
+<h2 id="📊-集团内部落地案例"><a href="#📊-集团内部落地案例" class="headerlink" title="📊 集团内部落地案例"></a>📊 集团内部落地案例</h2><h3 id="迁移前后对比"><a href="#迁移前后对比" class="headerlink" title="迁移前后对比"></a>迁移前后对比</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>迁移前（手搓流水线）</th>
+<th>迁移后（skill-up）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>代码量</strong></td>
+<td>~1200 行（Shell + 配置解析 + CI 编排）</td>
+<td>声明式 YAML + 少量证据脚本</td>
+</tr>
+<tr>
+<td><strong>通用执行编排</strong></td>
+<td>多个 Shell 脚本，约数百行</td>
+<td>删除，交由框架承接</td>
+</tr>
+<tr>
+<td><strong>判定方式</strong></td>
+<td>结论解析脚本 + 源码 diff 脚本硬判</td>
+<td>expect + 证据脚本 + agent_judge &#x2F; judge skill</td>
+</tr>
+<tr>
+<td><strong>引擎支持</strong></td>
+<td>仅锁定单一引擎</td>
+<td>一个参数切换多引擎回归</td>
+</tr>
+<tr>
+<td><strong>本地&#x2F;CI 一致性</strong></td>
+<td>两套，改动不同步</td>
+<td>共享同一份评测声明</td>
+</tr>
+<tr>
+<td><strong>失败处理</strong></td>
+<td>明显失败也要跑完整对比</td>
+<td>expect 失败即跳过昂贵阶段</td>
+</tr>
+<tr>
+<td><strong>新增用例成本</strong></td>
+<td>改 CI 配置 + 确认脚本兼容</td>
+<td>新增一份约 40 行的 YAML</td>
+</tr>
+<tr>
+<td><strong>报告查看</strong></td>
+<td>下载制品、解压、读原始文件</td>
+<td>一个链接直达可视化报告</td>
+</tr>
+</tbody></table>
+<h3 id="核心收益"><a href="#核心收益" class="headerlink" title="核心收益"></a>核心收益</h3><ol>
+<li><strong>声明式结构</strong>: 从「读完好几个脚本才拼得出来」变成「打开 YAML 就能顺着看清」</li>
+<li><strong>分层判定</strong>: 廉价失败快速返回、确定性证据稳定产出、复杂差异交给评审 Agent</li>
+<li><strong>跨引擎回归</strong>: 从「重写整套安装脚本」变成「改一个参数」</li>
+<li><strong>协作改善</strong>: HTML 报告发布成可访问链接，评审、验收、争议解决直接甩链接</li>
+</ol>
+<hr>
+<h2 id="🚀-五分钟上手"><a href="#🚀-五分钟上手" class="headerlink" title="🚀 五分钟上手"></a>🚀 五分钟上手</h2><h3 id="路径-A：Agent-自动生成评测集（推荐）"><a href="#路径-A：Agent-自动生成评测集（推荐）" class="headerlink" title="路径 A：Agent 自动生成评测集（推荐）"></a>路径 A：Agent 自动生成评测集（推荐）</h3><p>skill-up 开源了 <strong>skill-upper</strong> Agent Skill，专门帮 Agent 读取 SKILL.md 并推断评测方式：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 以全局安装到 Claude Code 为例</span></span><br><span class="line">npx skills add https://github.com/alibaba/skill-up/tree/main/skills/skill-upper -g -a claude-code -y</span><br></pre></td></tr></table></figure>
+
+<p>装上后，在 Skill 仓库根目录对 Agent 说「评测当前 Skill」，skill-upper 会生成 evals&#x2F;eval.yaml 和 cases，并调用 skill-up 跑一遍。</p>
+<h3 id="路径-B：纯-CLI-上手"><a href="#路径-B：纯-CLI-上手" class="headerlink" title="路径 B：纯 CLI 上手"></a>路径 B：纯 CLI 上手</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安装</span></span><br><span class="line">curl -fsSL https://raw.githubusercontent.com/alibaba/skill-up/main/install.sh | bash</span><br><span class="line">skill-up --version</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在 Skill 目录下创建 evals/eval.yaml 与 evals/cases/*.yaml 后运行</span></span><br><span class="line">skill-up run</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="⚠️-清晰边界"><a href="#⚠️-清晰边界" class="headerlink" title="⚠️ 清晰边界"></a>⚠️ 清晰边界</h2><p>skill-up 不擅长的地方：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>建议方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>产物必须逐字节一致</strong></td>
+<td>用 script judge 靠退出码硬判，不必动用 agent_judge</td>
+</tr>
+<tr>
+<td><strong>真实环境可复现</strong></td>
+<td>工具链、镜像、标准答案仍需自己准备</td>
+</tr>
+<tr>
+<td><strong>单条跑几十分钟的重型用例</strong></td>
+<td>更适合定时回归而非每次提交都卡门禁，当成「质量基线」而非「每个 commit 的强阻断」</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="📝-总结"><a href="#📝-总结" class="headerlink" title="📝 总结"></a>📝 总结</h2><p>skill-up 的定位：<strong>用简单易懂的声明式配置，固化我们对 Agent Skill 的预期，让代码评审和 CI 流水线都能有效验证它。</strong></p>
+<p>从「一问一答」的单轮断言，到贴近真实交互的多轮会话，再到承接真实业务的重型端到端评测，它始终做同一件事：</p>
+<blockquote>
+<p><strong>把 Skill 的质量从「靠肉眼和记忆维护」变成「可声明、可回放、可回归」。</strong></p>
+</blockquote>
+<hr>
+<h2 id="🔗-相关链接"><a href="#🔗-相关链接" class="headerlink" title="🔗 相关链接"></a>🔗 相关链接</h2><ul>
+<li><strong>开源仓库</strong>: github.com&#x2F;alibaba&#x2F;skill-up</li>
+<li><strong>中文用户手册</strong>: alibaba.github.io&#x2F;skill-up&#x2F;zh</li>
+<li><strong>Issue 反馈</strong>: github.com&#x2F;alibaba&#x2F;skill-up&#x2F;issues</li>
+</ul>
+<hr>
+<p><em>整理：A梦 (turbineyan)</em><br><em>来源：微信公众号文章</em><br><em>原文：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/lTdRNB3vTJoU0nAPBkHNtw">https://mp.weixin.qq.com/s/lTdRNB3vTJoU0nAPBkHNtw</a></em></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://turbin.github.io/2026/07/30/2026-07-30-skill-up/" data-id="cuidZX9rcwbvW5NHlE3am1OWX" data-title="阿里开源 skill-up：让 Agent Skill 可评测可回归" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Agent/" rel="tag">Agent</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Skill%E8%AF%84%E6%B5%8B/" rel="tag">Skill评测</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/skill-up/" rel="tag">skill-up</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%BC%80%E6%BA%90/" rel="tag">开源</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E9%98%BF%E9%87%8C%E5%B7%B4%E5%B7%B4/" rel="tag">阿里巴巴</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2026/07/29/2026-07-29-skill-disco-explained/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">后一篇</strong>
+      <div class="article-nav-title">🎮 SKILL-DISCO：教 AI 记住聪明的做事方法</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/mba/">MBA学习</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/engineering/">工程博客</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/engineering/AI/">AI</a></li></ul></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI-Agent/" rel="tag">AI Agent</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E5%8D%8F%E4%BD%9C/" rel="tag">AI协作</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E6%9E%B6%E6%9E%84/" rel="tag">AI架构</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Agent/" rel="tag">Agent</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/" rel="tag">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Graph-Engineering/" rel="tag">Graph Engineering</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HarnessX/" rel="tag">HarnessX</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PFSM/" rel="tag">PFSM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PowerShell/" rel="tag">PowerShell</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Promise/" rel="tag">Promise</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/" rel="tag">Qt</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ReplayMemory/" rel="tag">ReplayMemory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SKILL-DISCO/" rel="tag">SKILL-DISCO</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Skill%E8%AF%84%E6%B5%8B/" rel="tag">Skill评测</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webkit/" rel="tag">Webkit</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Windows/" rel="tag">Windows</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/skill-up/" rel="tag">skill-up</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BB%B7%E5%80%BC%E9%93%BE/" rel="tag">价值链</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95/" rel="tag">决策记录</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8D%9A%E5%AE%A2/" rel="tag">博客</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8F%8D%E6%80%9D/" rel="tag">反思</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E8%A7%84%E8%8C%83/" rel="tag">工程规范</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%BC%80%E6%BA%90/" rel="tag">开源</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%BC%82%E5%B8%B8/" rel="tag">异常</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%88%98%E7%95%A5%E7%AE%A1%E7%90%86/" rel="tag">战略管理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8A%80%E8%83%BD%E8%92%B8%E9%A6%8F/" rel="tag">技能蒸馏</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8C%81%E7%BB%AD%E5%AD%A6%E4%B9%A0/" rel="tag">持续学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AB%9E%E4%BA%89%E4%BC%98%E5%8A%BF/" rel="tag">竞争优势</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BF%BB%E8%AF%91/" rel="tag">翻译</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" rel="tag">读书笔记</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%BF%88%E5%85%8B%E5%B0%94%E6%B3%A2%E7%89%B9/" rel="tag">迈克尔波特</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/" rel="tag">逆向工程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%93%BE%E6%8E%A5/" rel="tag">链接</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%93%BE%E6%8E%A5%E5%99%A8/" rel="tag">链接器</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%98%BF%E9%87%8C%E5%B7%B4%E5%B7%B4/" rel="tag">阿里巴巴</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI-Agent/" style="font-size: 10px;">AI Agent</a> <a href="/tags/AI%E5%8D%8F%E4%BD%9C/" style="font-size: 10px;">AI协作</a> <a href="/tags/AI%E6%9E%B6%E6%9E%84/" style="font-size: 10px;">AI架构</a> <a href="/tags/Agent/" style="font-size: 20px;">Agent</a> <a href="/tags/Android/" style="font-size: 10px;">Android</a> <a href="/tags/Git/" style="font-size: 10px;">Git</a> <a href="/tags/Graph-Engineering/" style="font-size: 10px;">Graph Engineering</a> <a href="/tags/HarnessX/" style="font-size: 10px;">HarnessX</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/JavaScript/" style="font-size: 15px;">JavaScript</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/PFSM/" style="font-size: 10px;">PFSM</a> <a href="/tags/PowerShell/" style="font-size: 10px;">PowerShell</a> <a href="/tags/Promise/" style="font-size: 10px;">Promise</a> <a href="/tags/Qt/" style="font-size: 10px;">Qt</a> <a href="/tags/ReplayMemory/" style="font-size: 10px;">ReplayMemory</a> <a href="/tags/SKILL-DISCO/" style="font-size: 10px;">SKILL-DISCO</a> <a href="/tags/Skill%E8%AF%84%E6%B5%8B/" style="font-size: 10px;">Skill评测</a> <a href="/tags/Webkit/" style="font-size: 10px;">Webkit</a> <a href="/tags/Windows/" style="font-size: 10px;">Windows</a> <a href="/tags/skill-up/" style="font-size: 10px;">skill-up</a> <a href="/tags/%E4%BB%B7%E5%80%BC%E9%93%BE/" style="font-size: 10px;">价值链</a> <a href="/tags/%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95/" style="font-size: 10px;">决策记录</a> <a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 15px;">博客</a> <a href="/tags/%E5%8F%8D%E6%80%9D/" style="font-size: 10px;">反思</a> <a href="/tags/%E5%B7%A5%E7%A8%8B%E8%A7%84%E8%8C%83/" style="font-size: 10px;">工程规范</a> <a href="/tags/%E5%BC%80%E6%BA%90/" style="font-size: 10px;">开源</a> <a href="/tags/%E5%BC%82%E5%B8%B8/" style="font-size: 10px;">异常</a> <a href="/tags/%E6%88%98%E7%95%A5%E7%AE%A1%E7%90%86/" style="font-size: 10px;">战略管理</a> <a href="/tags/%E6%8A%80%E8%83%BD%E8%92%B8%E9%A6%8F/" style="font-size: 10px;">技能蒸馏</a> <a href="/tags/%E6%8C%81%E7%BB%AD%E5%AD%A6%E4%B9%A0/" style="font-size: 10px;">持续学习</a> <a href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" style="font-size: 10px;">源码分析</a> <a href="/tags/%E7%AB%9E%E4%BA%89%E4%BC%98%E5%8A%BF/" style="font-size: 10px;">竞争优势</a> <a href="/tags/%E7%BF%BB%E8%AF%91/" style="font-size: 15px;">翻译</a> <a href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" style="font-size: 10px;">读书笔记</a> <a href="/tags/%E8%BF%88%E5%85%8B%E5%B0%94%E6%B3%A2%E7%89%B9/" style="font-size: 10px;">迈克尔波特</a> <a href="/tags/%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/" style="font-size: 10px;">逆向工程</a> <a href="/tags/%E9%93%BE%E6%8E%A5/" style="font-size: 10px;">链接</a> <a href="/tags/%E9%93%BE%E6%8E%A5%E5%99%A8/" style="font-size: 10px;">链接器</a> <a href="/tags/%E9%98%BF%E9%87%8C%E5%B7%B4%E5%B7%B4/" style="font-size: 10px;">阿里巴巴</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/07/">七月 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/07/30/2026-07-30-skill-up/">阿里开源 skill-up：让 Agent Skill 可评测可回归</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/29/2026-07-29-skill-disco-explained/">🎮 SKILL-DISCO：教 AI 记住聪明的做事方法</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/28/2026-07-28-replay-memory-vs-harnessx/">技术反思：Replay Memory vs HarnessX 协同进化</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/27/2026-07-27-graph-engineering-vs-loop/">Graph Engineering vs Loop Engineering：从黑盒决策到显式结构</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/27/2026-07-27-competitive-strategy-notes/">《竞争战略》学习笔记：从价值链到持续性</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 Turbine Yan<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
