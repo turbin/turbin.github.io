@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Agent 失败学习机制综述：从 Reflexion 到 FCRF | Turbine&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="主题: 智能体失败学习与反思机制涵盖论文: Reflexion (NeurIPS 2023)、ETO (ACL 2024)、FCRF (2025)整理时间: 2026-08-04整理: A梦   摘要本文综述了智能体（Agent）从失败中学习的三种代表性方法：Reflexion（基于文本反思的情景记忆）、ETO（Trial and Error 探索失败构造对照对）、FCRF（独立教训池模块）。通">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Agent 失败学习机制综述：从 Reflexion 到 FCRF">
+<meta property="og:url" content="https://turbin.github.io/2026/08/04/2026-08-04-agent-failure-learning-survey/index.html">
+<meta property="og:site_name" content="Turbine&#39;s Blog">
+<meta property="og:description" content="主题: 智能体失败学习与反思机制涵盖论文: Reflexion (NeurIPS 2023)、ETO (ACL 2024)、FCRF (2025)整理时间: 2026-08-04整理: A梦   摘要本文综述了智能体（Agent）从失败中学习的三种代表性方法：Reflexion（基于文本反思的情景记忆）、ETO（Trial and Error 探索失败构造对照对）、FCRF（独立教训池模块）。通">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-08-04T09:30:00.000Z">
+<meta property="article:modified_time" content="2026-08-04T09:35:44.053Z">
+<meta property="article:author" content="Turbine Yan">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="失败学习">
+<meta property="article:tag" content="机器学习">
+<meta property="article:tag" content="论文综述">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Turbine's Blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Turbine&#39;s Blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">一个会写C/C++，喜欢研究Linux的纯码农</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS 订阅"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="搜索"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="搜索"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://turbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-2026-08-04-agent-failure-learning-survey" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/08/04/2026-08-04-agent-failure-learning-survey/" class="article-date">
+  <time class="dt-published" datetime="2026-08-04T09:30:00.000Z" itemprop="datePublished">2026-08-04</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/engineering/">工程博客</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      Agent 失败学习机制综述：从 Reflexion 到 FCRF
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <blockquote>
+<p><strong>主题</strong>: 智能体失败学习与反思机制<br><strong>涵盖论文</strong>: Reflexion (NeurIPS 2023)、ETO (ACL 2024)、FCRF (2025)<br><strong>整理时间</strong>: 2026-08-04<br><strong>整理</strong>: A梦</p>
+</blockquote>
+<hr>
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>本文综述了智能体（Agent）从失败中学习的三种代表性方法：<strong>Reflexion</strong>（基于文本反思的情景记忆）、<strong>ETO</strong>（Trial and Error 探索失败构造对照对）、<strong>FCRF</strong>（独立教训池模块）。通过对比分析，我们发现失败学习的关键在于<strong>如何将失败经验转化为可验证、可复用的知识工件</strong>，而非简单地将失败文本存入记忆。原始 Reflexion 的自由反思存在严重幻觉问题（100% 虚构），而后续工作通过<strong>程序化信号提取</strong>、<strong>显式正负区分</strong>、<strong>独立教训池</strong>等方式显著提升了失败学习的有效性。</p>
+<hr>
+<h2 id="1-引言"><a href="#1-引言" class="headerlink" title="1. 引言"></a>1. 引言</h2><p>智能体在复杂环境（如 WebShop、ALFWorld、HumanEval）中执行任务时，失败是不可避免的。关键问题是如何从失败中学习，避免重复犯错。本文综述三种代表性方法，分析其技术路线、效果边界和核心教训。</p>
+<hr>
+<h2 id="2-Reflexion：文本反思入情景记忆"><a href="#2-Reflexion：文本反思入情景记忆" class="headerlink" title="2. Reflexion：文本反思入情景记忆"></a>2. Reflexion：文本反思入情景记忆</h2><h3 id="2-1-核心方法"><a href="#2-1-核心方法" class="headerlink" title="2.1 核心方法"></a>2.1 核心方法</h3><p>Reflexion (Shinn et al., NeurIPS 2023) 提出将失败经验转化为<strong>文本反思</strong>（verbal reflection），存入智能体的<strong>情景记忆</strong>（episodic memory）中，供后续任务参考。</p>
+<p><strong>工作流程</strong>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">执行任务 → 失败 → 生成文本反思 → 存入记忆 → 新任务时检索相关反思 → 改进执行</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-实验效果"><a href="#2-2-实验效果" class="headerlink" title="2.2 实验效果"></a>2.2 实验效果</h3><table>
+<thead>
+<tr>
+<th>基准测试</th>
+<th>基线</th>
+<th>Reflexion</th>
+<th>提升</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>ALFWorld</strong></td>
+<td>75%</td>
+<td><strong>97%</strong> (130&#x2F;134)</td>
+<td>+22%</td>
+</tr>
+<tr>
+<td><strong>HumanEval</strong></td>
+<td>-</td>
+<td><strong>91%</strong></td>
+<td>显著提升</td>
+</tr>
+</tbody></table>
+<p><strong>关键发现</strong>: 无需微调，仅通过文本反思即可大幅提升性能。</p>
+<h3 id="2-3-失效分析-2605-29463-2026"><a href="#2-3-失效分析-2605-29463-2026" class="headerlink" title="2.3 失效分析 (2605.29463, 2026)"></a>2.3 失效分析 (2605.29463, 2026)</h3><p>然而，后续研究对 Reflexion 进行了深入分析，发现严重问题：</p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>数据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>自由反思 100% 虚构</strong></td>
+<td>0&#x2F;121 命中正确目标物</td>
+</tr>
+<tr>
+<td><strong>无记忆基线</strong></td>
+<td>解 2&#x2F;16</td>
+</tr>
+<tr>
+<td><strong>原始 Reflexion</strong></td>
+<td>解 3&#x2F;16（仅略优于无记忆）</td>
+</tr>
+</tbody></table>
+<p><strong>核心问题</strong>: 自由诊断式反思（free-form reflection）完全不可靠，生成的反思内容是<strong>幻觉</strong>（hallucination），而非真实有用的经验。</p>
+<p><strong>修正方案</strong>: 将<strong>程序化轨迹信号</strong>（programmatic trajectory signals）提取为反思：</p>
+<ul>
+<li>修正后: <strong>0% → 86% 命中</strong></li>
+<li>解: <strong>3&#x2F;16 → 显著提升</strong></li>
+</ul>
+<h3 id="2-4-技术层级定位"><a href="#2-4-技术层级定位" class="headerlink" title="2.4 技术层级定位"></a>2.4 技术层级定位</h3><ul>
+<li><strong>层 3（蒸馏失败为反思卡注入）</strong>: 原始 Reflexion 属于此层，但实现方式（自由文本）有严重缺陷</li>
+<li><strong>层 1（原始失败内容防火墙）</strong>: 失效分析证明，不加处理的原始失败内容&#x2F;自由反思是有害的</li>
+<li><strong>关键教训</strong>: 失败经验必须经过<strong>程序化&#x2F;可验证</strong>的处理才能有效利用</li>
+</ul>
+<hr>
+<h2 id="3-ETO：Trial-and-Error-探索失败构造对照对"><a href="#3-ETO：Trial-and-Error-探索失败构造对照对" class="headerlink" title="3. ETO：Trial and Error 探索失败构造对照对"></a>3. ETO：Trial and Error 探索失败构造对照对</h2><h3 id="3-1-核心方法"><a href="#3-1-核心方法" class="headerlink" title="3.1 核心方法"></a>3.1 核心方法</h3><p>ETO (ACL 2024) 提出<strong>Trial and Error</strong>框架，将探索过程中的失败经验构造为<strong>成败对照对</strong>（success-failure contrastive pairs），通过 <strong>DPO（Direct Preference Optimization）</strong> 进行训练。</p>
+<p><strong>工作流程</strong>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">探索执行 → 收集失败和成功轨迹 → 构造对照对 (失败 vs 成功) → DPO 训练 → 策略提升</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-关键技术"><a href="#3-2-关键技术" class="headerlink" title="3.2 关键技术"></a>3.2 关键技术</h3><table>
+<thead>
+<tr>
+<th>技术</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>失败构造</strong></td>
+<td>将探索失败转化为结构化数据</td>
+</tr>
+<tr>
+<td><strong>成败对照对</strong></td>
+<td>显式区分正负样本</td>
+</tr>
+<tr>
+<td><strong>DPO 训练</strong></td>
+<td>直接偏好优化，无需奖励模型</td>
+</tr>
+</tbody></table>
+<h3 id="3-3-实验效果"><a href="#3-3-实验效果" class="headerlink" title="3.3 实验效果"></a>3.3 实验效果</h3><p>ETO 在<strong>三个任务</strong>上大幅超越基线：</p>
+<ul>
+<li>通过显式构造成败对照，智能体学会”什么不该做”</li>
+<li>相比朴素混合（naive mixing），对照式学习更有效</li>
+</ul>
+<h3 id="3-4-与-NAT-的关联-2402-11651"><a href="#3-4-与-NAT-的关联-2402-11651" class="headerlink" title="3.4 与 NAT 的关联 (2402.11651)"></a>3.4 与 NAT 的关联 (2402.11651)</h3><p>NAT (Learning From Failure) 进一步验证了 ETO 的核心思想：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>GSM8K 性能</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>NAT-13B</strong></td>
+<td><strong>53.8</strong></td>
+</tr>
+<tr>
+<td>AgentLM-13B</td>
+<td>32.4</td>
+</tr>
+</tbody></table>
+<p><strong>关键发现</strong>: </p>
+<ul>
+<li>负例（失败）必须<strong>显式区分正负</strong></li>
+<li>朴素混合（简单将正负样本混合）效果次优</li>
+<li>失败可用但须有<strong>质量控制</strong>与<strong>显式区分</strong></li>
+</ul>
+<h3 id="3-5-技术层级定位"><a href="#3-5-技术层级定位" class="headerlink" title="3.5 技术层级定位"></a>3.5 技术层级定位</h3><ul>
+<li><strong>层 2（失败作分析输入，对照提炼）</strong>: ETO 和 NAT 属于此层</li>
+<li><strong>边界</strong>: 失败经验需要显式构造和质量控制，不能简单混合</li>
+</ul>
+<hr>
+<h2 id="4-FCRF：独立教训池模块"><a href="#4-FCRF：独立教训池模块" class="headerlink" title="4. FCRF：独立教训池模块"></a>4. FCRF：独立教训池模块</h2><h3 id="4-1-核心方法"><a href="#4-1-核心方法" class="headerlink" title="4.1 核心方法"></a>4.1 核心方法</h3><p>FCRF (2507.14975, Mentor-Actor) 提出将<strong>教训</strong>（lessons）作为<strong>独立工件</strong>（independent artifact），构建<strong>独立教训池模块</strong>（independent lesson pool module）。</p>
+<p><strong>工作流程</strong>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">执行任务 → 失败 → 提取结构化教训 → 存入独立教训池 → 新任务时检索并应用教训 → 纠错执行</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-关键技术"><a href="#4-2-关键技术" class="headerlink" title="4.2 关键技术"></a>4.2 关键技术</h3><table>
+<thead>
+<tr>
+<th>技术</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>独立教训池</strong></td>
+<td>教训作为独立模块，与主策略分离</td>
+</tr>
+<tr>
+<td><strong>结构化教训</strong></td>
+<td>教训是程序化、可验证的工件</td>
+</tr>
+<tr>
+<td><strong>纠错能力</strong></td>
+<td>专门用于错误修正</td>
+</tr>
+</tbody></table>
+<h3 id="4-3-实验效果"><a href="#4-3-实验效果" class="headerlink" title="4.3 实验效果"></a>4.3 实验效果</h3><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>提升</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>成功率 (SR)</strong></td>
+<td><strong>+2.2%</strong></td>
+</tr>
+<tr>
+<td><strong>纠错能力</strong></td>
+<td>显著提升</td>
+</tr>
+</tbody></table>
+<p><strong>消融实验</strong>: 独立教训池模块的引入带来稳定提升，证明教训作为独立工件的合理性。</p>
+<h3 id="4-4-技术层级定位"><a href="#4-4-技术层级定位" class="headerlink" title="4.4 技术层级定位"></a>4.4 技术层级定位</h3><ul>
+<li><strong>层 3（教训为独立工件、独立类型与上限）</strong>: FCRF 属于此层</li>
+<li><strong>核心创新</strong>: 教训不是简单的文本或对照对，而是<strong>独立的、结构化的知识工件</strong></li>
+</ul>
+<hr>
+<h2 id="5-对比分析与综合讨论"><a href="#5-对比分析与综合讨论" class="headerlink" title="5. 对比分析与综合讨论"></a>5. 对比分析与综合讨论</h2><h3 id="5-1-三种方法对比"><a href="#5-1-三种方法对比" class="headerlink" title="5.1 三种方法对比"></a>5.1 三种方法对比</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Reflexion</th>
+<th>ETO&#x2F;NAT</th>
+<th>FCRF</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>失败表示</strong></td>
+<td>自由文本反思</td>
+<td>成败对照对</td>
+<td>结构化教训</td>
+</tr>
+<tr>
+<td><strong>处理方式</strong></td>
+<td>情景记忆存储</td>
+<td>DPO 训练</td>
+<td>独立模块检索</td>
+</tr>
+<tr>
+<td><strong>核心问题</strong></td>
+<td>100% 幻觉</td>
+<td>需显式区分正负</td>
+<td>教训结构化</td>
+</tr>
+<tr>
+<td><strong>有效性</strong></td>
+<td>原始低，修正后高</td>
+<td>高</td>
+<td>高</td>
+</tr>
+<tr>
+<td><strong>技术层级</strong></td>
+<td>层 3（有缺陷）</td>
+<td>层 2</td>
+<td>层 3（改进）</td>
+</tr>
+</tbody></table>
+<h3 id="5-2-关键教训"><a href="#5-2-关键教训" class="headerlink" title="5.2 关键教训"></a>5.2 关键教训</h3><h4 id="教训-1-原始失败内容不能直接利用（层-1-防火墙）"><a href="#教训-1-原始失败内容不能直接利用（层-1-防火墙）" class="headerlink" title="教训 1: 原始失败内容不能直接利用（层 1 防火墙）"></a>教训 1: 原始失败内容不能直接利用（层 1 防火墙）</h4><p>Reflexion 失效分析证明：<strong>不加处理的原始失败内容或自由反思是有害的</strong>。</p>
+<ul>
+<li>自由反思 100% 虚构</li>
+<li>坏记忆不如无记忆</li>
+<li>必须经过<strong>程序化&#x2F;可验证</strong>的处理</li>
+</ul>
+<h4 id="教训-2-失败需要显式构造和质量控制（层-2-提炼）"><a href="#教训-2-失败需要显式构造和质量控制（层-2-提炼）" class="headerlink" title="教训 2: 失败需要显式构造和质量控制（层 2 提炼）"></a>教训 2: 失败需要显式构造和质量控制（层 2 提炼）</h4><p>ETO 和 NAT 证明：</p>
+<ul>
+<li>失败经验需要<strong>显式区分正负</strong></li>
+<li>朴素混合效果次优</li>
+<li>成败<strong>对照式学习</strong>更有效</li>
+</ul>
+<h4 id="教训-3-教训应作为独立结构化工件（层-3-蒸馏）"><a href="#教训-3-教训应作为独立结构化工件（层-3-蒸馏）" class="headerlink" title="教训 3: 教训应作为独立结构化工件（层 3 蒸馏）"></a>教训 3: 教训应作为独立结构化工件（层 3 蒸馏）</h4><p>FCRF 证明：</p>
+<ul>
+<li>教训应作为<strong>独立模块</strong></li>
+<li>教训需要<strong>结构化、可验证</strong></li>
+<li>独立教训池带来稳定提升</li>
+</ul>
+<h3 id="5-3-技术演进路线"><a href="#5-3-技术演进路线" class="headerlink" title="5.3 技术演进路线"></a>5.3 技术演进路线</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Reflexion (原始)</span><br><span class="line">    ↓ 失效分析发现 100% 幻觉</span><br><span class="line">Reflexion (修正): 程序化信号提取</span><br><span class="line">    ↓ 需要显式正负区分</span><br><span class="line">ETO/NAT: 成败对照对 + DPO</span><br><span class="line">    ↓ 教训应独立结构化</span><br><span class="line">FCRF: 独立教训池模块</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="6-未来方向"><a href="#6-未来方向" class="headerlink" title="6. 未来方向"></a>6. 未来方向</h2><ol>
+<li><strong>自动化教训提取</strong>: 如何从失败中自动提取高质量、结构化的教训</li>
+<li><strong>跨任务迁移</strong>: 教训如何在不同任务间迁移和复用</li>
+<li><strong>教训验证机制</strong>: 如何验证教训的正确性和适用性</li>
+<li><strong>动态教训更新</strong>: 教训如何随时间更新和淘汰</li>
+<li><strong>多智能体教训共享</strong>: 多个智能体如何共享和协作优化教训池</li>
+</ol>
+<hr>
+<h2 id="7-结论"><a href="#7-结论" class="headerlink" title="7. 结论"></a>7. 结论</h2><p>从 Reflexion 到 FCRF，Agent 失败学习机制经历了从<strong>自由文本反思</strong>到<strong>结构化独立教训</strong>的演进。核心教训是：<strong>失败经验必须经过程序化、可验证的处理，显式区分正负，并作为独立结构化工件存储和利用</strong>。原始 Reflexion 的自由反思虽然概念先进，但实现方式存在严重幻觉问题；后续工作通过程序化信号提取、成败对照对、独立教训池等方式，显著提升了失败学习的有效性和可靠性。</p>
+<hr>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
+<li>Shinn et al. (2023). Reflexion: Self-Reflective Agents with Verbal Reinforcement Learning. <em>NeurIPS 2023</em>. arXiv:2303.11366</li>
+<li>ETO (2024). Trial and Error: Exploration with Failure Contrastive Pairs. <em>ACL 2024</em></li>
+<li>NAT (2024). Learning From Failure: Negative Example-Aware Training. arXiv:2402.11651</li>
+<li>FCRF (2025). Mentor-Actor: Independent Lesson Pool for Failure Correction. arXiv:2507.14975</li>
+<li>Reflexion Failure Analysis (2026). Why Free-Form Reflection Fails. arXiv:2605.29463</li>
+</ol>
+<hr>
+<p><em>整理：A梦 (turbineyan)</em><br><em>原文发布于: <a href="https://turbin.github.io/">https://turbin.github.io</a></em></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://turbin.github.io/2026/08/04/2026-08-04-agent-failure-learning-survey/" data-id="cuidzXQchkrJ5O2C6hyv0Wjs7" data-title="Agent 失败学习机制综述：从 Reflexion 到 FCRF" class="article-share-link"><span class="fa fa-share">分享</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Agent/" rel="tag">Agent</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%A4%B1%E8%B4%A5%E5%AD%A6%E4%B9%A0/" rel="tag">失败学习</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" rel="tag">机器学习</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BA%E6%96%87%E7%BB%BC%E8%BF%B0/" rel="tag">论文综述</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2026/07/30/2026-07-30-skill-up/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">后一篇</strong>
+      <div class="article-nav-title">阿里开源 skill-up：让 Agent Skill 可评测可回归</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/mba/">MBA学习</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/engineering/">工程博客</a><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/engineering/AI/">AI</a></li></ul></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI-Agent/" rel="tag">AI Agent</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E5%8D%8F%E4%BD%9C/" rel="tag">AI协作</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E6%9E%B6%E6%9E%84/" rel="tag">AI架构</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Agent/" rel="tag">Agent</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Android/" rel="tag">Android</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Git/" rel="tag">Git</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Graph-Engineering/" rel="tag">Graph Engineering</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HarnessX/" rel="tag">HarnessX</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JavaScript/" rel="tag">JavaScript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PFSM/" rel="tag">PFSM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/PowerShell/" rel="tag">PowerShell</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Promise/" rel="tag">Promise</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Qt/" rel="tag">Qt</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ReplayMemory/" rel="tag">ReplayMemory</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SKILL-DISCO/" rel="tag">SKILL-DISCO</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Skill%E8%AF%84%E6%B5%8B/" rel="tag">Skill评测</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webkit/" rel="tag">Webkit</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Windows/" rel="tag">Windows</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/skill-up/" rel="tag">skill-up</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BB%B7%E5%80%BC%E9%93%BE/" rel="tag">价值链</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95/" rel="tag">决策记录</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8D%9A%E5%AE%A2/" rel="tag">博客</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%8F%8D%E6%80%9D/" rel="tag">反思</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%A4%B1%E8%B4%A5%E5%AD%A6%E4%B9%A0/" rel="tag">失败学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%B7%A5%E7%A8%8B%E8%A7%84%E8%8C%83/" rel="tag">工程规范</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%BC%80%E6%BA%90/" rel="tag">开源</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%BC%82%E5%B8%B8/" rel="tag">异常</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%88%98%E7%95%A5%E7%AE%A1%E7%90%86/" rel="tag">战略管理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8A%80%E8%83%BD%E8%92%B8%E9%A6%8F/" rel="tag">技能蒸馏</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%8C%81%E7%BB%AD%E5%AD%A6%E4%B9%A0/" rel="tag">持续学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" rel="tag">机器学习</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">源码分析</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%AB%9E%E4%BA%89%E4%BC%98%E5%8A%BF/" rel="tag">竞争优势</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BF%BB%E8%AF%91/" rel="tag">翻译</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%BA%E6%96%87%E7%BB%BC%E8%BF%B0/" rel="tag">论文综述</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" rel="tag">读书笔记</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%BF%88%E5%85%8B%E5%B0%94%E6%B3%A2%E7%89%B9/" rel="tag">迈克尔波特</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/" rel="tag">逆向工程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%93%BE%E6%8E%A5/" rel="tag">链接</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%93%BE%E6%8E%A5%E5%99%A8/" rel="tag">链接器</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E9%98%BF%E9%87%8C%E5%B7%B4%E5%B7%B4/" rel="tag">阿里巴巴</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 10px;">AI</a> <a href="/tags/AI-Agent/" style="font-size: 10px;">AI Agent</a> <a href="/tags/AI%E5%8D%8F%E4%BD%9C/" style="font-size: 10px;">AI协作</a> <a href="/tags/AI%E6%9E%B6%E6%9E%84/" style="font-size: 10px;">AI架构</a> <a href="/tags/Agent/" style="font-size: 20px;">Agent</a> <a href="/tags/Android/" style="font-size: 10px;">Android</a> <a href="/tags/Git/" style="font-size: 10px;">Git</a> <a href="/tags/Graph-Engineering/" style="font-size: 10px;">Graph Engineering</a> <a href="/tags/HarnessX/" style="font-size: 10px;">HarnessX</a> <a href="/tags/Java/" style="font-size: 10px;">Java</a> <a href="/tags/JavaScript/" style="font-size: 15px;">JavaScript</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/PFSM/" style="font-size: 10px;">PFSM</a> <a href="/tags/PowerShell/" style="font-size: 10px;">PowerShell</a> <a href="/tags/Promise/" style="font-size: 10px;">Promise</a> <a href="/tags/Qt/" style="font-size: 10px;">Qt</a> <a href="/tags/ReplayMemory/" style="font-size: 10px;">ReplayMemory</a> <a href="/tags/SKILL-DISCO/" style="font-size: 10px;">SKILL-DISCO</a> <a href="/tags/Skill%E8%AF%84%E6%B5%8B/" style="font-size: 10px;">Skill评测</a> <a href="/tags/Webkit/" style="font-size: 10px;">Webkit</a> <a href="/tags/Windows/" style="font-size: 10px;">Windows</a> <a href="/tags/skill-up/" style="font-size: 10px;">skill-up</a> <a href="/tags/%E4%BB%B7%E5%80%BC%E9%93%BE/" style="font-size: 10px;">价值链</a> <a href="/tags/%E5%86%B3%E7%AD%96%E8%AE%B0%E5%BD%95/" style="font-size: 10px;">决策记录</a> <a href="/tags/%E5%8D%9A%E5%AE%A2/" style="font-size: 15px;">博客</a> <a href="/tags/%E5%8F%8D%E6%80%9D/" style="font-size: 10px;">反思</a> <a href="/tags/%E5%A4%B1%E8%B4%A5%E5%AD%A6%E4%B9%A0/" style="font-size: 10px;">失败学习</a> <a href="/tags/%E5%B7%A5%E7%A8%8B%E8%A7%84%E8%8C%83/" style="font-size: 10px;">工程规范</a> <a href="/tags/%E5%BC%80%E6%BA%90/" style="font-size: 10px;">开源</a> <a href="/tags/%E5%BC%82%E5%B8%B8/" style="font-size: 10px;">异常</a> <a href="/tags/%E6%88%98%E7%95%A5%E7%AE%A1%E7%90%86/" style="font-size: 10px;">战略管理</a> <a href="/tags/%E6%8A%80%E8%83%BD%E8%92%B8%E9%A6%8F/" style="font-size: 10px;">技能蒸馏</a> <a href="/tags/%E6%8C%81%E7%BB%AD%E5%AD%A6%E4%B9%A0/" style="font-size: 10px;">持续学习</a> <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" style="font-size: 10px;">机器学习</a> <a href="/tags/%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" style="font-size: 10px;">源码分析</a> <a href="/tags/%E7%AB%9E%E4%BA%89%E4%BC%98%E5%8A%BF/" style="font-size: 10px;">竞争优势</a> <a href="/tags/%E7%BF%BB%E8%AF%91/" style="font-size: 15px;">翻译</a> <a href="/tags/%E8%AE%BA%E6%96%87%E7%BB%BC%E8%BF%B0/" style="font-size: 10px;">论文综述</a> <a href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" style="font-size: 10px;">读书笔记</a> <a href="/tags/%E8%BF%88%E5%85%8B%E5%B0%94%E6%B3%A2%E7%89%B9/" style="font-size: 10px;">迈克尔波特</a> <a href="/tags/%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B/" style="font-size: 10px;">逆向工程</a> <a href="/tags/%E9%93%BE%E6%8E%A5/" style="font-size: 10px;">链接</a> <a href="/tags/%E9%93%BE%E6%8E%A5%E5%99%A8/" style="font-size: 10px;">链接器</a> <a href="/tags/%E9%98%BF%E9%87%8C%E5%B7%B4%E5%B7%B4/" style="font-size: 10px;">阿里巴巴</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/08/">八月 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/07/">七月 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/08/04/2026-08-04-agent-failure-learning-survey/">Agent 失败学习机制综述：从 Reflexion 到 FCRF</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/30/2026-07-30-skill-up/">阿里开源 skill-up：让 Agent Skill 可评测可回归</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/29/2026-07-29-skill-disco-explained/">🎮 SKILL-DISCO：教 AI 记住聪明的做事方法</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/28/2026-07-28-replay-memory-vs-harnessx/">技术反思：Replay Memory vs HarnessX 协同进化</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/27/2026-07-27-graph-engineering-vs-loop/">Graph Engineering vs Loop Engineering：从黑盒决策到显式结构</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 Turbine Yan<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
